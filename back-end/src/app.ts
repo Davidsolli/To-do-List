@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
+import "./database/db";
 
 dotenv.config();
 
@@ -9,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/", (req: Request, res: Response) => {
-    res.send("Servidor to-do-list🚀!!!")
+  res.send("Servidor to-do-list🚀!!!");
 });
 
 app.listen(PORT, () => {

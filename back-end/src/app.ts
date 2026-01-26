@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
+
 import "./database/db";
+import router from "./routes/routes";
 
 dotenv.config();
 
@@ -9,9 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use("/", (req: Request, res: Response) => {
-  res.send("Servidor to-do-list🚀!!!");
-});
+app.use("/api", router);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando http://localhost:${PORT}`);

@@ -4,7 +4,7 @@ import { User, UserCreateDto } from "../interfaces/user";
 export class AuthRepository {
     static create(userData: UserCreateDto, hashedPassword: string) {
         const result = db.prepare(`INSERT INTO users (name, email, password)
-      VALUES (?, ?, ?, datetime('now'))`).run(userData.name, userData.email, hashedPassword);
+      VALUES (?, ?, ?)`).run(userData.name, userData.email, hashedPassword);
         if (result.changes === 0) {
             throw new Error('Falha ao inserir usuário no banco de dados');
         } 
@@ -21,7 +21,7 @@ export class AuthRepository {
   }
   static findById(id: number): User | undefined {
     return db.prepare(`
-      SELECT id, name, email, password, created_at
+      SELECT id, name, email, password
       FROM users
       WHERE id = ?
     `).get(id) as User | undefined;

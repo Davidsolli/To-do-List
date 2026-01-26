@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-const dbPath = path.resolve(__dirname, "app.db");
+const dbPath = path.resolve(process.cwd(), "src/database/app.db");
 
 const dir = path.dirname(dbPath);
 if (!fs.existsSync(dir)) {
@@ -17,12 +17,12 @@ console.log("Banco SQLite pronto:", dbPath);
 db.pragma("foreign_keys = ON");
 
 // Criar tabelas
-db.exec(      
-  `CREATE TABLE IF NOT EXISTS users (
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
+    password TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS projects (

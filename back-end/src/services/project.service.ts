@@ -34,6 +34,10 @@ export class ProjectService {
     return newProject;
   }
 
+  static getByUserId(userId: number): Project[] {
+     return ProjectRepository.findByUserId(userId);
+  }
+
   static getById(id: number): Project {
     const project = ProjectRepository.findById(id);
     if (!project) {

@@ -12,6 +12,11 @@ export class ProjectRepository {
         return result.lastInsertRowid as number;
     }
 
+    static findByUserId(userId: number): Project[] {
+        const result = db.prepare('SELECT * FROM projects WHERE user_id = ?').all(userId);
+        return result as Project[];
+    }
+
     static findById(id: number): Project | undefined {
         const result = db.prepare(`SELECT * FROM projects WHERE id = ?`).get(id);
         return result as Project | undefined;

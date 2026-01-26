@@ -13,6 +13,21 @@ export class ProjectController {
     }
   }
 
+  //GET /projects/users/:userId
+  static getByUserId(req: Request, res: Response) {
+    try {
+        const userId = Number(req.params.userId);
+        if (isNaN(userId)) {
+             return res.status(400).json({ error: "ID de usuário inválido" });
+        }
+        
+        const projects = ProjectService.getByUserId(userId);
+        return res.status(200).json(projects);
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message });
+    }
+  }
+
   // GET /projects/:id
   static getById(req: Request, res: Response) {
     try {

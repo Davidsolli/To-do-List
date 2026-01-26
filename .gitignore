@@ -4,4 +4,5 @@
 **/src/database/app.db
 
 # Ignorar arquivos
-*/.env
+*.env
+.vscode/

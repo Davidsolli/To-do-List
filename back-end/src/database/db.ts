@@ -1,62 +1,48 @@
-import dotenv from "dotenv";
+import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
-import sqlite3 from "sqlite3";
 
-dotenv.config();
-
-const dbPath = path.resolve(__dirname, "../../src/database/app.db");
+const dbPath = path.resolve(process.cwd(), "src/database/app.db");
 
 const dir = path.dirname(dbPath);
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error("Erro ao abrir/criar o banco:", err.message);
-  }
+export const db = new Database(dbPath);
 
-  console.log("Banco SQLite pronto:", dbPath);
+console.log("Banco SQLite pronto:", dbPath);
 
-  db.run("PRAGMA foreign_keys = ON;");
+// Habilitar foreign keys
+db.pragma("foreign_keys = ON");
 
-  db.exec(
-    `      
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            user_id INTEGER NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT,
-            tip TEXT,
-            priority TEXT,
-            status TEXT,
-            estimate INTEGER,
-            project_id INTEGER NOT NULL,
-            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-        );
-    `,
-    (err) => {
-      if (err) {
-        console.error("Erro ao executar SQL:", err.message);
-      } else {
-        console.log("Tabelas criadas/validadas com sucesso!");
-      }
-    },
+// Criar tabelas
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
   );
-});
 
-export default db;
+  CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    tip TEXT,
+    priority TEXT,
+    status TEXT,
+    estimate INTEGER,
+    project_id INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+  );
+`);
+
+console.log("Tabelas criadas/validadas com sucesso!");

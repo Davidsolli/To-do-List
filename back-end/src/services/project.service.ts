@@ -76,6 +76,15 @@ export class ProjectService {
 
     return ProjectRepository.findById(id)!; 
   }
+
+  static delete(id: number): boolean {
+    const existingProject = ProjectRepository.findById(id);
+    if (!existingProject) {
+      throw new Error('Projeto não encontrado para exclusão.');
+    }
+
+    return ProjectRepository.delete(id) > 0;
+  }
 }
 
 

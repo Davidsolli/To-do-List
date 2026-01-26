@@ -30,4 +30,12 @@ export class ProjectRepository {
         }
         return result.changes;
     }
+
+    static delete(id: number): number {
+        const result = db.prepare(`DELETE FROM projects WHERE id = ?`).run(id);
+        if (result.changes === 0) {
+            throw new Error('Falha ao deletar projeto no banco de dados');
+        }
+        return result.changes;
+    }
 }

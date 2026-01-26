@@ -48,4 +48,22 @@ export class ProjectController {
       return res.status(400).json({ error: error.message });
     }
   }
+
+  // DELETE /projects/:id
+  static delete(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+         return res.status(400).json({ error: "ID inválido" });
+      }
+
+      ProjectService.delete(id);
+      return res.status(204).send();
+    } catch (error: any) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

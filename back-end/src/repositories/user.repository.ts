@@ -16,4 +16,14 @@ export default class UserRepository {
       WHERE id = ?
     `).get(id) as User | undefined;
   }
+
+  static update(id: number, name: string, email: string): boolean {
+    const result = db.prepare(`
+      UPDATE users 
+      SET name = ?, email = ? 
+      WHERE id = ?
+    `).run(name, email, id);
+
+    return result.changes > 0;
+  }
 }

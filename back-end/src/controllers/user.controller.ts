@@ -28,4 +28,19 @@ export default class UserController {
             return res.status(400).json({ error: error.message });
         }
     }
+
+    async update(req: Request, res: Response) {
+        try {
+            const service = new UserService();
+            const id = Number(req.params.id);
+            const dadosParaAtualizar = req.body;
+
+            if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+            const updatedUser = await service.update(id, dadosParaAtualizar);
+            return res.status(200).json(updatedUser);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
 }

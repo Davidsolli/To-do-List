@@ -22,4 +22,20 @@ export default class UserService {
 
         return safeUsers;
     }
+
+    async update(id: number, dadosParciais: { name?: string, email?: string }) {
+        const usuarioAtual = UserRepository.findById(id);
+
+        if (!usuarioAtual) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        const novoNome = dadosParciais.name || usuarioAtual.name;
+        const novoEmail = dadosParciais.email || usuarioAtual.email;
+        const success = UserRepository.update(id, novoNome, novoEmail);
+
+        if (!success) throw new Error('Erro ao atualizar usuário');
+
+        return { id, name: novoNome, email: novoEmail };
+    }
 }

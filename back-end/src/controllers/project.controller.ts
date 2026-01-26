@@ -11,5 +11,23 @@ export class ProjectController {
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
-  }  
+  }
+
+  // GET /projects/:id
+  static getById(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+         return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const project = ProjectService.getById(id);
+      return res.status(200).json(project);
+    } catch (error: any) {
+      if (error.message === 'Projeto não encontrado.') {
+        return res.status(404).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

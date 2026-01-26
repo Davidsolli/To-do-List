@@ -33,6 +33,14 @@ export class ProjectService {
 
     return newProject;
   }
+
+  static getById(id: number): Project {
+    const project = ProjectRepository.findById(id);
+    if (!project) {
+      throw new Error('Projeto não encontrado.');
+    }
+    return project;
+  }
 }
 
 

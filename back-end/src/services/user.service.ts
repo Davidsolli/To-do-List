@@ -1,45 +1,54 @@
-import UserController from "../controllers/user.controller";
+import { UserResponseDTO, UserUpdateDTO } from "../interfaces/user";
 import UserRepository from "../repositories/user.repository";
+import bcrypt from "bcrypt"
 
 
 export default class UserService {
-    async getById(id: number) {
+    private readonly SALT_ROUNDS = process.env.SALT || 10;
+
+    async getById(id: number): Promise<UserResponseDTO> {
         const user = UserRepository.findById(id);
+
         if (!user) {
             throw new Error('Usuário não encontrado');
         }
 
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return user;
     }
-    async getAll() {
+
+    async getAll(): Promise<UserResponseDTO[]> {
         const users = UserRepository.findAll();
 
-        const safeUsers = users.map(user => {
-            const { password, ...userWithoutPassword } = user;
-            return userWithoutPassword;
-        });
+        if (!users) {
+            throw new Error('Usuários não encontrados')
+        }
 
-        return safeUsers;
+        return users;
     }
 
-    async update(id: number, dadosParciais: { name?: string, email?: string }) {
-        const usuarioAtual = UserRepository.findById(id);
+    async update(id: number, newData: UserUpdateDTO): Promise<boolean> {
+        const user = UserRepository.findById(id);
 
-        if (!usuarioAtual) {
+        if (!user) {
             throw new Error('Usuário não encontrado');
         }
 
-        const novoNome = dadosParciais.name || usuarioAtual.name;
-        const novoEmail = dadosParciais.email || usuarioAtual.email;
-        const success = UserRepository.update(id, novoNome, novoEmail);
+        const newName = newData.name || user.name;
+        const newEmail = newData.email || user.email;
+        let newPassword = user.password;
+
+        if (newData.password !== undefined) {
+            newPassword = await bcrypt.hash(newData.password, this.SALT_ROUNDS); 
+        }
+
+        const success = UserRepository.update(id, newName, newEmail, newPassword);
 
         if (!success) throw new Error('Erro ao atualizar usuário');
 
-        return { id, name: novoNome, email: novoEmail };
+        return success;
     }
     
-    async delete(id: number) {
+    async delete(id: number): Promise<boolean> {
         const success = UserRepository.delete(id);
         if (!success) {
             throw new Error('Usuário não encontrado ou já deletado');

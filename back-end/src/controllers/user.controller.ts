@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import UserService from "../services/user.service";
 
 export default class UserController {
-    async getById(req: Request, res: Response) {
+    async getById(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();
             const id = Number(req.params.id);
@@ -19,7 +19,7 @@ export default class UserController {
         }
     }
 
-    async getAll(req: Request, res: Response) {
+    async getAll(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();
             const users = await service.getAll();
@@ -29,7 +29,7 @@ export default class UserController {
         }
     }
 
-    async update(req: Request, res: Response) {
+    async update(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();
             const id = Number(req.params.id);
@@ -43,7 +43,8 @@ export default class UserController {
             return res.status(400).json({ error: error.message });
         }
     }
-    async delete(req: Request, res: Response) {
+
+    async delete(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();
             const id = Number(req.params.id);

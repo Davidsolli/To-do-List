@@ -38,4 +38,12 @@ export default class UserService {
 
         return { id, name: novoNome, email: novoEmail };
     }
+    
+    async delete(id: number) {
+        const success = UserRepository.delete(id);
+        if (!success) {
+            throw new Error('Usuário não encontrado ou já deletado');
+        }
+        return true;
+    }
 }

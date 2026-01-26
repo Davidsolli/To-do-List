@@ -26,4 +26,14 @@ export default class UserRepository {
 
     return result.changes > 0;
   }
+
+  static delete(id: number): boolean {
+    const result = db.prepare(`
+      DELETE FROM users 
+      WHERE id = ?
+    `).run(id);
+
+    return result.changes > 0;
+  }
 }
+

@@ -21,4 +21,13 @@ export class ProjectRepository {
         const result = db.prepare(`SELECT * FROM projects WHERE name = ? AND user_id = ?`).get(name, userId);
         return result as Project | undefined;
     }
+
+    static update(id: number, projectData: ProjectCreateDto): number {
+        const result = db.prepare(`UPDATE projects SET name = ?, description = ? WHERE id = ?`) 
+            .run(projectData.name, projectData.description, id);
+        if (result.changes === 0) {
+            throw new Error('Falha ao atualizar projeto no banco de dados');
+        }
+        return result.changes;
+    }
 }

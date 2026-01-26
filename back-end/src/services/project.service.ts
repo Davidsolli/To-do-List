@@ -41,6 +41,41 @@ export class ProjectService {
     }
     return project;
   }
+
+  static update(id: number, projectData: Partial<ProjectCreateDto>): Project {
+    const existingProject = ProjectRepository.findById(id);
+    if (!existingProject) {
+      throw new Error('Projeto não encontrado para atualização.');
+    }
+
+    const newName = projectData.name ?? existingProject.name;
+    const newDescription = projectData.description ?? existingProject.description;
+
+    if (projectData.name && projectData.name !== existingProject.name) {
+       const duplicateProject = ProjectRepository.findByProjectName(projectData.name, existingProject.user_id);
+       
+       if (duplicateProject) {
+         throw new Error('Você já possui outro projeto com este nome.');
+       }
+    }
+
+    if (!ProjectValidation.validateName(newName)) {
+      throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
+    }
+    if (!ProjectValidation.validateDescription(newDescription)) {
+      throw new Error('A descrição deve ter pelo menos 5 caracteres.');
+    }
+
+    const finalProjectData: ProjectCreateDto = {
+      name: newName,
+      description: newDescription,
+      user_id: existingProject.user_id
+    };
+
+    ProjectRepository.update(id, finalProjectData);
+
+    return ProjectRepository.findById(id)!; 
+  }
 }
 
 

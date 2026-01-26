@@ -1,17 +1,13 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes";
-import { TaskController } from "../controllers/task.controller";
+import tasksRoutes from "./task.routes";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/users", ()=>{});
 router.use("/projects", ()=>{});
-router.use("/tasks", ()=>{});
-
-router.post("/tasks", TaskController.createTask);
-
-router.post("/tasks/:id/assign", ()=>{});
+router.use("/tasks", tasksRoutes);
 
 
 export default router;

@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack serve --open",
+    "build": "webpack --mode production",
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +23,7 @@
     "mocha": "^11.7.5",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",

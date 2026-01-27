@@ -16,7 +16,7 @@ export class ProjectValidation {
   }
 
   static validateName(name: string) {
-    if (!name || name.trim().length >= 3) {
+    if (!name || name.trim().length < 3) {
       throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
     }
   }

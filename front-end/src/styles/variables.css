@@ -1,0 +1,72 @@
+:root {
+  /* =========================================
+     1. PALETA DA MARCA (BRAND)
+     ========================================= */
+  --color-primary: #13EC5B;           /* Botões, Logo */
+  --color-primary-light: #A1E7A8;     /* Hover, Detalhes */
+  --color-primary-dark-text: #0D7A2D; /* Textos em destaque */
+
+
+  /* =========================================
+     2. TIPOGRAFIA (TEXT)
+     ========================================= */
+  --text-main: #1E1F24;      /* Títulos */
+  --text-secondary: #585962; /* Parágrafos */
+  --text-tertiary: #80828D;  /* Desabilitados */
+
+
+  /* =========================================
+     3. FUNDOS E SUPERFÍCIES (BACKGROUNDS)
+     ========================================= */
+  --bg-page: #F6F8F6;       /* Fundo da tela */
+  --bg-surface: #F0F0F2;    /* Cards, Sidebar */
+  --bg-decorative: #EBF3EB; /* Detalhes visuais */
+
+
+  /* =========================================
+     4. ESTADOS INTERATIVOS (UI)
+     ========================================= */
+  --bg-active-item: #D1F3D3; /* Menu ativo */
+  --border-color: #E0E0E0;   /* Bordas gerais */
+
+
+  /* =========================================
+     5. SISTEMA DE PRIORIDADE (URGÊNCIA)
+     ========================================= */
+  
+  /* --- ALTA (Vermelho) --- */
+  --priority-high-bg: #FFC5C5;
+  --priority-high-dot: #FF3939;
+  --priority-high-text: #451D1D; /* Marrom avermelhado escuro para leitura */
+
+  /* --- MÉDIA (Amarelo/Laranja) --- */
+  --priority-mid-bg: #FFF4CC;
+  --priority-mid-dot: #B87503;
+  --priority-mid-text: #451D1D; /* Mantido o mesmo tom escuro para consistência */
+
+  /* --- BAIXA (Verde) --- */
+  --priority-low-bg: #DCFCE7;
+  --priority-low-dot: #166534;
+  --priority-low-text: #166534;
+
+
+  /* =========================================
+     6. SISTEMA DE STATUS (KANBAN / PROCESSO)
+     ========================================= */
+  
+  /* --- FAZENDO / EM ANDAMENTO (Azul) --- */
+  /* Renomeei de 'mid' para 'doing' para não confundir com prioridade média */
+  --status-doing-bg: #D6E4FF;
+  --status-doing-dot: #2F80ED;
+  --status-doing-text: #2F80ED;
+
+  /* --- PENDENTE (Cinza ou usar a cor de Alta Prioridade se for urgente) --- */
+  --status-todo-bg: #E3E3E5;
+  --status-todo-dot: #585962;
+  --status-todo-text: #585962;
+
+  /* --- CONCLUÍDO (Verde igual Baixa Prioridade) --- */
+  --status-done-bg: #DCFCE7;
+  --status-done-dot: #166534;
+  --status-done-text: #166534;
+}

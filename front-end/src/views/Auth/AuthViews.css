@@ -3,7 +3,6 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: var(--bg-page);
 }
 
 /* --- LADO ESQUERDO (HERO) --- */
@@ -41,27 +40,18 @@
   gap: 10px;
 }
 
+/* Override específico para o Hero (Título maior que o global) */
 .auth-hero__content h1 {
-  font-size: 3.5rem;
+  font-size: 3.5rem; 
   line-height: 1.1;
   margin-bottom: 1rem;
-  font-weight: 700;
+  color: #FFFFFF; /* Garante branco no hero */
 }
 
 .auth-hero__content p {
   font-size: 1.25rem;
   opacity: 0.9;
-}
-
-.auth-link {
-  color: var(--color-primary-dark-text);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.auth-link:hover {
-  color: var(--text-main);
+  color: #FFFFFF;
 }
 
 /* Mostra o Hero em telas Desktop */
@@ -78,7 +68,6 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background-color: var(--bg-page);
 }
 
 .auth-form-content {
@@ -87,27 +76,23 @@
 }
 
 .auth-form-content h2 {
-  font-size: 2rem;
-  color: var(--text-main);
   margin-bottom: 0.5rem;
 }
 
 .auth-description {
-  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 0; /* O espaçamento é controlado pela margem do Input component */
+  gap: 0; 
 }
 
 .auth-footer {
   margin-top: 2rem;
   text-align: center;
   font-size: 0.9rem;
-  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;

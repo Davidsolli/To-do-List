@@ -7,4 +7,6 @@ export interface User {
 
 export type UserCreateDto = Omit<User, 'id'>;
 
-export type UserResponseDTO = Omit<User, 'password'>;
+export type UserUpdateDTO = Partial<Omit<User, "id">>
+
+export type UserResponseDTO = Partial<Omit<User, 'password'>>;

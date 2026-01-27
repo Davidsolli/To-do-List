@@ -5,4 +5,6 @@ export interface Project {
     description: string;
 }
 
-export type ProjectCreateDto = Omit<Project, 'id'>;
+export type ProjectCreateDTO = Omit<Project, 'id'>;
+
+export type ProjectUpdateDTO = Partial<Omit<Project, "id">>

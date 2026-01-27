@@ -1,22 +1,12 @@
-import { Project, ProjectCreateDto } from "../interfaces/project";
+import { Project, ProjectCreateDTO, ProjectUpdateDTO } from "../interfaces/project";
 import { ProjectRepository } from "../repositories/project.repository";
 import { ProjectValidation } from "../validations/project.validation";
 
 export class ProjectService {
   
-  static create(projectData: ProjectCreateDto): Project {
+  static create(projectData: ProjectCreateDTO): Project {
 
-    if (!ProjectValidation.validateName(projectData.name)) {
-      throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
-    }
-
-    if (!ProjectValidation.validateDescription(projectData.description)) {
-      throw new Error('A descrição deve ter pelo menos 5 caracteres.');
-    }
-
-    if (!ProjectValidation.validateUserId(projectData.user_id)) {
-      throw new Error('ID do usuário inválido.');
-    }
+    ProjectValidation.validateProject(projectData);
 
     const nameExists = ProjectRepository.findByProjectName(projectData.name, projectData.user_id);
     if (nameExists) {
@@ -46,14 +36,15 @@ export class ProjectService {
     return project;
   }
 
-  static update(id: number, projectData: Partial<ProjectCreateDto>): Project {
+  static update(id: number, projectData: ProjectUpdateDTO): Project {
     const existingProject = ProjectRepository.findById(id);
+
     if (!existingProject) {
       throw new Error('Projeto não encontrado para atualização.');
     }
 
-    const newName = projectData.name ?? existingProject.name;
-    const newDescription = projectData.description ?? existingProject.description;
+    const newName = projectData.name || existingProject.name;
+    const newDescription = projectData.description || existingProject.description;
 
     if (projectData.name && projectData.name !== existingProject.name) {
        const duplicateProject = ProjectRepository.findByProjectName(projectData.name, existingProject.user_id);
@@ -63,14 +54,10 @@ export class ProjectService {
        }
     }
 
-    if (!ProjectValidation.validateName(newName)) {
-      throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
-    }
-    if (!ProjectValidation.validateDescription(newDescription)) {
-      throw new Error('A descrição deve ter pelo menos 5 caracteres.');
-    }
+    ProjectValidation.validateName(newName);
+    ProjectValidation.validateDescription(newDescription);
 
-    const finalProjectData: ProjectCreateDto = {
+    const finalProjectData: ProjectCreateDTO = {
       name: newName,
       description: newDescription,
       user_id: existingProject.user_id

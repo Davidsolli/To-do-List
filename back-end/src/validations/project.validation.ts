@@ -1,13 +1,29 @@
+import { ProjectCreateDTO } from "../interfaces/project";
+
 export class ProjectValidation {
-  static validateName(name: string): boolean {
-    return typeof name === 'string' && name.trim().length >= 3;
+  static validateProject(project: ProjectCreateDTO) {
+    if (!project.name || project.name.trim().length < 3) {
+      throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
+    }
+
+    if (!project.description || project.description.trim().length < 5) {
+      throw new Error('A descrição deve ter pelo menos 5 caracteres.');
+    }
+
+    if (!project.user_id || project.user_id <= 0) {
+      throw new Error('ID do usuário inválido.');
+    }
   }
 
-  static validateDescription(description: string): boolean {
-    return typeof description === 'string' && description.trim().length >= 5;
+  static validateName(name: string) {
+    if (!name || name.trim().length >= 3) {
+      throw new Error('O nome do projeto deve ter pelo menos 3 caracteres.');
+    }
   }
 
-  static validateUserId(userId: number): boolean {
-    return typeof userId === 'number' && userId > 0;
+  static validateDescription(description: string) {
+    if (!description || description.trim().length < 5) {
+      throw new Error('A descrição deve ter pelo menos 5 caracteres.');
+    }
   }
 }

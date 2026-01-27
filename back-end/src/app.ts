@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 import "./database/db";
 import router from "./routes/routes";
+import { db } from "./database/db";
 
 dotenv.config();
 

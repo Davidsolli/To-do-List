@@ -3,6 +3,7 @@ import { Input } from '../../components/Input/Input';   // Lógica do Input
 import { Button } from '../../components/Button/Button'; // Lógica do Button
 import template from './RegisterView.html';
 import './AuthViews.css';
+import { Validator } from '../../utils/Validator';
 
 export class RegisterView extends Component {
   getTemplate(): string {
@@ -48,6 +49,45 @@ export class RegisterView extends Component {
   protected afterRender(): void {
     // ... seus outros códigos ...
 
+    // Lógica do Form
+    const form = this.container.querySelector('#register-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const nameInput = this.container.querySelector('#name') as HTMLInputElement;
+        const emailInput = this.container.querySelector('#email') as HTMLInputElement;
+        const passwordInput = this.container.querySelector('#password') as HTMLInputElement;
+
+        // Limpar erros anteriores
+        this.clearErrors();
+
+        let hasError = false;
+
+        if (!Validator.isNameValid(nameInput.value)) {
+          this.showError('name', 'Por favor, insira um nome válido (mínimo 4 letras).');
+          hasError = true;
+        }
+
+        if (!Validator.isEmail(emailInput.value)) {
+          this.showError('email', 'Por favor, insira um e-mail válido.');
+          hasError = true;
+        }
+
+        if (!Validator.isPasswordStrong(passwordInput.value)) {
+          this.showError('password', 'A senha deve ter no mínimo 8 caracteres, incluir letras, números e símbolos.');
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Se passar na validação, prosseguir com cadastro
+        console.log('Cadastro válido:', emailInput.value);
+        // Aqui chamaria o serviço de auth
+      });
+    }
+
+
     // Lógica Genérica para qualquer botão de "olhinho" na tela
     const toggleBtns = this.container.querySelectorAll('[data-action="toggle-password"]');
 
@@ -69,5 +109,17 @@ export class RegisterView extends Component {
         }
       });
     });
+  }
+
+  private showError(inputId: string, message: string): void {
+    const errorEl = this.container.querySelector(`#error-${inputId}`);
+    if (errorEl) {
+      errorEl.textContent = message;
+    }
+  }
+
+  private clearErrors(): void {
+    const errors = this.container.querySelectorAll('.form-error');
+    errors.forEach(el => el.textContent = '');
   }
 }

@@ -75,3 +75,7 @@
 .input-toggle-btn:hover {
   color: var(--text-main);
 }
+
+.form-error{
+    color: var(--priority-high-dot);
+}

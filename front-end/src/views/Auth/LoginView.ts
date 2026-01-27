@@ -3,6 +3,7 @@ import { Input } from '../../components/Input/Input';   // Lógica do Input
 import { Button } from '../../components/Button/Button'; // Lógica do Button
 import template from './LoginView.html';
 import './AuthViews.css';
+import { Validator } from '../../utils/Validator';
 
 export class LoginView extends Component {
   getTemplate(): string {
@@ -40,6 +41,39 @@ export class LoginView extends Component {
   protected afterRender(): void {
     // ... seus outros códigos ...
 
+    // Lógica do Form
+    const form = this.container.querySelector('#login-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const emailInput = this.container.querySelector('#email') as HTMLInputElement;
+        const passwordInput = this.container.querySelector('#password') as HTMLInputElement;
+
+        // Limpar erros anteriores
+        this.clearErrors();
+
+        let hasError = false;
+
+        if (!Validator.isEmail(emailInput.value)) {
+          this.showError('email', 'Por favor, insira um e-mail válido.');
+          hasError = true;
+        }
+
+        if (Validator.isEmpty(passwordInput.value)) {
+          this.showError('password', 'Por favor, insira sua senha.');
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Se passar na validação, prosseguir com login
+        console.log('Login válido:', emailInput.value);
+        // Aqui chamaria o serviço de auth
+      });
+    }
+
+
     // Lógica Genérica para qualquer botão de "olhinho" na tela
     const toggleBtns = this.container.querySelectorAll('[data-action="toggle-password"]');
 
@@ -61,5 +95,17 @@ export class LoginView extends Component {
         }
       });
     });
+  }
+
+  private showError(inputId: string, message: string): void {
+    const errorEl = this.container.querySelector(`#error-${inputId}`);
+    if (errorEl) {
+      errorEl.textContent = message;
+    }
+  }
+
+  private clearErrors(): void {
+    const errors = this.container.querySelectorAll('.form-error');
+    errors.forEach(el => el.textContent = '');
   }
 }

@@ -1,0 +1,35 @@
+<section class="auth-container">
+    <aside class="auth-hero">
+        <div class="auth-hero__overlay">
+            <div class="auth-hero__content">
+                <div class="auth-hero__logo">
+                    <img src="../../assets/logo-white.svg" alt="Logo">
+                </div>
+                <h1>Domine o seu dia</h1>
+                <p>Experimente a nova geração da produtividade com a nossa to-do list.</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="auth-form-wrapper">
+        <div class="auth-form-content">
+            <h2>Crie sua conta</h2>
+            <p class="auth-description">Cadastre-se para acessar nossa ferramenta.</p>
+
+            <form id="login-form" class="auth-form">
+                {{name_component}}
+
+                {{email_component}}
+
+                {{password_component}}
+
+                {{register_button_component}}
+            </form>
+
+            <div class="auth-footer">
+                Já tem uma conta?
+                <a href="/login" data-link class="auth-link">Faça login</a>
+            </div>
+        </div>
+    </main>
+</section>

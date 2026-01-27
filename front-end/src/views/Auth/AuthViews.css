@@ -1,0 +1,115 @@
+/* Layout Geral (Split Screen) */
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-page);
+}
+
+/* --- LADO ESQUERDO (HERO) --- */
+.auth-hero {
+  display: none; /* Mobile first: esconde */
+  flex: 1;
+  /* Certifique-se que a imagem existe nesse caminho */
+  background-image: url('../../assets/auth-hero.jpg'); 
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Máscara escura sobre a imagem */
+.auth-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+  display: flex;
+  align-items: center;
+  padding: 60px;
+}
+
+.auth-hero__content {
+  color: #FFFFFF;
+  max-width: 480px;
+}
+
+.auth-hero__logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-hero__content h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.auth-hero__content p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+.auth-link {
+  color: var(--color-primary-dark-text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+  color: var(--text-main);
+}
+
+/* Mostra o Hero em telas Desktop */
+@media (min-width: 900px) {
+  .auth-hero {
+    display: block;
+  }
+}
+
+/* --- LADO DIREITO (FORM WRAPPER) --- */
+.auth-form-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--bg-page);
+}
+
+.auth-form-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-form-content h2 {
+  font-size: 2rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.auth-description {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* O espaçamento é controlado pela margem do Input component */
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}

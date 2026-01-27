@@ -44,4 +44,34 @@ export class TaskController {
       }
     }
   }
+
+  static async searchTasks(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      const keyword = req.query.q as string;
+
+      if (isNaN(userId)) {
+        res.status(400).json({ error: "ID do usuário inválido" });
+        return;
+      }
+
+      if (!keyword) {
+        res.status(400).json({ error: "Parâmetro de busca 'q' é obrigatório" });
+        return;
+      }
+
+      const tasks = await TaskService.searchTasksByUserIdAndKeyword(userId, keyword);
+
+      res.status(200).json({
+        message: "Busca realizada com sucesso",
+        tasks: tasks,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Erro interno do servidor" });
+      }
+    }
+  }
 }

@@ -69,4 +69,18 @@ export class TaskRepository {
       )
       .all(userId) as Task[];
   }
+
+  static searchByUserIdAndKeyword(userId: number, keyword: string): Task[] {
+    const searchTerm = `%${keyword}%`;
+    return db
+      .prepare(
+        `
+            SELECT t.id, t.title, t.description, t.tip, t.priority, t.status, t.estimate, t.project_id
+            FROM tasks t
+            INNER JOIN projects p ON t.project_id = p.id
+            WHERE p.user_id = ? AND (t.title LIKE ? OR t.description LIKE ?)
+        `,
+      )
+      .all(userId, searchTerm, searchTerm) as Task[];
+  }
 }

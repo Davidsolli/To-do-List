@@ -11,4 +11,11 @@ export class TaskService {
     static async getTasksByUserId(userId: number): Promise<TaskResponseDTO[]> {
         return TaskRepository.findByUserId(userId);
     }
+
+    static async searchTasksByUserIdAndKeyword(userId: number, keyword: string): Promise<TaskResponseDTO[]> {
+        if (!keyword || keyword.trim().length === 0) {
+            throw new Error("Parâmetro de busca não pode estar vazio");
+        }
+        return TaskRepository.searchByUserIdAndKeyword(userId, keyword.trim());
+    }
 }

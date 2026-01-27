@@ -20,4 +20,28 @@ export class TaskController {
       }
     }
   }
+
+  static async getTasksByUserId(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+
+      if (isNaN(userId)) {
+        res.status(400).json({ error: "ID do usuário inválido" });
+        return;
+      }
+
+      const tasks = await TaskService.getTasksByUserId(userId);
+
+      res.status(200).json({
+        message: "Tarefas recuperadas com sucesso",
+        tasks: tasks,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Erro interno do servidor" });
+      }
+    }
+  }
 }

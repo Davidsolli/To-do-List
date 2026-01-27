@@ -7,4 +7,8 @@ export class TaskService {
         TaskValidation.validateTaskCreation(taskData);
         return TaskRepository.create(taskData);
     }
+
+    static async getTasksByUserId(userId: number): Promise<TaskResponseDTO[]> {
+        return TaskRepository.findByUserId(userId);
+    }
 }

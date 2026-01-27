@@ -56,4 +56,17 @@ export class TaskRepository {
       )
       .all(projectId) as Task[];
   }
+
+  static findByUserId(userId: number): Task[] {
+    return db
+      .prepare(
+        `
+            SELECT t.id, t.title, t.description, t.tip, t.priority, t.status, t.estimate, t.project_id
+            FROM tasks t
+            INNER JOIN projects p ON t.project_id = p.id
+            WHERE p.user_id = ?
+        `,
+      )
+      .all(userId) as Task[];
+  }
 }

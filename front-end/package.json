@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack serve --open",
+    "dev": "webpack serve --open",
     "build": "webpack --mode production",
+    "start": "npm run build && npx serve -s dist",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "keywords": [],
@@ -21,6 +22,7 @@
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.6",
     "mocha": "^11.7.5",
+    "serve": "^14.2.5",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",

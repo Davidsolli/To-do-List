@@ -1,14 +1,16 @@
+import { TaskPriority, TaskStatus } from "../enums/task.enums";
+
 export interface Task {
-    id: number;
-    title: string;
-    description?: string;
-    tip?: string;
-    priority?: string;
-    status?: string;
-    estimate?: number;
-    project_id: number;
+  id: number;
+  title: string;
+  description?: string;
+  tip?: string;
+  priority?: TaskPriority;
+  status?: TaskStatus;
+  estimate?: number;
+  project_id: number;
 }
 
-export type TaskCreateDto = Omit<Task, 'id'>;
+export type TaskCreateDTO = Omit<Task, "id">;
 
 export type TaskResponseDTO = Task;

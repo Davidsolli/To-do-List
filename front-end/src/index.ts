@@ -1,5 +1,8 @@
 import './styles/main.css';
 import { app } from './App';
+import { toast } from './services/ToastService';
+
+(window as any).toast = toast;
 
 document.addEventListener('DOMContentLoaded', () => {
     app.start();

@@ -41,4 +41,13 @@ export class TaskService {
 
         return newTask;
     }
+
+    static async getTasksByUserId(userId: number): Promise<TaskResponseDTO[]> {
+        if (!userId || userId <= 0) {
+            throw new Error('ID do usuário é obrigatório e deve ser válido');
+        }
+
+        const tasks = TaskRepository.findByUserId(userId);
+        return tasks;
+    }
 }

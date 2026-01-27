@@ -28,4 +28,30 @@ export class TaskController {
             }
         }
     }
+
+    static async getTasksByUserId(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.query.user_id as string);
+
+            if (!userId || isNaN(userId)) {
+                res.status(400).json({
+                    error: 'Parâmetro user_id é obrigatório e deve ser um número'
+                });
+                return;
+            }
+
+            const tasks = await TaskService.getTasksByUserId(userId);
+
+            res.status(200).json({
+                message: 'Tarefas encontradas',
+                tasks: tasks
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
+        }
+    }
 }

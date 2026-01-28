@@ -4,6 +4,7 @@ import { Button } from '../../components/Button/Button'; // Lógica do Button
 import template from './LoginView.html';
 import './AuthViews.css';
 import { Validator } from '../../utils/Validator';
+import { AuthService } from '../../services/AuthService';
 
 export class LoginView extends Component {
   getTemplate(): string {
@@ -68,10 +69,28 @@ export class LoginView extends Component {
         if (hasError) return;
 
         // Se passar na validação, prosseguir com login
-        console.log('Login válido:', emailInput.value);
-        // Aqui chamaria o serviço de auth
+        const submitBtn = this.container.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const originalText = submitBtn.innerText;
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Carregando...';
+
+        AuthService.login(emailInput.value, passwordInput.value)
+          .then((user) => {
+            window.toast.success(`Bem-vindo, ${user.name}!`);
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+          })
+          .catch((err) => {
+            window.toast.error(err.message || 'Falha no login');
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+          });
       });
     }
+
 
 
     // Lógica Genérica para qualquer botão de "olhinho" na tela

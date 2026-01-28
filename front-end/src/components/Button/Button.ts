@@ -9,7 +9,7 @@ interface ButtonProps {
     action?: string; // Para o data-action
     disabled?: boolean;
     loading?: boolean;
-    icon?: string; // Classe do FontAwesome
+    icon?: string; // Classe do FontAwesome (ex: 'fa-solid fa-user')
 }
 
 export class Button {

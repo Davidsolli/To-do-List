@@ -26,17 +26,19 @@ export class Validator {
 
   static isPasswordStrong(password: string): boolean {
     // - Mínimo 8 caracteres
-    // - Pelo menos 1 letra (maiúscula ou minúscula)
+    // - Pelo menos 1 letra minúscula
+    // - Pelo menos 1 letra maiúscula
     // - Pelo menos 1 número
     // - Pelo menos 1 caractere especial (qualquer símbolo)
-    
+
     // Explicação da Regex:
-    // (?=.*[A-Za-z]) -> Garante ter letra
+    // (?=.*[a-z])    -> Garante ter letra minúscula
+    // (?=.*[A-Z])    -> Garante ter letra maiúscula
     // (?=.*\d)       -> Garante ter número
     // (?=.*[\W_])    -> Garante ter símbolo (Non-word char) ou underline
     // .{8,}          -> Aceita qualquer coisa com no mínimo 8 chars
-    
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
     return regex.test(password);
   }

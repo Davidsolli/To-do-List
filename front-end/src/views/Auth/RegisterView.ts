@@ -4,6 +4,7 @@ import { Button } from '../../components/Button/Button'; // Lógica do Button
 import template from './RegisterView.html';
 import './AuthViews.css';
 import { Validator } from '../../utils/Validator';
+import { AuthService } from '../../services/AuthService';
 
 export class RegisterView extends Component {
   getTemplate(): string {
@@ -82,10 +83,28 @@ export class RegisterView extends Component {
         if (hasError) return;
 
         // Se passar na validação, prosseguir com cadastro
-        console.log('Cadastro válido:', emailInput.value);
-        // Aqui chamaria o serviço de auth
+        const submitBtn = this.container.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const originalText = submitBtn.innerText;
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Carregando...';
+
+        AuthService.register(nameInput.value, emailInput.value, passwordInput.value)
+          .then(() => {
+            window.toast.success('Cadastro realizado com sucesso! Faça login.');
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 1000);
+          })
+          .catch((err) => {
+            window.toast.error(err.message || 'Falha no cadastro');
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+          });
       });
     }
+
 
 
     // Lógica Genérica para qualquer botão de "olhinho" na tela

@@ -7,4 +7,10 @@ declare global {
         toast: ToastService;
     }
     const toast: ToastService;
+
+    namespace NodeJS {
+        interface ProcessEnv {
+            API_URL: string;
+        }
+    }
 }

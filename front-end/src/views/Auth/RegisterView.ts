@@ -5,6 +5,7 @@ import template from './RegisterView.html';
 import './AuthViews.css';
 import { Validator } from '../../utils/Validator';
 import { AuthService } from '../../services/AuthService';
+import { app } from '../../App';
 
 export class RegisterView extends Component {
   getTemplate(): string {
@@ -92,7 +93,7 @@ export class RegisterView extends Component {
           .then(() => {
             window.toast.success('Cadastro realizado com sucesso! Faça login.');
             setTimeout(() => {
-              window.location.href = '/login';
+              app.navigate('/login');
             }, 1000);
           })
           .catch((err) => {

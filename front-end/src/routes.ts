@@ -4,6 +4,8 @@ import { Placeholder } from './views/Placeholder';
 import { LoginView } from './views/Auth/LoginView';
 import { RegisterView } from './views/Auth/RegisterView';
 
+//roles possíveis: admin e user (padrão)
+//protected - precisa de autenticação
 export const routes: RouteDefinition[] = [
     { path: '/', view: Placeholder, protected: true },
     { path: '/login', view: LoginView },

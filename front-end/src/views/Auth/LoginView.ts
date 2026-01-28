@@ -5,6 +5,8 @@ import template from './LoginView.html';
 import './AuthViews.css';
 import { Validator } from '../../utils/Validator';
 import { AuthService } from '../../services/AuthService';
+import { app } from '../../App';
+
 
 export class LoginView extends Component {
   getTemplate(): string {
@@ -78,7 +80,7 @@ export class LoginView extends Component {
           .then((user) => {
             window.toast.success(`Bem-vindo, ${user.name}!`);
             setTimeout(() => {
-              window.location.href = '/';
+              app.navigate('/');
             }, 1000);
           })
           .catch((err) => {

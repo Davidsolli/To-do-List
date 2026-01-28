@@ -71,7 +71,7 @@ export class Router {
 
                 if (!hasRole) {
                     window.toast.error('Acesso negado: privilégios insuficientes.');
-                    if (path !== '/dashboard') this.navigate('/dashboard');
+                    if (path !== '/dashboard') this.navigate('/');
                     return;
                 }
             }

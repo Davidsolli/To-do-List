@@ -35,7 +35,7 @@ export default class UserService {
 
         const newName = newData.name || user.name;
         const newEmail = newData.email || user.email;
-        let newPassword = user.password;
+        let newPassword = undefined;
 
         if (newData.password !== undefined) {
             newPassword = await bcrypt.hash(newData.password, this.SALT_ROUNDS); 

@@ -1,5 +1,5 @@
 import { db } from "../database/db";
-import { Task, TaskCreateDTO } from "../interfaces/task";
+import { Task, TaskCreateDTO, TaskResponseDTO } from "../interfaces/task";
 
 export class TaskRepository {
   static create(taskData: TaskCreateDTO): Task {
@@ -83,4 +83,75 @@ export class TaskRepository {
       )
       .all(userId, searchTerm, searchTerm) as Task[];
   }
+  static update(
+    taskId: number,
+    taskData: Partial<TaskCreateDTO>
+  ): TaskResponseDTO {
+
+    const result = db.prepare(`
+    UPDATE tasks
+    SET 
+      title = COALESCE(?, title),
+      description = COALESCE(?, description),
+      tip = COALESCE(?, tip),
+      priority = COALESCE(?, priority),
+      estimate = COALESCE(?, estimate)
+    WHERE id = ?
+  `).run(
+      taskData.title ?? null,
+      taskData.description ?? null,
+      taskData.tip ?? null,
+      taskData.priority ?? null,
+      taskData.estimate ?? null,
+      taskId
+    );
+
+    if (result.changes === 0) {
+      throw new Error("Task não encontrada ou não atualizada");
+    }
+
+    const updatedTask = this.findById(taskId);
+
+    if (!updatedTask) {
+      throw new Error("Erro ao buscar task atualizada");
+    }
+
+    return updatedTask;
+  }
+  static updateStatus(
+    taskId: number,
+    status: string
+  ): TaskResponseDTO {
+
+    const result = db.prepare(`
+    UPDATE tasks
+    SET status = ?
+    WHERE id = ?
+  `).run(status, taskId);
+
+    if (result.changes === 0) {
+      throw new Error("Task não encontrada");
+    }
+
+    const updatedTask = this.findById(taskId);
+
+    if (!updatedTask) {
+      throw new Error("Erro ao buscar task atualizada");
+    }
+
+    return updatedTask;
+  }
+
+  static delete(taskId: number): void {
+
+  const result = db.prepare(`
+    DELETE FROM tasks
+    WHERE id = ?
+  `).run(taskId);
+
+  if (result.changes === 0) {
+    throw new Error("Task não encontrada");
+  }
+}
+
 }

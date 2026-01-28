@@ -1,5 +1,16 @@
-// src/types/custom.d.ts
-declare module '*.html' {
-  const content: string;
-  export default content;
+
+
+import { ToastService } from '../services/ToastService';
+
+declare global {
+    interface Window {
+        toast: ToastService;
+    }
+    const toast: ToastService;
+
+    namespace NodeJS {
+        interface ProcessEnv {
+            API_URL: string;
+        }
+    }
 }

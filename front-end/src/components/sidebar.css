@@ -1,0 +1,346 @@
+/* ============================================
+   SIDEBAR - Estilos Globais
+   ============================================ */
+
+:root {
+    --primary-color: #22c55e;
+    --primary-hover: #16a34a;
+    --primary-light: #f0fdf4;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-light: #e2e8f0;
+    --bg-white: #ffffff;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --sidebar-width: 16rem;
+    --header-height: 4rem;
+}
+
+/* Reset e Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #f9fafb;
+    color: var(--text-primary);
+}
+
+/* Material Icons */
+.material-icons-outlined {
+    font-family: 'Material Icons Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background-color: var(--bg-white);
+    border-right: 1px solid var(--border-light);
+    overflow-y: auto;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Desktop: Sidebar sempre visível */
+@media (min-width: 1024px) {
+    .sidebar {
+        display: flex;
+    }
+}
+
+/* Mobile: Sidebar com overlay */
+@media (max-width: 1023px) {
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: auto;
+        height: calc(100vh - var(--header-height));
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg);
+        z-index: 25;
+    }
+
+    .sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+}
+
+/* ============================================
+   NAVEGAÇÃO
+   ============================================ */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    flex: 1;
+}
+
+/* ============================================
+   ITENS DO SIDEBAR
+   ============================================ */
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    user-select: none;
+    position: relative;
+}
+
+.sidebar-item:hover {
+    background-color: #f1f5f9;
+    color: var(--primary-color);
+}
+
+/* Item Ativo */
+.sidebar-item-active {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    font-weight: 600;
+}
+
+.sidebar-item-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--primary-color);
+    border-radius: 0 3px 3px 0;
+}
+
+/* Ícones */
+.sidebar-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* Texto do Item */
+.sidebar-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   OVERLAY (Mobile)
+   ============================================ */
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    z-index: 15;
+    transition: background-color 0.3s ease;
+}
+
+@media (max-width: 1023px) {
+    .sidebar-overlay {
+        display: block;
+    }
+
+    .sidebar-overlay-active {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* ============================================
+   TOGGLE BUTTON (Mobile)
+   ============================================ */
+
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    z-index: 35;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+    font-family: inherit;
+    color: var(--text-primary);
+}
+
+.sidebar-toggle:hover {
+    background-color: #f1f5f9;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.sidebar-toggle .material-icons-outlined {
+    font-size: 20px;
+}
+
+@media (max-width: 1023px) {
+    .sidebar-toggle {
+        display: flex;
+    }
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets Pequenos (768px a 1023px) */
+@media (max-width: 1023px) {
+    :root {
+        --sidebar-width: 14rem;
+    }
+
+    .sidebar-item {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .sidebar-icon {
+        font-size: 18px;
+    }
+}
+
+/* Celulares (480px e abaixo) */
+@media (max-width: 480px) {
+    :root {
+        --sidebar-width: 13rem;
+    }
+
+    .sidebar {
+        width: var(--sidebar-width);
+    }
+
+    .sidebar-nav {
+        padding: 0.75rem;
+        gap: 0.125rem;
+    }
+
+    .sidebar-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+    }
+
+    .sidebar-icon {
+        font-size: 18px;
+    }
+
+    .sidebar-toggle {
+        width: 2.25rem;
+        height: 2.25rem;
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+
+    .sidebar-toggle .material-icons-outlined {
+        font-size: 18px;
+    }
+}
+
+/* ============================================
+   SCROLLBAR CUSTOMIZADA
+   ============================================ */
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+/* ============================================
+   MODO ESCURO (Preparação para futuro)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .sidebar {
+        background-color: #1e293b;
+        border-right-color: #334155;
+    }
+
+    .sidebar-item {
+        color: #94a3b8;
+    }
+
+    .sidebar-item:hover {
+        background-color: #334155;
+        color: var(--primary-color);
+    }
+
+    .sidebar-item-active {
+        background-color: rgba(34, 197, 94, 0.1);
+    }
+
+    .sidebar-toggle {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+
+    .sidebar-toggle:hover {
+        background-color: #334155;
+        border-color: var(--primary-color);
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #334155;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+    }
+}

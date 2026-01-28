@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaTask - Sidebar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+    <!-- Overlay para Mobile (fechamento da sidebar) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <!-- Projetos -->
+            <a href="#" class="sidebar-item sidebar-item-active" data-route="projetos">
+                <span class="material-icons-outlined sidebar-icon">folder</span>
+                <span class="sidebar-text">Projetos</span>
+            </a>
+
+            <!-- Equipe -->
+            <a href="#" class="sidebar-item" data-route="equipe">
+                <span class="material-icons-outlined sidebar-icon">group</span>
+                <span class="sidebar-text">Equipe</span>
+            </a>
+
+            <!-- Configurações -->
+            <a href="#" class="sidebar-item" data-route="configuracoes">
+                <span class="material-icons-outlined sidebar-icon">settings</span>
+                <span class="sidebar-text">Configurações</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Toggle Button para Mobile -->
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menu">
+        <span class="material-icons-outlined">menu</span>
+    </button>
+
+    <script>
+        /**
+         * Gerencia a abertura/fechamento da sidebar em dispositivos móveis
+         */
+        class SidebarManager {
+            constructor() {
+                this.sidebar = document.getElementById('sidebar');
+                this.overlay = document.getElementById('sidebarOverlay');
+                this.toggleBtn = document.getElementById('sidebarToggle');
+                this.sidebarItems = document.querySelectorAll('.sidebar-item');
+
+                this.init();
+            }
+
+            init() {
+                // Event listeners para abrir/fechar
+                this.toggleBtn?.addEventListener('click', () => this.toggleSidebar());
+                this.overlay?.addEventListener('click', () => this.closeSidebar());
+
+                // Fechar sidebar ao clicar em um item (mobile)
+                this.sidebarItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.handleItemClick(item);
+                        this.closeSidebarOnMobile();
+                    });
+                });
+
+                // Fechar sidebar ao redimensionar para desktop
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            toggleSidebar() {
+                this.sidebar.classList.toggle('sidebar-open');
+                this.overlay.classList.toggle('sidebar-overlay-active');
+            }
+
+            closeSidebar() {
+                this.sidebar.classList.remove('sidebar-open');
+                this.overlay.classList.remove('sidebar-overlay-active');
+            }
+
+            closeSidebarOnMobile() {
+                if (window.innerWidth < 1024) {
+                    this.closeSidebar();
+                }
+            }
+
+            handleResize() {
+                if (window.innerWidth >= 1024) {
+                    this.closeSidebar();
+                }
+            }
+
+            /**
+             * Gerencia clique em item da sidebar
+             * @param {HTMLElement} item - Item clicado
+             */
+            handleItemClick(item) {
+                // Remove classe ativa de todos os itens
+                this.sidebarItems.forEach(i => i.classList.remove('sidebar-item-active'));
+                
+                // Adiciona classe ativa ao item clicado
+                item.classList.add('sidebar-item-active');
+
+                // Aqui você pode adicionar lógica de roteamento
+                const route = item.getAttribute('data-route');
+                console.log('Navegando para:', route);
+                
+                // Exemplo: disparar evento customizado para o router
+                window.dispatchEvent(new CustomEvent('sidebar-navigate', { detail: { route } }));
+            }
+
+            /**
+             * Define o item ativo programaticamente
+             * @param {string} route - Rota a ser ativada
+             */
+            setActiveItem(route) {
+                this.sidebarItems.forEach(item => {
+                    if (item.getAttribute('data-route') === route) {
+                        item.classList.add('sidebar-item-active');
+                    } else {
+                        item.classList.remove('sidebar-item-active');
+                    }
+                });
+            }
+        }
+
+        // Inicializar quando o documento carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            window.sidebarManager = new SidebarManager();
+
+            // Escutar eventos de navegação para atualizar item ativo
+            window.addEventListener('sidebar-navigate', (e) => {
+                // Pode ser usado pelo router para manter sincronização
+                console.log('Evento de navegação recebido:', e.detail.route);
+            });
+        });
+    </script>
+</body>
+</html>

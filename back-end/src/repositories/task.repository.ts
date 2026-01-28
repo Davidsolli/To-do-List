@@ -142,4 +142,16 @@ export class TaskRepository {
     return updatedTask;
   }
 
+  static delete(taskId: number): void {
+
+  const result = db.prepare(`
+    DELETE FROM tasks
+    WHERE id = ?
+  `).run(taskId);
+
+  if (result.changes === 0) {
+    throw new Error("Task não encontrada");
+  }
+}
+
 }

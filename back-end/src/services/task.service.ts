@@ -38,4 +38,8 @@ export class TaskService {
         return TaskRepository.updateStatus(taskId, status);
     }
 
+    static async deleteTask(taskId: number): Promise<void> {
+  return TaskRepository.delete(taskId);
+}
+
 }

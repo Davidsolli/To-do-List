@@ -1,53 +1,68 @@
 import { db } from "../database/db";
-import { User, UserResponseDTO } from "../interfaces/user";
+import { User, UserResponseDTO, UserUpdateDTO } from "../interfaces/user";
 
 export default class UserRepository {
   static findAll(): UserResponseDTO[] {
-    return db.prepare(`
+    return db
+      .prepare(
+        `
       SELECT id, name, email
       FROM users
-    `).all() as UserResponseDTO[];
+    `,
+      )
+      .all() as UserResponseDTO[];
   }
 
   static findById(id: number): User | undefined {
-    return db.prepare(`
+    return db
+      .prepare(
+        `
       SELECT id, name, email
       FROM users
       WHERE id = ?
-    `).get(id) as User | undefined;
+    `,
+      )
+      .get(id) as User | undefined;
   }
 
-// Note o '?' após password. Isso diz: "Ei, TypeScript, pode vir string ou undefined aqui"
-  static update(id: number, name: string, email: string, password?: string): boolean {
-    let result;
+  static update(id: number, user: UserUpdateDTO): boolean {
+    const fields: string[] = [];
+    const values: any[] = [];
 
-    if (password) {
-      // CENÁRIO 1: Chegou senha nova. Atualizamos tudo.
-      result = db.prepare(`
-        UPDATE users 
-        SET name = ?, email = ?, password = ?
-        WHERE id = ?
-      `).run(name, email, password, id);
-    } else {
-      // CENÁRIO 2: Não chegou senha (undefined). Atualizamos SÓ nome e email.
-      // O banco mantém a senha antiga intacta.
-      result = db.prepare(`
-        UPDATE users 
-        SET name = ?, email = ?
-        WHERE id = ?
-      `).run(name, email, id);
+    if (user.name) {
+      fields.push("name = ?");
+      values.push(user.name);
     }
 
+    if (user.email) {
+      fields.push("email = ?");
+      values.push(user.email);
+    }
+    
+    if (user.password) {
+      fields.push("password = ?");
+      values.push(user.password);
+    }
+
+    if (fields.length === 0) return false;
+
+    const sql = `UPDATE users SET ${fields.join(", ")} WHERE id = ?`;
+    values.push(id);
+
+    const result = db.prepare(sql).run(...values);
     return result.changes > 0;
   }
 
-  static delete (id: number): boolean {
-  const result = db.prepare(`
+  static delete(id: number): boolean {
+    const result = db
+      .prepare(
+        `
       DELETE FROM users 
       WHERE id = ?
-    `).run(id);
+    `,
+      )
+      .run(id);
 
-  return result.changes > 0;
+    return result.changes > 0;
+  }
 }
-}
-

@@ -34,7 +34,7 @@ export class AuthRepository {
     return db
       .prepare(
         `
-      SELECT id, name, email, password
+      SELECT id, name, email, role
       FROM users
       WHERE id = ?
     `,
@@ -46,7 +46,7 @@ export class AuthRepository {
     return db
       .prepare(
         `
-    SELECT id, name, email, password
+    SELECT id, name, email, password, role
     FROM users
     WHERE email = ?
   `,

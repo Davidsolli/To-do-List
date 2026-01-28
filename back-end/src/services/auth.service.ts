@@ -40,8 +40,7 @@ export class UserService {
     // Criar usuário
     const userId = AuthRepository.create(userData, hashedPassword);
 
-    // Buscar usuário criado (sem a senha)
-
+    // Buscar usuário criado
     const newUser = AuthRepository.findById(userId);
 
     if (!newUser) {
@@ -49,8 +48,7 @@ export class UserService {
     }
 
     // Retornar sem a senha
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword as UserResponseDTO;
+    return newUser;
   }
 
   static async login(
@@ -69,7 +67,7 @@ export class UserService {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user.id, email: user.email, name: user.name, role: user.role },
       this.JWT_SECRET,
       { expiresIn: "1h" },
     );

@@ -23,7 +23,6 @@ describe("Integração - Fluxo de Usuários", () => {
 
       expect(response.status).toBe(201);
       expect(response.body.user).toHaveProperty("id");
-      // Aqui salvamos o ID para usar lá embaixo
       userIdCriado = response.body.user.id;
     });
 
@@ -46,6 +45,7 @@ describe("Integração - Fluxo de Usuários", () => {
         .send({
           name: "Gabriel Sem Senha",
           email: "sem.senha@email.com"
+          //SEM SENHA
         });
 
       expect(response.status).toBe(400);
@@ -55,7 +55,7 @@ describe("Integração - Fluxo de Usuários", () => {
         .post("/api/auth/register")
         .send({
           name: "Gabriel Sem Senha",
-          //email: "sem.senha@email.com"
+          //SEM EMAIL
           password: "SenhaForte132!"
         });
 
@@ -65,7 +65,7 @@ describe("Integração - Fluxo de Usuários", () => {
       const response = await request(app)
         .post("/api/auth/register")
         .send({
-          //name: "Gabriel Sem Senha",
+          //SEM NOME
           email: "sem.senha@email.com",
           password: "SenhaForte132!"
         });
@@ -74,10 +74,10 @@ describe("Integração - Fluxo de Usuários", () => {
     });
   });
 
-  // BUSCA 
+  // BUSCA POR ID
   describe("Busca de Usuário por ID", () => {
     it("deve retornar os dados do usuário criado (200)", async () => {
-      if (!userIdCriado) return; // Segurança
+      if (!userIdCriado) return;
 
       const response = await request(app).get(`/api/users/${userIdCriado}`);
 
@@ -101,6 +101,71 @@ describe("Integração - Fluxo de Usuários", () => {
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ATUALIZAR
+  describe("Atualização de Usuário", () => {
+    it("deve atualizar apenas o NOME", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ name: "Gabriel Atualizado Nome" });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.name).toBe("Gabriel Atualizado Nome");
+    });
+
+    it("deve atualizar apenas o EMAIL", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ email: "atualizado@email.com" });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.email).toBe("atualizado@email.com");
+    });
+
+    it("deve atualizar apenas a SENHA", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ password: "NovaSenhaForte456@" });
+
+      expect(response.status).toBe(200);
+    });
+
+    it("deve atualizar TUDO (Nome, Email e Senha)", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({
+          name: "Gabriel Full Update",
+          email: "full@update.com",
+          password: "OutraSenha789!"
+        });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.name).toBe("Gabriel Full Update");
+      expect(check.body.email).toBe("full@update.com");
+    });
+
+    it("deve retornar erro ao tentar atualizar ID inexistente", async () => {
+      const response = await request(app)
+        .put("/api/users/99999")
+        .send({ name: "Não Existo" });
+
+      expect([400, 404]).toContain(response.status);
     });
   });
 });

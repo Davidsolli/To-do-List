@@ -53,5 +53,67 @@ describe("Unitário - UserService", () => {
       await expect(userService.getAll()).rejects.toThrow("Usuários não encontrados");
     });
   });
+
+  describe("update", () => {
+    const existingUser = { id: 1, name: "Antigo", email: "antigo@email.com" };
+
+    it("deve atualizar APENAS o nome (senha undefined)", async () => {
+      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
+      (UserRepository.update as jest.Mock).mockReturnValue(true);
+
+      await userService.update(1, { name: "Nome Novo" });
+
+      expect(UserRepository.update).toHaveBeenCalledWith(1, {
+        name: "Nome Novo",
+        email: "antigo@email.com",
+        password: undefined
+      });
+    });
+
+    it("deve atualizar APENAS o email", async () => {
+      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
+      (UserRepository.update as jest.Mock).mockReturnValue(true);
+
+      await userService.update(1, { email: "novo@email.com" });
+
+      expect(UserRepository.update).toHaveBeenCalledWith(1, {
+        name: "Antigo",
+        email: "novo@email.com",
+        password: undefined
+      });
+    });
+
+    it("deve atualizar APENAS a senha (com hash)", async () => {
+      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
+      (UserRepository.update as jest.Mock).mockReturnValue(true);
+      (require("bcrypt").hash as jest.Mock).mockResolvedValue("nova_hash_segura");
+
+      await userService.update(1, { password: "123" });
+
+      expect(UserRepository.update).toHaveBeenCalledWith(1, {
+        name: "Antigo",
+        email: "antigo@email.com",
+        password: "nova_hash_segura"
+      });
+    });
+
+    it("deve atualizar TUDO (Nome, Email e Senha)", async () => {
+      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
+      (UserRepository.update as jest.Mock).mockReturnValue(true);
+      (require("bcrypt").hash as jest.Mock).mockResolvedValue("hash_completa");
+
+      await userService.update(1, { name: "Full", email: "full@test.com", password: "123" });
+
+      expect(UserRepository.update).toHaveBeenCalledWith(1, {
+        name: "Full",
+        email: "full@test.com",
+        password: "hash_completa"
+      });
+    });
+
+    it("deve lançar erro ao tentar atualizar usuário inexistente", async () => {
+      (UserRepository.findById as jest.Mock).mockReturnValue(null);
+      await expect(userService.update(99, { name: "Fantasma" })).rejects.toThrow("Usuário não encontrado");
+    });
+  });
 });
-  

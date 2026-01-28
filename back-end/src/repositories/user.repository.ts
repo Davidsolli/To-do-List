@@ -17,7 +17,7 @@ export default class UserRepository {
     return db
       .prepare(
         `
-      SELECT id, name, email
+      SELECT id, name, email, role
       FROM users
       WHERE id = ?
     `,

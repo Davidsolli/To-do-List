@@ -33,7 +33,7 @@ describe("Unitário - UserService", () => {
     });
   });
 
-  //LISTAR TODOS
+  // LISTAR TODOS
   describe("getAll", () => {
     it("deve retornar uma lista de usuários", async () => {
       const mockUsers = [
@@ -54,6 +54,7 @@ describe("Unitário - UserService", () => {
     });
   });
 
+  // ATUALIZAR
   describe("update", () => {
     const existingUser = { id: 1, name: "Antigo", email: "antigo@email.com" };
 
@@ -114,6 +115,20 @@ describe("Unitário - UserService", () => {
     it("deve lançar erro ao tentar atualizar usuário inexistente", async () => {
       (UserRepository.findById as jest.Mock).mockReturnValue(null);
       await expect(userService.update(99, { name: "Fantasma" })).rejects.toThrow("Usuário não encontrado");
+    });
+  });
+
+  // DELETAR
+  describe("delete", () => {
+    it("deve deletar com sucesso", async () => {
+      (UserRepository.delete as jest.Mock).mockReturnValue(true);
+      const result = await userService.delete(1);
+      expect(result).toBe(true);
+    });
+
+    it("deve lançar erro ao falhar no delete", async () => {
+      (UserRepository.delete as jest.Mock).mockReturnValue(false);
+      await expect(userService.delete(1)).rejects.toThrow("Usuário não encontrado ou já deletado");
     });
   });
 });

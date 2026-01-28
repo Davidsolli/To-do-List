@@ -168,4 +168,22 @@ describe("Integração - Fluxo de Usuários", () => {
       expect([400, 404]).toContain(response.status);
     });
   });
+
+  // DELETAR
+  describe("Remoção de Usuário", () => {
+    it("deve deletar o usuário criado com sucesso", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app).delete(`/api/users/${userIdCriado}`);
+      expect([200, 204]).toContain(response.status);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect([400, 404]).toContain(check.status);
+    });
+
+    it("deve retornar erro ao tentar deletar ID inexistente", async () => {
+      const response = await request(app).delete("/api/users/99999");
+      expect([400, 404]).toContain(response.status);
+    });
+  });
 });

@@ -23,7 +23,7 @@ export class TaskController {
 
   static async getTasksByUserId(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = Number(req.params.userId);
 
       if (isNaN(userId)) {
         res.status(400).json({ error: "ID do usuário inválido" });
@@ -47,7 +47,7 @@ export class TaskController {
 
   static async searchTasks(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId, 10);
+      const userId = Number(req.params.userId);
       const keyword = req.query.q as string;
 
       if (isNaN(userId)) {

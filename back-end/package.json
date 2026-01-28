@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/app.ts",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
     "build": "tsc",
-    "start": "node ./dist/app.js",
+    "start": "node ./dist/src/server.js",
     "prod": "npm run build && npm start",
     "test": "jest"
   },

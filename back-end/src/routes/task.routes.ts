@@ -6,6 +6,6 @@ const tasksRoutes = Router();
 tasksRoutes.post("/", TaskController.createTask);
 tasksRoutes.get("/user/:userId/search", TaskController.searchTasks);
 tasksRoutes.get("/user/:userId", TaskController.getTasksByUserId);
-tasksRoutes.post("/:id", () => {});
+tasksRoutes.put("/:id", TaskController.updateTask);
 
 export default tasksRoutes;

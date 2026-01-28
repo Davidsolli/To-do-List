@@ -74,4 +74,29 @@ export class TaskController {
       }
     }
   }
+  static async updateTask(req: Request, res: Response): Promise<void> {
+  try {
+    const taskId = Number(req.params.id);
+    const taskData = req.body;
+
+    if (isNaN(taskId)) {
+      res.status(400).json({ error: "ID da task inválido" });
+      return;
+    }
+
+    const updatedTask = await TaskService.updateTask(taskId, taskData);
+
+    res.status(200).json({
+      message: "Tarefa atualizada com sucesso",
+      task: updatedTask,
+    });
+
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+}
 }

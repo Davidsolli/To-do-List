@@ -18,4 +18,11 @@ export class TaskService {
         }
         return TaskRepository.searchByUserIdAndKeyword(userId, keyword.trim());
     }
+    static async updateTask(
+        taskId: number,
+        taskData: Partial<TaskCreateDTO>
+    ): Promise<TaskResponseDTO> {
+
+        return TaskRepository.update(taskId, taskData);
+    }
 }

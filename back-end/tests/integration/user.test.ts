@@ -3,7 +3,6 @@ import app from "../../src/app";
 import { db } from "../../src/database/db";
 
 describe("Integração - Fluxo de Usuários", () => {
-  // Setup: Limpa o banco antes de tudo
   beforeAll(() => {
     db.prepare("DELETE FROM projects").run();
     db.prepare("DELETE FROM users").run();
@@ -11,7 +10,7 @@ describe("Integração - Fluxo de Usuários", () => {
 
   let userIdCriado: number;
 
-  // CRIAÇÃO (POST /auth/register)
+  // CRIAÇÃO
   describe("Criação de Usuário", () => {
     it("deve criar um usuário válido com sucesso (201)", async () => {
       const response = await request(app)
@@ -24,7 +23,8 @@ describe("Integração - Fluxo de Usuários", () => {
 
       expect(response.status).toBe(201);
       expect(response.body.user).toHaveProperty("id");
-      userIdCriado = response.body.user.id; // Guarda ID para os próximos testes
+      // Aqui salvamos o ID para usar lá embaixo
+      userIdCriado = response.body.user.id;
     });
 
     it("não deve criar usuário com email duplicado (400)", async () => {
@@ -32,7 +32,7 @@ describe("Integração - Fluxo de Usuários", () => {
         .post("/api/auth/register")
         .send({
           name: "Gabriel Impostor",
-          email: "gabriel.teste@email.com", // Mesmo email do anterior
+          email: "gabriel.teste@email.com",
           password: "OutraSenha123!"
         });
 
@@ -46,7 +46,6 @@ describe("Integração - Fluxo de Usuários", () => {
         .send({
           name: "Gabriel Sem Senha",
           email: "sem.senha@email.com"
-          // Faltando password
         });
 
       expect(response.status).toBe(400);
@@ -75,21 +74,33 @@ describe("Integração - Fluxo de Usuários", () => {
     });
   });
 
-  // BUSCA POR ID (GET /users/:id) 
+  // BUSCA 
   describe("Busca de Usuário por ID", () => {
     it("deve retornar os dados do usuário criado (200)", async () => {
+      if (!userIdCriado) return; // Segurança
+
       const response = await request(app).get(`/api/users/${userIdCriado}`);
 
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(userIdCriado);
       expect(response.body.name).toBe("Gabriel Teste");
-      expect(response.body.password).toBeUndefined(); // Segurança
+      expect(response.body.password).toBeUndefined();
     });
 
-    it("deve retornar 404 (ou 400) para usuário inexistente", async () => {
+    it("deve retornar erro para usuário inexistente", async () => {
       const response = await request(app).get("/api/users/99999");
-      // Aceita 404 (Not Found) ou 400 (Bad Request - dependendo do seu controller)
       expect([400, 404]).toContain(response.status);
+    });
+  });
+
+  // LISTAR TODOS
+  describe("Listagem de Usuários", () => {
+    it("deve listar todos os usuários cadastrados (200)", async () => {
+      const response = await request(app).get("/api/users");
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
     });
   });
 });

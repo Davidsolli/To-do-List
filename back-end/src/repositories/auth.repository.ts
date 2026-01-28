@@ -1,14 +1,15 @@
 import { db } from "../database/db";
+import { UserRole } from "../enums/userRoles.enums";
 import { User, UserCreateDto } from "../interfaces/user";
 
 export class AuthRepository {
   static create(userData: UserCreateDto, hashedPassword: string) {
     const result = db
       .prepare(
-        `INSERT INTO users (name, email, password)
-      VALUES (?, ?, ?)`,
+        `INSERT INTO users (name, email, password, role)
+      VALUES (?, ?, ?, ?)`,
       )
-      .run(userData.name, userData.email, hashedPassword);
+      .run(userData.name, userData.email, hashedPassword, UserRole.USER);
     if (result.changes === 0) {
       throw new Error("Falha ao inserir usuário no banco de dados");
     }

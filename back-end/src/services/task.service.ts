@@ -25,4 +25,17 @@ export class TaskService {
 
         return TaskRepository.update(taskId, taskData);
     }
+
+    static async updateTaskStatus(
+        taskId: number,
+        status: string
+    ): Promise<TaskResponseDTO> {
+
+        if (status.trim().length === 0) {
+            throw new Error("Status inválido");
+        }
+
+        return TaskRepository.updateStatus(taskId, status);
+    }
+
 }

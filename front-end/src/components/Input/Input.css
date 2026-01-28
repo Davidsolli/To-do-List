@@ -1,0 +1,81 @@
+.form-group { margin-bottom: 1.5rem; width: 100%; }
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.form-input-wrapper {
+  position: relative; /* Necessário para posicionar os ícones */
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px; /* Padding padrão */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-main);
+  transition: border-color 0.2s;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
+}
+
+/* --- Modificadores de Padding (Adicionados pelo TS) --- */
+
+/* Se tiver ícone na esquerda, empurra o texto para a direita */
+.form-input--has-icon {
+  padding-left: 44px; 
+}
+
+/* Se tiver toggle na direita, empurra o texto para a esquerda */
+.form-input--has-toggle {
+  padding-right: 44px;
+}
+
+/* --- Elementos Absolutos --- */
+
+/* Ícone da esquerda (FontAwesome) */
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none; /* O clique passa através dele */
+  font-size: 1rem;
+}
+
+/* Botão de Toggle Password */
+.input-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-toggle-btn:hover {
+  color: var(--text-main);
+}
+
+.form-error{
+    color: var(--priority-high-dot);
+}

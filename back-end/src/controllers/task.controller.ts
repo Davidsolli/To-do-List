@@ -85,14 +85,14 @@ export class TaskController {
       }
 
       // Verify project ownership
-      const project = ProjectService.getById(projectId);
+      const project = await ProjectService.getById(projectId);
 
       if (project.user_id !== userId) {
         res.status(403).json({ error: "Você não tem permissão para acessar as tarefas deste projeto" });
         return;
       }
 
-      const tasks = TaskService.getTasksByProjectId(projectId);
+      const tasks = await TaskService.getTasksByProjectId(projectId);
 
       res.status(200).json({
         message: "Tarefas do projeto recuperadas com sucesso",
@@ -202,6 +202,7 @@ export class TaskController {
       }
     }
   }
+
   static async deleteTask(req: Request, res: Response): Promise<void> {
   try {
     const taskId = Number(req.params.id);

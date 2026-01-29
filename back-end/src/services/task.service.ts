@@ -18,4 +18,28 @@ export class TaskService {
         }
         return TaskRepository.searchByUserIdAndKeyword(userId, keyword.trim());
     }
+    static async updateTask(
+        taskId: number,
+        taskData: Partial<TaskCreateDTO>
+    ): Promise<TaskResponseDTO> {
+
+        return TaskRepository.update(taskId, taskData);
+    }
+
+    static async updateTaskStatus(
+        taskId: number,
+        status: string
+    ): Promise<TaskResponseDTO> {
+
+        if (status.trim().length === 0) {
+            throw new Error("Status inválido");
+        }
+
+        return TaskRepository.updateStatus(taskId, status);
+    }
+
+    static async deleteTask(taskId: number): Promise<void> {
+  return TaskRepository.delete(taskId);
+}
+
 }

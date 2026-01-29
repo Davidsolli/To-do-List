@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { TaskCreateDTO } from "../interfaces/task";
 import { TaskService } from "../services/task.service";
+import { TaskStatus } from "../enums/task.enums";
 
 export class TaskController {
   static async createTask(req: Request, res: Response): Promise<void> {
@@ -74,4 +75,89 @@ export class TaskController {
       }
     }
   }
+  static async updateTask(req: Request, res: Response): Promise<void> {
+    try {
+      const taskId = Number(req.params.id);
+      const taskData = req.body;
+
+      if (isNaN(taskId)) {
+        res.status(400).json({ error: "ID da task inválido" });
+        return;
+      }
+
+      const updatedTask = await TaskService.updateTask(taskId, taskData);
+
+      res.status(200).json({
+        message: "Tarefa atualizada com sucesso",
+        task: updatedTask,
+      });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Erro interno do servidor" });
+      }
+    }
+  }
+  static async updateTaskStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const taskId = Number(req.params.id);
+      const { status } = req.body;
+
+      if (isNaN(taskId)) {
+        res.status(400).json({ error: "ID da task inválido" });
+        return;
+      }
+
+      if (!status) {
+        res.status(400).json({ error: "Status é obrigatório" });
+        return;
+      }
+
+      if (!Object.values(TaskStatus).includes(status)) {
+        res.status(400).json({
+          error: "Status inválido"
+        });
+        return;
+      }
+
+      const updatedTask = await TaskService.updateTaskStatus(taskId, status);
+
+      res.status(200).json({
+        message: "Status da task atualizado com sucesso",
+        task: updatedTask,
+      });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Erro interno do servidor" });
+      }
+    }
+  }
+  static async deleteTask(req: Request, res: Response): Promise<void> {
+  try {
+    const taskId = Number(req.params.id);
+
+    if (isNaN(taskId)) {
+      res.status(400).json({ error: "ID da task inválido" });
+      return;
+    }
+
+    await TaskService.deleteTask(taskId);
+
+    res.status(200).json({
+      message: "Task deletada com sucesso"
+    });
+
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+}
 }

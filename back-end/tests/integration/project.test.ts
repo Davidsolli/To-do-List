@@ -7,7 +7,8 @@ import { UserRole } from "../../src/enums/userRoles.enums";
 describe("Integração - Rotas de Projetos", () => {
   let token: string;
 
-  beforeAll(() => {
+  beforeEach(() => {
+    db.prepare("DELETE FROM tasks").run();
     db.prepare("DELETE FROM projects").run();
     db.prepare("DELETE FROM users").run();
 
@@ -39,12 +40,22 @@ describe("Integração - Rotas de Projetos", () => {
 
   // TESTE 2: VALIDAR DUPLICIDADE (REGRA DE NEGÓCIO)
   it("não deve permitir criar projeto com mesmo nome para o mesmo usuário", async () => {
+    // Primeiro, cria um projeto
+    await request(app)
+      .post("/api/projects")
+      .set("Cookie", [`token=${token}`])
+      .send({
+        name: "Projeto Duplicado",
+        description: "Primeiro projeto."
+      });
+
+    // Tenta criar outro com o mesmo nome
     const response = await request(app)
       .post("/api/projects")
       .set("Cookie", [`token=${token}`])
       .send({
-        name: "Projeto Alpha",
-        description: "Projeto 2 de ciclo."
+        name: "Projeto Duplicado",
+        description: "Segundo projeto com mesmo nome."
       });
 
     expect(response.status).toBe(400);
@@ -53,6 +64,15 @@ describe("Integração - Rotas de Projetos", () => {
 
   // TESTE 3: LISTAR PROJETO PELO ID DO USUÁRIO (GET)
   it("deve listar todos os projetos de um usuário", async () => {
+    // Primeiro, cria um projeto para o usuário
+    await request(app)
+      .post("/api/projects")
+      .set("Cookie", [`token=${token}`])
+      .send({
+        name: "Projeto para Listar",
+        description: "Descrição do projeto."
+      });
+
     const response = await request(app)
       .get("/api/projects/user/1")
       .set("Cookie", [`token=${token}`]);

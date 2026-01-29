@@ -1,45 +1,33 @@
 <div class="dashboard-container">
     
-    <div class="content-header">
-        <div class="header-text">
-            <h1>Projetos</h1>
-            <p class="text-secondary">Gerencie e organize todos os seus projetos ativos.</p>
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Visão Geral</h1>
+            <p class="text-secondary">Bem-vindo(a) de volta!</p>
         </div>
-        
         <div class="header-actions">
-            <div class="search-wrapper">
-                {{search_component}}
-            </div>
-            <div class="btn-wrapper">
-                {{new_project_btn}}
-            </div>
+            {{btn_all_projects}}
         </div>
     </div>
 
-    <section id="projects-grid" class="projects-grid">
-        <p class="text-secondary">Carregando projetos...</p>
+    <section class="projects-section">
+        <h3 style="margin-bottom: 1rem;">Projetos Recentes</h3>
+        
+        <div id="projects-carousel" class="projects-carousel">
+            <p class="text-secondary">Carregando...</p>
+        </div>
     </section>
 
     <section class="tasks-section">
-    <div class="tasks-header">
-        <h3>Tarefas recentes</h3>
-        <a href="#" class="link">Ver todas</a>
-    </div>
-    
-    <div class="tasks-table-wrapper">
-        <table class="tasks-table">
-            <thead>
-                <tr>
-                    <th>Nome da Tarefa</th>
-                    <th>Projeto</th>
-                    <th>Prioridade</th>
-                    <th>Status</th>
-                    <th>Prazo</th>
-                </tr>
-            </thead>
-            <tbody id="tasks-table-body">
-                </tbody>
-        </table>
-    </div>
+        
+        <div class="section-header">
+            <h3>Minhas Tarefas</h3>
+        </div>
+        
+        <div id="tasks-container">
+            <p class="text-secondary">Carregando tarefas...</p>
+        </div>
+        
     </section>
+
 </div>

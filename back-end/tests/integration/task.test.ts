@@ -9,7 +9,7 @@ describe("Integração - Rotas de Tarefas (Security)", () => {
   let tokenUserB: string;
   let projectIdUserA: number;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     db.prepare("DELETE FROM tasks").run();
     db.prepare("DELETE FROM projects").run();
     db.prepare("DELETE FROM users").run();
@@ -27,7 +27,7 @@ describe("Integração - Rotas de Tarefas (Security)", () => {
     tokenUserB = jwt.sign({ id: 2, email: "userB@test.com", role: UserRole.USER }, "segredo_super_seguranca");
 
     // User A creates a project (using endpoint to ensure real flow or db direct)
-    // Let's use direct DB insert to save time/complexity and isolate task test? 
+    // Let's use direct DB insert to save time/complexity and isolate task test?
     // Or use endpoint to be sure user A owns it. Let's use endpoint.
     const projectRes = await request(app)
       .post("/api/projects")
@@ -36,8 +36,13 @@ describe("Integração - Rotas de Tarefas (Security)", () => {
         name: "Project User A",
         description: "My Project"
       });
-    
+
     projectIdUserA = projectRes.body.id;
+
+    // Validar que o projeto foi criado corretamente
+    if (!projectIdUserA) {
+      throw new Error("Project was not created properly");
+    }
   });
 
   it("User A deve conseguir criar task no seu proprio projeto", async () => {

@@ -5,6 +5,10 @@
   box-sizing: border-box;
 }
 
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -12,6 +16,20 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
+}
+
+/* --- App Container --- */
+#app {
+  min-height: 100vh;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 1023px) {
+  #app {
+    padding: 1rem;
+    margin-left: 0 !important;
+  }
 }
 
 /* --- Tipografia Global --- */

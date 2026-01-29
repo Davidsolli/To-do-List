@@ -3,6 +3,7 @@ import { ProjectController } from "../controllers/project.controller";
 import {
   authenticate,
   authorize,
+  checkOwnership,
 } from "../middleware/auth.middleware";
 import { UserRole } from "../enums/userRoles.enums";
 
@@ -19,6 +20,7 @@ projectRoutes.get(
   "/user/:userId",
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
   ProjectController.getByUserId,
 );
 

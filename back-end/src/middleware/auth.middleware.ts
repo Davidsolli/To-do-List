@@ -45,11 +45,15 @@ export function checkOwnership(
   res: Response,
   next: NextFunction,
 ) {
-  const requestedId = Number(req.params.id);
+  const requestedId = Number(req.params.id || req.params.userId);
   const loggedUserId = req.user?.id;
 
   if (!loggedUserId) {
     return res.status(401).json({ error: "Usuário não autenticado" });
+  }
+
+  if ( req.user?.role === UserRole.ADMIN) {
+    return next();
   }
 
   if (loggedUserId !== requestedId) {

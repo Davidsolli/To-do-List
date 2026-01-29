@@ -1,12 +1,30 @@
 import { Request, Response } from "express";
 import { TaskCreateDTO } from "../interfaces/task";
 import { TaskService } from "../services/task.service";
+import { ProjectService } from "../services/project.service";
 import { TaskStatus } from "../enums/task.enums";
+import { AuthRequest } from "../interfaces/auth";
 
 export class TaskController {
   static async createTask(req: Request, res: Response): Promise<void> {
     try {
       const taskData: TaskCreateDTO = req.body;
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ error: "Usuário não autenticado" });
+        return;
+      }
+      
+      // Verify project ownership
+      const project = await ProjectService.getById(taskData.project_id);
+      
+      if (project.user_id !== userId) {
+         res.status(403).json({ error: "Você não tem permissão para criar tarefas neste projeto" });
+         return;
+      }
+
       const newTask = await TaskService.createTask(taskData);
 
       res.status(201).json({
@@ -15,7 +33,11 @@ export class TaskController {
       });
     } catch (error) {
       if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+        if (error.message === 'Projeto não encontrado.') {
+             res.status(404).json({ error: error.message });
+        } else {
+             res.status(400).json({ error: error.message });
+        }
       } else {
         res.status(500).json({ error: "Erro interno do servidor" });
       }

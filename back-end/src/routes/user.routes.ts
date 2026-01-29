@@ -21,6 +21,7 @@ userRoutes.get(
   "/:id",
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
   userController.getById,
 );
 
@@ -35,7 +36,7 @@ userRoutes.put(
 userRoutes.delete(
   "/:id",
   authenticate,
-  authorize([UserRole.ADMIN, UserRole.USER]),
+  authorize([UserRole.ADMIN]),
   userController.delete,
 );
 

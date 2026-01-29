@@ -3,6 +3,7 @@ import { TaskController } from "../controllers/task.controller";
 import {
   authenticate,
   authorize,
+  checkOwnership,
 } from "../middleware/auth.middleware";
 import { UserRole } from "../enums/userRoles.enums";
 
@@ -19,6 +20,7 @@ tasksRoutes.get(
   "/user/:userId/search",
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
   TaskController.searchTasks,
 );
 
@@ -26,6 +28,7 @@ tasksRoutes.get(
   "/user/:userId",
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
   TaskController.getTasksByUserId,
 );
 

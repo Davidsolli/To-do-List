@@ -3,7 +3,7 @@ import { ProjectRepository } from "../repositories/project.repository";
 import { ProjectValidation } from "../validations/project.validation";
 
 export class ProjectService {
-  
+
   static create(projectData: ProjectCreateDTO): Project {
 
     ProjectValidation.validateProject(projectData);

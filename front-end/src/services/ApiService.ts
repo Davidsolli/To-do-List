@@ -7,7 +7,7 @@ export interface ApiResponse<T = any> {
 
 export class ApiService {
     // Pegue a URL do .env ou use localhost como fallback
-    private static baseUrl = process.env.API_URL || 'http://localhost:3000';
+    private static baseUrl = process.env.API_URL || 'http://localhost:3000/api/';
 
     private static getHeaders(): HeadersInit {
         const headers: HeadersInit = {

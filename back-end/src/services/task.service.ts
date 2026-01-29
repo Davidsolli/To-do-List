@@ -12,6 +12,10 @@ export class TaskService {
         return TaskRepository.findByUserId(userId);
     }
 
+    static async getTasksByProjectId(projectId: number): Promise<TaskResponseDTO[]> {
+        return TaskRepository.findByProjectId(projectId);
+    }
+
     static async searchTasksByUserIdAndKeyword(userId: number, keyword: string): Promise<TaskResponseDTO[]> {
         if (!keyword || keyword.trim().length === 0) {
             throw new Error("Parâmetro de busca não pode estar vazio");

@@ -68,6 +68,49 @@ export class TaskController {
     }
   }
 
+  static async getTasksByProjectId(req: Request, res: Response): Promise<void> {
+    try {
+      const projectId = Number(req.params.projectId);
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.id;
+
+      if (isNaN(projectId)) {
+        res.status(400).json({ error: "ID do projeto inválido" });
+        return;
+      }
+
+      if (!userId) {
+        res.status(401).json({ error: "Usuário não autenticado" });
+        return;
+      }
+
+      // Verify project ownership
+      const project = ProjectService.getById(projectId);
+
+      if (project.user_id !== userId) {
+        res.status(403).json({ error: "Você não tem permissão para acessar as tarefas deste projeto" });
+        return;
+      }
+
+      const tasks = TaskService.getTasksByProjectId(projectId);
+
+      res.status(200).json({
+        message: "Tarefas do projeto recuperadas com sucesso",
+        tasks: tasks,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Projeto não encontrado.') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(400).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: "Erro interno do servidor" });
+      }
+    }
+  }
+
   static async searchTasks(req: Request, res: Response): Promise<void> {
     try {
       const userId = Number(req.params.userId);

@@ -47,25 +47,16 @@ export class AuthService {
      * Deve ser chamado ao carregar a SPA
      */
     static async verifySession(): Promise<boolean> {
-        try {
-            // Tenta validar no backend (ideal)
-            const response = await ApiService.get<{ user: User }>('auth/me');
-            currentUser = response.user;
-            localStorage.setItem('user_data', JSON.stringify(currentUser)); // Sincroniza
+        // Como não temos endpoint auth/me, confiamos na persistência visual do localStorage.
+        // O token HttpOnly continua no browser. Se estiver inválido, as requisições de API falharão (401).
+        const stored = localStorage.getItem('user_data');
+        if (stored) {
+            currentUser = JSON.parse(stored);
             return true;
-        } catch (error) {
-            // BACKUP: Se o backend não tiver o endpoint /me ou der erro de rede,
-            // tentamos recuperar os dados públicos do localStorage para não deslogar o user no F5.
-            // O token HttpOnly continua no navegador. Se ele estiver inválido, a próxima chamada de API real falhará (401).
-            const stored = localStorage.getItem('user_data');
-            if (stored) {
-                currentUser = JSON.parse(stored);
-                return true;
-            }
-
-            currentUser = null;
-            return false;
         }
+
+        currentUser = null;
+        return false;
     }
 
 

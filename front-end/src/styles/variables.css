@@ -70,3 +70,19 @@
   --status-done-dot: #166534;
   --status-done-text: #166534;
 }
+
+/* ============================================
+   DARK MODE VARIABLES
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    --text-main: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --bg-page: #1a1a2e;
+    --bg-surface: #0f172a;
+    --border-color: #334155;
+    --bg-active-item: rgba(19, 236, 91, 0.15);
+  }
+}

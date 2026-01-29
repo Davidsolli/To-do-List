@@ -1,7 +1,18 @@
+<!-- Mobile Header (Visible only on mobile via CSS) -->
+<header class="mobile-header">
+  <div class="mobile-header-logo" data-action="go-home" style="cursor: pointer;">
+    <img src="../assets/logo-dark.svg" alt="AlphaTask" class="mobile-logo mobile-logo-light">
+    <img src="../assets/logo-white.svg" alt="AlphaTask" class="mobile-logo mobile-logo-dark">
+  </div>
+  <button class="mobile-menu-btn" id="sidebarToggle" aria-label="Abrir menu">
+    <span class="material-icons-outlined">menu</span>
+  </button>
+</header>
+
 <!-- Sidebar Container -->
 <aside class="sidebar" id="sidebar">
   <!-- Header com Logo -->
-  <div class="sidebar-header">
+  <div class="sidebar-header" data-action="go-home" style="cursor: pointer;">
     <img src="../assets/logo-dark.svg" alt="AlphaTask" class="sidebar-logo sidebar-logo-light">
     <img src="../assets/logo-white.svg" alt="AlphaTask" class="sidebar-logo sidebar-logo-dark">
   </div>
@@ -13,7 +24,9 @@
       <a href="#" class="sidebar-item sidebar-item-active" data-action="toggle-projects" data-route="projetos">
         <span class="material-icons-outlined sidebar-icon">folder</span>
         <span class="sidebar-text">Projetos</span>
-        <span class="material-icons-outlined sidebar-chevron">expand_more</span>
+        <div class="sidebar-chevron-container">
+          <span class="material-icons-outlined sidebar-chevron">expand_more</span>
+        </div>
       </a>
       <div class="sidebar-projects-list" id="projects-list" style="display: none;">
         <!-- Projetos do usuário serão renderizados aqui via TypeScript -->
@@ -29,28 +42,33 @@
 
   <!-- Footer com Usuário e Controles -->
   <div class="sidebar-footer">
-    <!-- Nome do Usuário (clicável) -->
-    <button class="sidebar-user-btn" data-bind="user-name" data-action="goto-profile" aria-label="Ir para perfil do usuário">
-      <span class="material-icons-outlined">account_circle</span>
-      <span class="sidebar-user-name">Carregando...</span>
-    </button>
+
+    <!-- Perfil do Usuário -->
+    <div class="sidebar-profile" data-action="goto-profile" title="Meu Perfil">
+      <!-- Avatar (Inicial) -->
+      <div class="sidebar-avatar" id="user-avatar">
+        <span data-bind="user-initial">U</span>
+      </div>
+
+      <!-- Info e Ações -->
+      <div class="sidebar-profile-info">
+        <span class="sidebar-user-name" data-bind="user-name">Carregando...</span>
+        <span class="sidebar-user-email" data-bind="user-email">...</span>
+      </div>
+    </div>
 
     <!-- Controles (Dark Mode + Logout) -->
     <div class="sidebar-controls">
-      <button class="sidebar-btn-icon" data-action="toggle-dark-mode" aria-label="Alternar modo escuro">
+      <button class="sidebar-btn-icon" data-action="toggle-dark-mode" aria-label="Alternar modo escuro" title="Tema">
         <span class="material-icons-outlined">dark_mode</span>
       </button>
-      <button class="sidebar-btn-icon sidebar-btn-logout" data-action="logout" aria-label="Sair">
+      <button class="sidebar-btn-icon sidebar-btn-logout" data-action="logout" aria-label="Sair" title="Sair">
         <span class="material-icons-outlined">logout</span>
       </button>
     </div>
+
   </div>
 </aside>
 
 <!-- Overlay para Mobile -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<!-- Toggle Button para Mobile -->
-<button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menu">
-  <span class="material-icons-outlined">menu</span>
-</button>

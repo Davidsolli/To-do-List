@@ -107,6 +107,8 @@ export class Router {
         }
     }
 
+    private resizeListener: (() => void) | null = null;
+
     /**
      * Renderiza a sidebar
      */
@@ -124,6 +126,12 @@ export class Router {
             return;
         }
 
+        // Limpar listener anterior se existir (segurança)
+        if (this.resizeListener) {
+            window.removeEventListener('resize', this.resizeListener);
+            this.resizeListener = null;
+        }
+
         // Renderiza nova instância da sidebar
         this.sidebarInstance = new Sidebar('sidebar-container');
         this.sidebarInstance.render();
@@ -134,25 +142,28 @@ export class Router {
             appRoot.style.marginLeft = '16rem'; // Corresponde à largura da sidebar
         }
 
-        // Responsividade: remover margin em telas pequenas
+        // Responsividade: remover margin em telas pequenas e adicionar margin top
         const handleResize = () => {
             if (window.innerWidth < 1024) {
                 if (appRoot) {
                     appRoot.style.marginLeft = '0';
+                    appRoot.style.marginTop = '4rem'; // Altura do header mobile
                 }
             } else {
                 if (appRoot) {
                     appRoot.style.marginLeft = '16rem';
+                    appRoot.style.marginTop = '0';
                 }
             }
         };
 
+        this.resizeListener = handleResize;
         window.addEventListener('resize', handleResize);
         handleResize(); // Chamar uma vez ao renderizar
     }
 
     /**
-     * Remove a sidebar
+     * Remove a sidebar e limpa os eventos
      */
     private removeSidebar(): void {
         const sidebarContainer = document.getElementById('sidebar-container');
@@ -160,9 +171,16 @@ export class Router {
             sidebarContainer.innerHTML = '';
         }
 
+        // Remover listener de resize para não afetar outras páginas (ex: Login)
+        if (this.resizeListener) {
+            window.removeEventListener('resize', this.resizeListener);
+            this.resizeListener = null;
+        }
+
         const appRoot = document.getElementById(this.rootId);
         if (appRoot) {
-            appRoot.style.marginLeft = '0';
+            appRoot.style.marginLeft = '';
+            appRoot.style.marginTop = '';
         }
 
         this.sidebarInstance = null;

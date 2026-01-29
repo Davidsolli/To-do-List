@@ -2,7 +2,9 @@ import { Component } from '../core/Component';
 import template from './Sidebar.html';
 import './sidebar.css';
 import { AuthService } from '../services/AuthService';
+import { ProjectService } from '../services/ProjectService';
 import { app } from '../App';
+
 
 export class Sidebar extends Component {
   private isDarkMode: boolean;
@@ -59,6 +61,21 @@ export class Sidebar extends Component {
     // Logout button
     const logoutBtn = this.container.querySelector('[data-action="logout"]');
     logoutBtn?.addEventListener('click', () => this.handleLogout());
+
+    // Logo click -> go home
+    const logoEls = this.container.querySelectorAll('[data-action="go-home"]');
+    logoEls.forEach(el => {
+      el.addEventListener('click', () => {
+        app.navigate('/');
+        // Mobile handling
+        if (window.innerWidth < 1024) {
+          const sidebar = this.container.querySelector('#sidebar');
+          const overlay = this.container.querySelector('#sidebarOverlay');
+          sidebar?.classList.remove('sidebar-open');
+          overlay?.classList.remove('sidebar-overlay-active');
+        }
+      });
+    });
   }
 
   /**
@@ -86,8 +103,20 @@ export class Sidebar extends Component {
 
     // Fechar sidebar ao clicar em um item (mobile)
     menuItems.forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         if (window.innerWidth < 1024) {
+          // Se for o toggle de projetos, verificar se foi na setinha
+          // Isso permite expandir o menu sem fechar a sidebar
+          if (item.getAttribute('data-action') === 'toggle-projects') {
+            const target = e.target as HTMLElement;
+            // Apenas a setinha mantém o menu aberto (para expandir)
+            // O resto (texto/ícone) deve navegar e fechar o menu
+            if (target.classList.contains('sidebar-chevron-container') ||
+              target.closest('.sidebar-chevron-container')) {
+              return;
+            }
+          }
+
           sidebar?.classList.remove('sidebar-open');
           overlay?.classList.remove('sidebar-overlay-active');
         }
@@ -106,10 +135,29 @@ export class Sidebar extends Component {
   /**
    * Configura o nome do usuário na sidebar
    */
+  /**
+   * Configura os dados do usuário na sidebar (nome, email, avatar)
+   */
   private setupUser(): void {
+    if (!this.currentUser) return;
+
+    // Nome
     const userNameEl = this.container.querySelector('[data-bind="user-name"]');
-    if (userNameEl && this.currentUser) {
+    if (userNameEl) {
       userNameEl.textContent = this.currentUser.name;
+    }
+
+    // Email
+    const userEmailEl = this.container.querySelector('[data-bind="user-email"]');
+    if (userEmailEl) {
+      userEmailEl.textContent = this.currentUser.email;
+    }
+
+    // Avatar (Inicial)
+    const userInitialEl = this.container.querySelector('[data-bind="user-initial"]');
+    if (userInitialEl) {
+      const initial = this.currentUser.name.charAt(0).toUpperCase();
+      userInitialEl.textContent = initial;
     }
   }
 
@@ -165,11 +213,24 @@ export class Sidebar extends Component {
   }
 
   /**
-   * Alterna a expansão/colapso da lista de projetos
+   * Alterna a expansão/colapso da lista de projetos OU navega para render
    */
   private handleToggleProjects(e: Event): void {
     e.preventDefault();
-    
+
+    const target = e.target as HTMLElement;
+    const isChevron = target.classList.contains('sidebar-chevron-container') || !!target.closest('.sidebar-chevron-container');
+
+    // Se NÃO clicou na setinha, navegar para projetos
+    if (!isChevron) {
+      app.navigate('/projetos');
+      // Opcional: Expandir ao entrar na rota? Por padrão, o comportamento de navegar não expande obrigatoriamente, 
+      // mas se o usuário quiser ver os projetos, ele clicaria na seta.
+      // Manteremos apenas a navegação conforme pedido.
+      return;
+    }
+
+    // Lógica de toggle (apenas se clicou na setinha)
     const projectsBtn = e.currentTarget as HTMLElement;
     const projectsList = this.container.querySelector('#projects-list') as HTMLElement;
     const chevron = projectsBtn.querySelector('.sidebar-chevron') as HTMLElement;
@@ -179,12 +240,12 @@ export class Sidebar extends Component {
     if (this.isProjectsExpanded) {
       projectsList.style.display = 'block';
       chevron.textContent = 'expand_less';
-      projectsBtn.classList.add('sidebar-item-active');
+      // projectsBtn.classList.add('sidebar-item-active'); // Não adicionamos active aqui pois a rota define o active
       this.populateProjectsList();
     } else {
       projectsList.style.display = 'none';
       chevron.textContent = 'expand_more';
-      projectsBtn.classList.remove('sidebar-item-active');
+      // projectsBtn.classList.remove('sidebar-item-active');
     }
   }
 
@@ -192,51 +253,73 @@ export class Sidebar extends Component {
    * Popula a lista de projetos do usuário
    * TODO: Integrar com API para buscar projetos reais
    */
-  private populateProjectsList(): void {
+  /**
+   * Popula a lista de projetos do usuário
+   */
+  private async populateProjectsList(): Promise<void> {
     const projectsList = this.container.querySelector('#projects-list') as HTMLElement;
-    
-    // Placeholder - será integrado com API após pronto
-    const mockProjects = [];
 
-    // Se não houver projetos, mostrar opção de criar projeto
-    if (mockProjects.length === 0) {
-      projectsList.innerHTML = `
-        <a href="#" class="sidebar-project-item" data-action="create-project">
-          <span class="sidebar-project-name">Criar um Projeto</span>
-        </a>
-      `;
+    try {
+      projectsList.innerHTML = '<div style="padding: 10px; color: var(--text-tertiary);">Carregando...</div>';
 
-      // Adicionar event listener para criar projeto
-      projectsList.querySelector('[data-action="create-project"]')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        app.navigate('/projetos/novo');
-      });
-    } else {
-      projectsList.innerHTML = mockProjects
-        .map(project => `
-          <a href="#" class="sidebar-project-item" data-project-id="${project.id}">
-            <span class="sidebar-project-name">${project.name}</span>
-          </a>
-        `)
-        .join('');
+      const projects = await ProjectService.getUserProjects();
 
-      // Adicionar event listeners aos projetos
-      projectsList.querySelectorAll('.sidebar-project-item').forEach(item => {
-        item.addEventListener('click', (e) => {
+      // Se não houver projetos, mostrar mensagem não clicável
+      if (projects.length === 0) {
+        projectsList.innerHTML = `
+            <span class="sidebar-project-name" style="font-style: italic;">Nenhum projeto</span>
+        `;
+
+        // Adicionar event listener para criar projeto (agora embaixo da mensagem)
+        projectsList.querySelector('[data-action="create-project"]')?.addEventListener('click', (e) => {
           e.preventDefault();
-          const projectId = (e.currentTarget as HTMLElement).getAttribute('data-project-id');
-          app.navigate(`/projetos/${projectId}`);
+          this.handleCreateProject();
         });
-      });
+
+      } else {
+        projectsList.innerHTML = projects
+          .map(project => `
+            <a href="#" class="sidebar-project-item" data-project-id="${project.id}">
+              <span class="sidebar-project-name">${project.name}</span>
+            </a>
+          `)
+          .join('');
+
+        // Adicionar event listeners aos projetos
+        projectsList.querySelectorAll('.sidebar-project-item[data-project-id]').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const projectId = (e.currentTarget as HTMLElement).getAttribute('data-project-id');
+            app.navigate(`/projetos/${projectId}`);
+          });
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      projectsList.innerHTML = '<div style="padding: 10px; color: red;">Erro ao carregar.</div>';
     }
   }
+
+  private async handleCreateProject(): Promise<void> {
+    const name = prompt('Nome do novo projeto:');
+    if (name) {
+      try {
+        await ProjectService.createProject(name);
+        window.toast.success('Projeto criado!');
+        this.populateProjectsList(); // Recarrega a lista
+      } catch (err) {
+        window.toast.error('Erro ao criar projeto.');
+      }
+    }
+  }
+
 
   /**
    * Trata cliques nos itens do menu (Usuários)
    */
   private handleMenuClick(e: Event): void {
     e.preventDefault();
-    
+
     const target = e.currentTarget as HTMLElement;
     const route = target.getAttribute('data-route');
 
@@ -258,7 +341,7 @@ export class Sidebar extends Component {
    */
   private handleGoToProfile(): void {
     if (this.currentUser) {
-      app.navigate(`/perfil/${this.currentUser.id}`);
+      app.navigate(`/perfil`);
     }
   }
 

@@ -1,148 +1,189 @@
-import UserService from "../../src/services/user.service";
-import UserRepository from "../../src/repositories/user.repository";
-import { UserUpdateDTO } from "../../src/interfaces/user";
-import bcrypt from "bcrypt";
+import request from "supertest";
+import app from "../../src/app";
+import { db } from "../../src/database/db";
 
-// 1. MOCK DO REPOSITÓRIO
-jest.mock("../../src/repositories/user.repository");
-
-// 2. MOCK DO BCRYPT
-jest.mock("bcrypt", () => ({
-  hash: jest.fn(),
-}));
-
-describe("Unitário - UserService", () => {
-  let userService: UserService;
-
-  beforeEach(() => {
-    jest.clearAllMocks(); // Limpa contadores
-    userService = new UserService(); // Instancia a classe
+describe("Integração - Fluxo de Usuários", () => {
+  beforeAll(() => {
+    db.prepare("DELETE FROM projects").run();
+    db.prepare("DELETE FROM users").run();
   });
 
-  describe("getById", () => {
-    it("deve retornar um usuário quando encontrado", async () => {
-      // ARRANGE
-      const mockUser = { id: 1, name: "Teste", email: "teste@email.com" };
-      (UserRepository.findById as jest.Mock).mockReturnValue(mockUser);
+  let userIdCriado: number;
 
-      // ACT
-      const result = await userService.getById(1);
+  // CRIAÇÃO
+  describe("Criação de Usuário", () => {
+    it("deve criar um usuário válido com sucesso (201)", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          name: "Gabriel Teste",
+          email: "gabriel.teste@email.com",
+          password: "SenhaForte123!"
+        });
 
-      // ASSERT
-      expect(result).toEqual(mockUser);
-      expect(UserRepository.findById).toHaveBeenCalledWith(1);
+      expect(response.status).toBe(201);
+      expect(response.body.user).toHaveProperty("id");
+      userIdCriado = response.body.user.id;
     });
 
-    it("deve lançar erro 'Usuário não encontrado' se o ID não existir", async () => {
-      // ARRANGE
-      (UserRepository.findById as jest.Mock).mockReturnValue(null);
+    it("não deve criar usuário com email duplicado (400)", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          name: "Gabriel Impostor",
+          email: "gabriel.teste@email.com",
+          password: "OutraSenha123!"
+        });
 
-      // ACT & ASSERT
-      await expect(async () => {
-        await userService.getById(99);
-      }).rejects.toThrow("Usuário não encontrado");
-    });
-  });
-
-  describe("getAll", () => {
-    it("deve retornar uma lista de usuários", async () => {
-      // ARRANGE
-      const mockUsers = [{ id: 1, name: "User 1" }, { id: 2, name: "User 2" }];
-      (UserRepository.findAll as jest.Mock).mockReturnValue(mockUsers);
-
-      // ACT
-      const result = await userService.getAll();
-
-      // ASSERT
-      expect(result).toEqual(mockUsers);
-      expect(UserRepository.findAll).toHaveBeenCalled();
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("error");
     });
 
-    it("deve lançar erro se não encontrar usuários", async () => {
-      // ARRANGE
-      (UserRepository.findAll as jest.Mock).mockReturnValue(null);
+    it("não deve criar usuário faltando campos obrigatórios (400)", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          name: "Gabriel Sem Senha",
+          email: "sem.senha@email.com"
+          //SEM SENHA
+        });
 
-      // ACT & ASSERT
-      await expect(async () => {
-        await userService.getAll();
-      }).rejects.toThrow("Usuários não encontrados");
+      expect(response.status).toBe(400);
     });
-  });
+    it("não deve criar usuário faltando campos obrigatórios (400)", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          name: "Gabriel Sem Senha",
+          //SEM EMAIL
+          password: "SenhaForte132!"
+        });
 
-  describe("update", () => {
-    // ESTE É O TESTE QUE ESTAVA FALHANDO E AGORA ESTÁ CORRIGIDO
-    it("deve atualizar nome e email, enviando undefined na senha para não alterá-la", async () => {
-      // ARRANGE
-      const existingUser = { id: 1, name: "Antigo", email: "antigo@email.com", password: "hash_antiga" };
-      
-      const updateData: UserUpdateDTO = { name: "Novo Nome", email: "novo@email.com" }; 
-      
-      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
-      (UserRepository.update as jest.Mock).mockReturnValue(true);
-
-      // ACT
-      const result = await userService.update(1, updateData);
-
-      // ASSERT
-      expect(result).toBe(true);
-      
-      // VERIFICAÇÃO CRUCIAL: Esperamos 'undefined' na posição da senha
-      expect(UserRepository.update).toHaveBeenCalledWith(1, "Novo Nome", "novo@email.com", undefined);
-      
-      // Garante que o bcrypt NÃO foi chamado
-      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(response.status).toBe(400);
     });
+    it("não deve criar usuário faltando campos obrigatórios (400)", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          //SEM NOME
+          email: "sem.senha@email.com",
+          password: "SenhaForte132!"
+        });
 
-    it("deve hashear a nova senha se ela for informada", async () => {
-      // ARRANGE
-      const existingUser = { id: 1, name: "Antigo", email: "antigo@email.com", password: "hash_antiga" };
-      
-      const updateData: UserUpdateDTO = { password: "nova_senha_123" };
-      
-      (UserRepository.findById as jest.Mock).mockReturnValue(existingUser);
-      (UserRepository.update as jest.Mock).mockReturnValue(true);
-      // Mockamos o retorno do bcrypt para simular o hash
-      (bcrypt.hash as jest.Mock).mockResolvedValue("nova_hash_segura");
-
-      // ACT
-      await userService.update(1, updateData);
-
-      // ASSERT
-      // Aqui sim esperamos a NOVA hash
-      expect(UserRepository.update).toHaveBeenCalledWith(1, "Antigo", "antigo@email.com", "nova_hash_segura");
-    });
-
-    it("deve lançar erro se tentar atualizar usuário inexistente", async () => {
-      // ARRANGE
-      (UserRepository.findById as jest.Mock).mockReturnValue(null);
-
-      // ACT & ASSERT
-      await expect(async () => {
-        await userService.update(99, {});
-      }).rejects.toThrow("Usuário não encontrado");
+      expect(response.status).toBe(400);
     });
   });
 
-  describe("delete", () => {
-    it("deve retornar true ao deletar com sucesso", async () => {
-      // ARRANGE
-      (UserRepository.delete as jest.Mock).mockReturnValue(true);
+  // BUSCA POR ID
+  describe("Busca de Usuário por ID", () => {
+    it("deve retornar os dados do usuário criado (200)", async () => {
+      if (!userIdCriado) return;
 
-      // ACT
-      const result = await userService.delete(1);
+      const response = await request(app).get(`/api/users/${userIdCriado}`);
 
-      // ASSERT
-      expect(result).toBe(true);
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(userIdCriado);
+      expect(response.body.name).toBe("Gabriel Teste");
+      expect(response.body.password).toBeUndefined();
     });
 
-    it("deve lançar erro se falhar ao deletar", async () => {
-      // ARRANGE
-      (UserRepository.delete as jest.Mock).mockReturnValue(false);
+    it("deve retornar erro para usuário inexistente", async () => {
+      const response = await request(app).get("/api/users/99999");
+      expect([400, 404]).toContain(response.status);
+    });
+  });
 
-      // ACT & ASSERT
-      await expect(async () => {
-        await userService.delete(1);
-      }).rejects.toThrow("Usuário não encontrado ou já deletado");
+  // LISTAR TODOS
+  describe("Listagem de Usuários", () => {
+    it("deve listar todos os usuários cadastrados (200)", async () => {
+      const response = await request(app).get("/api/users");
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ATUALIZAR
+  describe("Atualização de Usuário", () => {
+    it("deve atualizar apenas o NOME", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ name: "Gabriel Atualizado Nome" });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.name).toBe("Gabriel Atualizado Nome");
+    });
+
+    it("deve atualizar apenas o EMAIL", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ email: "atualizado@email.com" });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.email).toBe("atualizado@email.com");
+    });
+
+    it("deve atualizar apenas a SENHA", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({ password: "NovaSenhaForte456@" });
+
+      expect(response.status).toBe(200);
+    });
+
+    it("deve atualizar TUDO (Nome, Email e Senha)", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app)
+        .put(`/api/users/${userIdCriado}`)
+        .send({
+          name: "Gabriel Full Update",
+          email: "full@update.com",
+          password: "OutraSenha789!"
+        });
+
+      expect(response.status).toBe(200);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect(check.body.name).toBe("Gabriel Full Update");
+      expect(check.body.email).toBe("full@update.com");
+    });
+
+    it("deve retornar erro ao tentar atualizar ID inexistente", async () => {
+      const response = await request(app)
+        .put("/api/users/99999")
+        .send({ name: "Não Existo" });
+
+      expect([400, 404]).toContain(response.status);
+    });
+  });
+
+  // DELETAR
+  describe("Remoção de Usuário", () => {
+    it("deve deletar o usuário criado com sucesso", async () => {
+      if (!userIdCriado) return;
+
+      const response = await request(app).delete(`/api/users/${userIdCriado}`);
+      expect([200, 204]).toContain(response.status);
+
+      const check = await request(app).get(`/api/users/${userIdCriado}`);
+      expect([400, 404]).toContain(check.status);
+    });
+
+    it("deve retornar erro ao tentar deletar ID inexistente", async () => {
+      const response = await request(app).delete("/api/users/99999");
+      expect([400, 404]).toContain(response.status);
     });
   });
 });

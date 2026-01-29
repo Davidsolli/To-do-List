@@ -25,7 +25,35 @@ export default class UserService {
     return users;
   }
 
-  async update(id: number, newData: UserUpdateDTO): Promise<boolean> {
+  async create(userData: any): Promise<UserResponseDTO> {
+    const { name, email, password, role } = userData;
+
+    if (!name || !email || !password) {
+      throw new Error("Nome, email e senha são obrigatórios");
+    }
+
+    // Verifica se o email já existe
+    const existingUser = UserRepository.findByEmail(email);
+    if (existingUser) {
+      throw new Error("Email já cadastrado");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
+
+    const userId = UserRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'user',
+    });
+
+    const newUser = UserRepository.findById(userId);
+    if (!newUser) throw new Error("Erro ao buscar usuário criado");
+
+    return newUser;
+  }
+
+  async update(id: number, newData: UserUpdateDTO): Promise<UserResponseDTO> {
     const user = UserRepository.findById(id);
 
     if (!user) {
@@ -34,6 +62,7 @@ export default class UserService {
 
     const newName = newData.name || user.name;
     const newEmail = newData.email || user.email;
+    const newRole = newData.role || user.role;
     let newPassword = user.password; // mantém a senha antiga
 
     if (newData.password) {
@@ -44,11 +73,16 @@ export default class UserService {
       name: newName,
       email: newEmail,
       password: newPassword,
+      role: newRole,
     });
 
     if (!success) throw new Error("Erro ao atualizar usuário");
 
-    return success;
+    // Retorna o usuário atualizado
+    const updatedUser = UserRepository.findById(id);
+    if (!updatedUser) throw new Error("Erro ao buscar usuário atualizado");
+
+    return updatedUser;
   }
 
   async delete(id: number): Promise<boolean> {

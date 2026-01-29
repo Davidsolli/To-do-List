@@ -29,6 +29,18 @@ export default class UserController {
         }
     }
 
+    async create(req: Request, res: Response): Promise<Response> {
+        try {
+            const service = new UserService();
+            const userData = req.body;
+
+            const createdUser = await service.create(userData);
+            return res.status(201).json(createdUser);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
     async update(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();

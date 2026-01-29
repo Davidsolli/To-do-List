@@ -32,6 +32,13 @@ tasksRoutes.get(
   TaskController.getTasksByUserId,
 );
 
+tasksRoutes.get(
+  "/project/:projectId",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.getTasksByProjectId,
+);
+
 tasksRoutes.put(
   "/:id",
   authenticate,

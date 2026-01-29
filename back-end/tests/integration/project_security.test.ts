@@ -9,7 +9,8 @@ describe("Integração - Segurança de Projetos", () => {
   let tokenUserB: string;
   let projectIdUserA: number;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
+    db.prepare("DELETE FROM tasks").run();
     db.prepare("DELETE FROM projects").run();
     db.prepare("DELETE FROM users").run();
 
@@ -33,8 +34,13 @@ describe("Integração - Segurança de Projetos", () => {
         name: "Project Private User A",
         description: "Private stuff"
       });
-    
+
     projectIdUserA = projectRes.body.id;
+
+    // Validar que o projeto foi criado corretamente
+    if (!projectIdUserA) {
+      throw new Error("Project was not created properly");
+    }
   });
 
   it("User B NÃO deve conseguir acessar projeto do User A (GET)", async () => {

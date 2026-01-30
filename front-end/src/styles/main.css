@@ -5,6 +5,10 @@
   box-sizing: border-box;
 }
 
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -13,6 +17,12 @@ body {
   background-color: var(--bg-page);
   color: var(--text-main);
 }
+
+/* --- App Container --- */
+#app {
+  min-height: 100vh;
+}
+
 
 /* --- Tipografia Global --- */
 h1, h2, h3, h4, h5, h6 {

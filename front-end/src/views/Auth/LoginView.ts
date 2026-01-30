@@ -30,7 +30,7 @@ export class LoginView extends Component {
       type: 'submit',
       fullWidth: true,
       action: 'submit-login',
-      variant: 'primary',
+      variant: 'primary'
     });
 
     // 2. Injetar no Template Principal
@@ -119,14 +119,29 @@ export class LoginView extends Component {
   }
 
   private showError(inputId: string, message: string): void {
-    const errorEl = this.container.querySelector(`#error-${inputId}`);
+    const errorEl = this.container.querySelector(`#error-${inputId}`) as HTMLElement;
+    const inputEl = this.container.querySelector(`#${inputId}`) as HTMLInputElement;
+
     if (errorEl) {
       errorEl.textContent = message;
+      errorEl.style.display = 'block';
+    }
+
+    if (inputEl) {
+      inputEl.classList.add('error');
     }
   }
 
   private clearErrors(): void {
     const errors = this.container.querySelectorAll('.form-error');
-    errors.forEach(el => el.textContent = '');
+    errors.forEach((el) => {
+      (el as HTMLElement).textContent = '';
+      (el as HTMLElement).style.display = 'none';
+    });
+
+    const inputs = this.container.querySelectorAll('.form-input');
+    inputs.forEach((input) => {
+      input.classList.remove('error');
+    });
   }
 }

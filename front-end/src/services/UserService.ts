@@ -1,41 +1,64 @@
 import { ApiService } from './ApiService';
 import { User } from '../models/User';
 
+interface UpdateUserDTO {
+    name?: string;
+    email?: string;
+}
+
+interface ChangePasswordDTO {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export class UserService {
-    private static readonly ENDPOINT = 'users';
+    private endpoint = 'users';
 
     /**
-     * Busca todos os usuários
+     * Buscar usuário por ID
      */
-    static async getAll(): Promise<User[]> {
-        return ApiService.get<User[]>(this.ENDPOINT);
+    async getById(userId: number): Promise<User> {
+        return await ApiService.get<User>(`${this.endpoint}/${userId}`);
     }
 
     /**
-     * Busca um usuário pelo ID
+     * Atualizar informações do usuário
      */
-    static async getById(id: number): Promise<User> {
-        return ApiService.get<User>(`${this.ENDPOINT}/${id}`);
+    async update(userId: number, data: UpdateUserDTO): Promise<User> {
+        return await ApiService.put<User>(`${this.endpoint}/${userId}`, data);
     }
 
     /**
-     * Cria um novo usuário
+     * Alterar senha do usuário
      */
-    static async create(user: Partial<User>): Promise<User> {
-        return ApiService.post<User>(this.ENDPOINT, user);
+    async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+        const data: ChangePasswordDTO = {
+            currentPassword,
+            newPassword
+        };
+
+        try {
+            await ApiService.put<void>(`${this.endpoint}/${userId}/password`, data);
+        } catch (error: any) {
+            // Tratar erros específicos de senha
+            if (error.message.includes('incorreta') || error.message.includes('incorrect')) {
+                throw new Error('Senha atual incorreta');
+            }
+            throw error;
+        }
     }
 
     /**
-     * Atualiza um usuário existente
+     * Deletar conta do usuário
      */
-    static async update(id: number, user: Partial<User>): Promise<User> {
-        return ApiService.put<User>(`${this.ENDPOINT}/${id}`, user);
+    async delete(userId: number): Promise<void> {
+        return await ApiService.delete<void>(`${this.endpoint}/${userId}`);
     }
 
     /**
-     * Remove um usuário
+     * Buscar projetos do usuário
      */
-    static async delete(id: number): Promise<void> {
-        return ApiService.delete<void>(`${this.ENDPOINT}/${id}`);
+    async getUserProjects(userId: number): Promise<any[]> {
+        return await ApiService.get<any[]>(`${this.endpoint}/${userId}/projects`);
     }
 }

@@ -1,14 +1,51 @@
-import { Router } from 'express';
-import  UserController  from "../controllers/user.controller";
+import { Router } from "express";
+import UserController from "../controllers/user.controller";
+import {
+  authenticate,
+  authorize,
+  checkOwnership,
+} from "../middleware/auth.middleware";
+import { UserRole } from "../enums/userRoles.enums";
 
 const userRoutes = Router();
 const userController = new UserController();
 
-userRoutes.get('/', userController.getAll);
-userRoutes.get('/:id', userController.getById);
-userRoutes.post('/', userController.create);
-userRoutes.put('/:id', userController.update);
-userRoutes.delete('/:id', userController.delete);
+userRoutes.get(
+  "/",
+  authenticate,
+  authorize([UserRole.ADMIN]),
+  userController.getAll,
+);
 
+userRoutes.get(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  userController.getById,
+);
+
+userRoutes.put(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  userController.update,
+);
+
+userRoutes.put(
+  "/:id/password",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  userController.changePassword,
+);
+
+userRoutes.delete(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN]),
+  userController.delete,
+);
 
 export default userRoutes;

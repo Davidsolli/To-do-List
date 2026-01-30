@@ -29,18 +29,6 @@ export default class UserController {
         }
     }
 
-    async create(req: Request, res: Response): Promise<Response> {
-        try {
-            const service = new UserService();
-            const userData = req.body;
-
-            const createdUser = await service.create(userData);
-            return res.status(201).json(createdUser);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
-        }
-    }
-
     async update(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();
@@ -69,6 +57,32 @@ export default class UserController {
             return res.status(200).json({ message: 'Usuário deletado com sucesso' });
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
+        }
+    }
+
+    async changePassword(req: Request, res: Response): Promise<Response> {
+        try {
+            const service = new UserService();
+            const id = Number(req.params.id);
+            const { currentPassword, newPassword } = req.body;
+
+            if (isNaN(id)) {
+                return res.status(400).json({ error: 'ID inválido' });
+            }
+
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ error: 'Senha atual e nova senha são obrigatórias' });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ error: 'A nova senha deve ter no mínimo 6 caracteres' });
+            }
+
+            await service.changePassword(id, currentPassword, newPassword);
+            return res.status(200).json({ message: 'Senha alterada com sucesso' });
+        } catch (error: any) {
+            const status = error.message === 'Senha atual incorreta' ? 401 : 400;
+            return res.status(status).json({ error: error.message });
         }
     }
 }

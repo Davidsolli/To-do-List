@@ -1,13 +1,70 @@
 import { Router } from "express";
 import { TaskController } from "../controllers/task.controller";
+import {
+  authenticate,
+  authorize,
+  checkOwnership,
+} from "../middleware/auth.middleware";
+import { UserRole } from "../enums/userRoles.enums";
 
 const tasksRoutes = Router();
 
-tasksRoutes.post("/", TaskController.createTask);
-tasksRoutes.get("/user/:userId/search", TaskController.searchTasks);
-tasksRoutes.get("/user/:userId", TaskController.getTasksByUserId);
-tasksRoutes.put("/:id", TaskController.updateTask);
-tasksRoutes.patch("/:id/status", TaskController.updateTaskStatus);
-tasksRoutes.delete("/:id", TaskController.deleteTask);
+tasksRoutes.post(
+  "/",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.createTask,
+);
+
+tasksRoutes.get(
+  "/user/:userId/search",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  TaskController.searchTasks,
+);
+
+tasksRoutes.get(
+  "/user/:userId",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  TaskController.getTasksByUserId,
+);
+
+tasksRoutes.get(
+  "/project/:projectId",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.getTasksByProjectId,
+);
+
+tasksRoutes.put(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.updateTask,
+);
+
+tasksRoutes.patch(
+  "/:id/status",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.updateTaskStatus,
+);
+
+tasksRoutes.delete(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.deleteTask,
+);
+
+tasksRoutes.post(
+  "/:id/generate-tip",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.generateTip,
+);
 
 export default tasksRoutes;

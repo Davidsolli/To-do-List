@@ -1,6 +1,7 @@
 import { TaskCreateDTO, TaskResponseDTO } from "../interfaces/task";
 import { TaskRepository } from "../repositories/task.repository";
 import { TaskValidation } from "../validations/task.validation";
+import { AIService } from "./ai.service";
 
 export class TaskService {
     static async createTask(taskData: TaskCreateDTO): Promise<TaskResponseDTO> {
@@ -10,6 +11,10 @@ export class TaskService {
 
     static async getTasksByUserId(userId: number): Promise<TaskResponseDTO[]> {
         return TaskRepository.findByUserId(userId);
+    }
+
+    static async getTasksByProjectId(projectId: number): Promise<TaskResponseDTO[]> {
+        return TaskRepository.findByProjectId(projectId);
     }
 
     static async searchTasksByUserIdAndKeyword(userId: number, keyword: string): Promise<TaskResponseDTO[]> {
@@ -41,5 +46,27 @@ export class TaskService {
     static async deleteTask(taskId: number): Promise<void> {
   return TaskRepository.delete(taskId);
 }
+
+    static async generateTip(taskId: number, forceRegenerate: boolean = false): Promise<TaskResponseDTO> {
+        // Buscar a task
+        const task = TaskRepository.findById(taskId);
+
+        if (!task) {
+            throw new Error("Task não encontrada");
+        }
+
+        // Se já tem dica e não é para forçar regeneração, retorna a existente
+        if (task.tip && !forceRegenerate) {
+            return task;
+        }
+
+        // Gerar nova dica com IA
+        const tip = await AIService.generateTaskTip(task.title, task.description || undefined);
+
+        // Atualizar a task com a nova dica
+        const updatedTask = TaskRepository.update(taskId, { tip });
+
+        return updatedTask;
+    }
 
 }

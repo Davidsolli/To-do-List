@@ -1,41 +1,47 @@
 import { ApiService } from './ApiService';
 import { Project } from '../models/Project';
 
+import { AuthService } from './AuthService';
+
 export class ProjectService {
-    private static readonly ENDPOINT = 'projects';
-
-    /**
-     * Busca todos os projetos do usuário
-     */
-    static async getAll(userId: number): Promise<Project[]> {
-        return ApiService.get<Project[]>(`${this.ENDPOINT}/user/${userId}`);
+    static async getUserProjects(): Promise<Project[]> {
+        const user = AuthService.user;
+        if (!user) {
+            throw new Error('Usuário não autenticado');
+        }
+        // O backend espera /projects/user/:userId
+        const response = await ApiService.get<{ projects: Project[] }>(`projects/user/${user.id}`);
+        // Verifica se o backend retorna { projects: [...] } ou o array direto
+        // Ajuste conforme o retorno real do seu controller
+        return (response as any).projects || response;
     }
 
-    /**
-     * Busca um projeto pelo ID
-     */
-    static async getById(id: string): Promise<Project> {
-        return ApiService.get<Project>(`${this.ENDPOINT}/${id}`);
+    static async createProject(name: string, description?: string): Promise<Project> {
+        // Envia nome e descrição. O backend deve pegar o userId do token ou esperar no body.
+        const user = AuthService.user;
+        const body = {
+            name,
+            description: description || '',
+            user_id: user?.id
+        };
+        const response = await ApiService.post<Project>('projects', body);
+        return response;
     }
 
-    /**
-     * Cria um novo projeto
-     */
-    static async create(project: Partial<Project>): Promise<Project> {
-        return ApiService.post<Project>(this.ENDPOINT, project);
+    static async getProjectById(id: number): Promise<Project> {
+        // GET /projects/:id - Backend retorna o projeto diretamente
+        const response = await ApiService.get<Project>(`projects/${id}`);
+        return response;
     }
 
-    /**
-     * Atualiza um projeto existente
-     */
-    static async update(id: string, project: Partial<Project>): Promise<Project> {
-        return ApiService.put<Project>(`${this.ENDPOINT}/${id}`, project);
+    static async updateProject(id: number, data: Partial<Omit<Project, 'id' | 'user_id'>>): Promise<Project> {
+        // PUT /projects/:id - Backend retorna o projeto diretamente
+        const response = await ApiService.put<Project>(`projects/${id}`, data);
+        return response;
     }
 
-    /**
-     * Remove um projeto
-     */
-    static async delete(id: string): Promise<void> {
-        return ApiService.delete<void>(`${this.ENDPOINT}/${id}`);
+    static async deleteProject(id: number): Promise<void> {
+        // DELETE /projects/:id
+        await ApiService.delete(`projects/${id}`);
     }
 }

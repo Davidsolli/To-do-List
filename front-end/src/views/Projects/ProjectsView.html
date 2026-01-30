@@ -1,26 +1,26 @@
-<section class="projects">
-    <header class="projects__header">
-        <h1 class="projects__title">Projetos</h1>
-
-        <div class="projects__actions">
-            <input type="text" class="projects__search" placeholder="Buscar projetos" data-action="search" />
-
-            <button class="btn btn--primary" data-action="new-project">
-                + Novo
-            </button>
+<div class="projects-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Projetos</h1>
+            <p class="text-secondary">Gerencie todos os seus projetos</p>
+        </div>
+        <div class="header-actions">
+            {{btn_new_project}}
         </div>
     </header>
 
-    <div class="projects__grid" data-bind="projects-list"></div>
-
-    <div class="projects__empty" data-bind="empty-state" hidden>
-        <p class="projects__empty-text">
-            Nenhum projeto encontrado
-        </p>
-
-        <button class="btn btn--primary" data-action="empty-new-project">
-            Criar novo projeto
-        </button>
+    <div class="search-section">
+        <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar projetos..."
+            data-action="search"
+        />
     </div>
 
-</section>
+    <div class="projects-grid" data-bind="projects-list"></div>
+
+    <div class="empty-state-msg" data-bind="empty-state" style="display: none;">
+        Nenhum projeto encontrado. Crie seu primeiro projeto!
+    </div>
+</div>

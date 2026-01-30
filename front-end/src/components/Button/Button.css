@@ -34,7 +34,7 @@
   background-color: rgba(0,0,0,0.05);
 }
 
-.btn--ghost { background: transparent; color: var(--text-secondary); }
+.btn--ghost { background: transparent; color: var(--color-primary-dark-text); }
 .btn--ghost:hover {
   background-color: rgba(0,0,0,0.05);
   color: var(--text-main);

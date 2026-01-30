@@ -30,7 +30,7 @@ export class LoginView extends Component {
       type: 'submit',
       fullWidth: true,
       action: 'submit-login',
-      variant: 'primary',
+      variant: 'primary'
     });
 
     // 2. Injetar no Template Principal

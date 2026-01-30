@@ -66,10 +66,16 @@ export class Modal {
     if (!this.overlay) return;
 
     const closeBtn = this.overlay.querySelector('[data-action="close-modal"]');
-    const backdrop = this.overlay.querySelector('[data-action="close-backdrop"]');
 
     closeBtn?.addEventListener('click', () => this.close());
-    backdrop?.addEventListener('click', () => this.close());
+
+    // Fechar ao clicar fora do modal (no overlay)
+    this.overlay.addEventListener('click', (e: MouseEvent) => {
+      // Só fecha se o clique foi diretamente no overlay, não em seus filhos
+      if (e.target === this.overlay) {
+        this.close();
+      }
+    });
 
     document.addEventListener('keydown', this.handleEscapeKey);
   }

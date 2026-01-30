@@ -6,12 +6,15 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 2rem 1rem;
 }
 
 .modal-overlay.modal-overlay--visible {
@@ -25,10 +28,11 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    margin: auto;
+    overflow: visible; /* IMPORTANTE: Para Select dropdown */
     transform: scale(0.9) translateY(-20px);
     transition: transform 0.2s;
+    position: relative;
 }
 
 .modal-overlay--visible .modal {
@@ -74,10 +78,10 @@
 }
 
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
 
-.form-group:last-child {
+.form-group:last-of-type {
     margin-bottom: 0;
 }
 
@@ -114,13 +118,75 @@
     line-height: 1.5;
 }
 
+/* Select específico com seta customizada */
+select.form-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23585962' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 12px;
+    cursor: pointer;
+}
+
+select.form-input:hover {
+    border-color: var(--text-secondary);
+}
+
+select.form-input:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2313EC5B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+/* Dark mode - seta mais clara */
+.dark-mode select.form-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+.dark-mode select.form-input:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2313EC5B' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+/* Options styling */
+select.form-input option {
+    padding: 0.75rem 0.875rem;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Option hover/selected - limitado pelo navegador */
+select.form-input option:checked {
+    background-color: var(--color-primary);
+    color: var(--color-primary-btn-text);
+    font-weight: 600;
+}
+
+/* Dark mode - options */
+.dark-mode select.form-input option {
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+}
+
+.dark-mode select.form-input option:checked {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: var(--color-primary-btn-text);
+}
+
 .form-error {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
     background-color: #fee2e2;
     color: #991b1b;
     border-radius: 6px;
     font-size: 0.875rem;
+    display: none;
+}
+
+.form-error:not(:empty) {
+    display: block;
 }
 
 .modal__footer {

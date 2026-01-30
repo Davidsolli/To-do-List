@@ -10,15 +10,15 @@
     </header>
 
     <div class="search-section">
-        <input
-            type="text"
-            class="search-input"
-            placeholder="Buscar projetos..."
-            data-action="search"
-        />
+        <input type="text" class="search-input" placeholder="Buscar projetos..." data-action="search" />
     </div>
 
-    <div class="projects-grid" data-bind="projects-list"></div>
+    <div class="projects-grid" data-bind="projects-list">
+        <div class="loading-wrapper">
+            <div class="spinner"></div>
+            <span>Carregando seus projetos...</span>
+        </div>
+    </div>
 
     <div class="empty-state-msg" data-bind="empty-state" style="display: none;">
         Nenhum projeto encontrado. Crie seu primeiro projeto!

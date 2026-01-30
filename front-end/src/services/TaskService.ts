@@ -45,4 +45,10 @@ export class TaskService {
     static async delete(id: string): Promise<void> {
         await ApiService.delete(`tasks/${id}`);
     }
+
+    static async generateTip(id: string, force: boolean = false): Promise<Task> {
+        const url = force ? `tasks/${id}/generate-tip?force=true` : `tasks/${id}/generate-tip`;
+        const response = await ApiService.post<{ message: string, task: Task }>(url, {});
+        return response.task;
+    }
 }

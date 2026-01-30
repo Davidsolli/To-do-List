@@ -4,16 +4,24 @@ import { Component } from '../../core/Component';
 import { User } from '../../models/User';
 import { UserService } from '../../services/UserService';
 import { AuthService } from '../../services/AuthService';
-import { Modal } from '../../components/Modal/Modal';
-import { UserForm } from '../../components/UserForm/UserForm';
+import { Button } from '../../components/Button/Button';
+import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
+import { UserModal } from '../../components/UserModal/UserModal';
+import { toast } from '../../services/ToastService';
 
 export class UsersView extends Component {
     private users: User[] = [];
     private filteredUsers: User[] = [];
-    private currentModal: Modal | null = null;
 
     getTemplate(): string {
-        return template;
+        const btnNewUser = new Button({
+            text: 'Novo Usuário',
+            variant: 'primary',
+            action: 'new-user',
+            icon: 'fa-solid fa-plus'
+        });
+
+        return template.replace('{{btn_new_user}}', btnNewUser.render());
     }
 
     protected async afterRender(): Promise<void> {
@@ -28,25 +36,26 @@ export class UsersView extends Component {
             this.filteredUsers = this.users;
         } catch (error) {
             console.error('Failed to load users', error);
+            toast.error('Erro ao carregar usuários');
             this.users = [];
             this.filteredUsers = [];
         }
     }
 
     private renderUsers(): void {
-        const list = this.container.querySelector('[data-users-list]');
-        const emptyState = this.container.querySelector('[data-empty-state]');
+        const list = this.container.querySelector('[data-bind="users-list"]') as HTMLElement;
+        const emptyState = this.container.querySelector('[data-bind="empty-state"]') as HTMLElement;
 
         if (!list || !emptyState) return;
 
         list.innerHTML = '';
 
         if (this.filteredUsers.length === 0) {
-            emptyState.removeAttribute('hidden');
+            emptyState.style.display = 'block';
             return;
         }
 
-        emptyState.setAttribute('hidden', 'true');
+        emptyState.style.display = 'none';
 
         this.filteredUsers.forEach(user => {
             const row = this.createUserRow(user);
@@ -75,15 +84,11 @@ export class UsersView extends Component {
             </td>
             <td>
                 <div class="user-actions">
-                    <button class="action-btn" data-action="edit-user" data-user-id="${user.id}" title="Editar usuário">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
-                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
-                        </svg>
+                    <button class="action-btn" data-action="edit-user" data-user-id="${user.id}" title="Editar usuário" ${isCurrentUser ? 'disabled' : ''}>
+                        <i class="material-icons-outlined">edit</i>
                     </button>
                     <button class="action-btn action-btn--danger" data-action="delete-user" data-user-id="${user.id}" title="Deletar usuário" ${isCurrentUser ? 'disabled' : ''}>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
-                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-                        </svg>
+                        <i class="material-icons-outlined">delete</i>
                     </button>
                 </div>
             </td>
@@ -92,8 +97,17 @@ export class UsersView extends Component {
         const editBtn = row.querySelector('[data-action="edit-user"]');
         const deleteBtn = row.querySelector('[data-action="delete-user"]');
 
-        editBtn?.addEventListener('click', () => this.openEditModal(user));
-        deleteBtn?.addEventListener('click', () => this.handleDeleteUser(user));
+        editBtn?.addEventListener('click', () => {
+            if (!isCurrentUser) {
+                this.openEditModal(user);
+            }
+        });
+
+        deleteBtn?.addEventListener('click', () => {
+            if (!isCurrentUser) {
+                this.handleDeleteUser(user);
+            }
+        });
 
         return row;
     }
@@ -113,99 +127,69 @@ export class UsersView extends Component {
             this.renderUsers();
         });
 
-        newUserBtn?.addEventListener('click', () => this.openCreateModal());
+        newUserBtn?.addEventListener('click', () => {
+            this.openCreateModal();
+        });
     }
 
     private openCreateModal(): void {
-        const form = new UserForm({
-            onSubmit: (user) => this.handleCreateUser(user),
-            onCancel: () => this.closeModal()
-        });
-
-        this.currentModal = new Modal({
-            title: 'Criar Novo Usuário',
-            content: form.render(),
-            onClose: () => {
-                this.currentModal = null;
+        const modal = new UserModal({
+            mode: 'create',
+            onSuccess: (user) => {
+                toast.success('Usuário criado com sucesso');
+                this.users.push(user);
+                this.filteredUsers = [...this.users];
+                this.renderUsers();
             }
         });
 
-        this.currentModal.open();
-
-        setTimeout(() => {
-            const modalElement = this.currentModal?.getElement();
-            if (modalElement) {
-                form.bindEvents(modalElement);
-            }
-        }, 0);
+        modal.show();
     }
 
     private openEditModal(user: User): void {
-        const form = new UserForm({
-            initialData: user,
-            onSubmit: (updatedData) => this.handleUpdateUser(user.id, updatedData),
-            onCancel: () => this.closeModal()
-        });
-
-        this.currentModal = new Modal({
-            title: 'Editar Usuário',
-            content: form.render(),
-            onClose: () => {
-                this.currentModal = null;
+        const modal = new UserModal({
+            mode: 'edit',
+            userId: user.id,
+            onSuccess: (updatedUser) => {
+                toast.success('Usuário atualizado com sucesso');
+                const index = this.users.findIndex(u => u.id === user.id);
+                if (index !== -1) {
+                    this.users[index] = updatedUser;
+                    this.filteredUsers = [...this.users];
+                    this.renderUsers();
+                }
             }
         });
 
-        this.currentModal.open();
-
-        setTimeout(() => {
-            const modalElement = this.currentModal?.getElement();
-            if (modalElement) {
-                form.bindEvents(modalElement);
-            }
-        }, 0);
+        modal.show();
     }
 
-    private async handleCreateUser(user: Partial<User>): Promise<void> {
-        try {
-            await UserService.create(user);
-            this.closeModal();
-            await this.reloadUsers();
-        } catch (error) {
-            console.error('Failed to create user', error);
-            alert('Erro ao criar usuário. Verifique os dados e tente novamente.');
-        }
-    }
-
-    private async handleUpdateUser(id: number, user: Partial<User>): Promise<void> {
-        try {
-            await UserService.update(id, user);
-            this.closeModal();
-            await this.reloadUsers();
-        } catch (error) {
-            console.error('Failed to update user', error);
-            alert('Erro ao atualizar usuário. Verifique os dados e tente novamente.');
-        }
-    }
-
-    private async handleDeleteUser(user: User): Promise<void> {
+    private handleDeleteUser(user: User): void {
         const currentUser = AuthService.user;
 
         if (currentUser?.id === user.id) {
-            alert('Você não pode deletar seu próprio usuário!');
+            toast.error('Você não pode deletar seu próprio usuário!');
             return;
         }
 
-        const confirmed = confirm(`Tem certeza que deseja deletar o usuário "${user.name}"?`);
+        const dialog = new ConfirmDialog({
+            title: 'Excluir Usuário',
+            message: `Tem certeza que deseja excluir o usuário "${user.name}"? Esta ação não pode ser desfeita.`,
+            confirmText: 'Excluir',
+            cancelText: 'Cancelar',
+            onConfirm: async () => {
+                try {
+                    await UserService.delete(user.id);
+                    toast.success('Usuário excluído com sucesso');
+                    await this.reloadUsers();
+                } catch (error) {
+                    console.error('Failed to delete user', error);
+                    toast.error('Erro ao deletar usuário. Tente novamente.');
+                }
+            }
+        });
 
-        if (!confirmed) return;
-
-        try {
-            await UserService.delete(user.id);
-            await this.reloadUsers();
-        } catch (error) {
-            console.error('Failed to delete user', error);
-            alert('Erro ao deletar usuário. Tente novamente.');
-        }
+        dialog.show();
     }
 
     private async reloadUsers(): Promise<void> {
@@ -215,12 +199,7 @@ export class UsersView extends Component {
             this.renderUsers();
         } catch (error) {
             console.error('Failed to reload users', error);
-        }
-    }
-
-    private closeModal(): void {
-        if (this.currentModal) {
-            this.currentModal.close();
+            toast.error('Erro ao recarregar usuários');
         }
     }
 

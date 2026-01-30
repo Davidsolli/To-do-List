@@ -1,57 +1,40 @@
-<div class="users-view">
-  <!-- Header -->
-  <header class="users-header">
-    <div class="users-header__content">
-      <div>
-        <h1 class="users-header__title">Gerenciamento de Usuários</h1>
-        <p class="users-header__subtitle">Visualize e gerencie todos os usuários do sistema</p>
-      </div>
-      <button class="btn btn--primary" data-action="new-user">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
-          <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-        </svg>
-        Novo Usuário
-      </button>
-    </div>
-  </header>
+<div class="users-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Gerenciamento de Usuários</h1>
+            <p class="text-secondary">Visualize e gerencie todos os usuários do sistema</p>
+        </div>
+        <div class="header-actions">
+            {{btn_new_user}}
+        </div>
+    </header>
 
-  <!-- Search Bar -->
-  <div class="search-section">
-    <div class="search-box">
-      <svg class="search-box__icon" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
-        <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
-      </svg>
-      <input
-        type="text"
-        class="search-box__input"
-        placeholder="Buscar por nome ou email..."
-        data-action="search"
-      />
+    <div class="search-section">
+        <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por nome ou email..."
+            data-action="search"
+        />
     </div>
-  </div>
 
-  <!-- Users Table -->
-  <div class="users-table-container">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Função</th>
-          <th class="text-right">Ações</th>
-        </tr>
-      </thead>
-      <tbody data-users-list>
-        <!-- Users will be inserted here -->
-      </tbody>
-    </table>
-
-    <!-- Empty State -->
-    <div class="empty-state" data-empty-state hidden>
-      <svg class="empty-state__icon" xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 -960 960 960" width="64" fill="currentColor">
-        <path d="M0-240v-63q0-43 44-70t116-27q13 0 25 .5t23 2.5q-14 21-21 44t-7 48v65H0Zm240 0v-65q0-32 17.5-58.5T307-410q32-20 76.5-30t96.5-10q53 0 97.5 10t76.5 30q32 20 49 46.5t17 58.5v65H240Zm540 0v-65q0-26-6.5-49T754-397q11-2 22.5-2.5t23.5-.5q72 0 116 26.5t44 70.5v63H780Zm-455-80h311q-10-20-55.5-35T480-370q-55 0-100.5 15T325-320ZM160-440q-33 0-56.5-23.5T80-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T160-440Zm640 0q-33 0-56.5-23.5T720-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T800-440Zm-320-40q-50 0-85-35t-35-85q0-51 35-85.5t85-34.5q51 0 85.5 34.5T600-600q0 50-34.5 85T480-480Z"/>
-      </svg>
-      <p class="empty-state__message">Nenhum usuário encontrado</p>
+    <div class="users-table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Função</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody data-bind="users-list">
+                <!-- Users will be inserted here -->
+            </tbody>
+        </table>
     </div>
-  </div>
+
+    <div class="empty-state-msg" data-bind="empty-state" style="display: none;">
+        Nenhum usuário encontrado no sistema.
+    </div>
 </div>

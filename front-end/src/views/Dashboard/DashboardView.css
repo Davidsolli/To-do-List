@@ -2,7 +2,14 @@
     padding: 2rem;
     max-width: 100%;
     margin: 0 auto;
-    overflow-x: hidden; /* Evita scroll horizontal na página toda */
+    overflow-x: hidden;
+}
+
+/* Título da seção */
+.section-title,
+.section-header h3 {
+    color: var(--text-main);
+    font-weight: 700;
 }
 
 /* --- Header Simplificado (Requisito 4) --- */
@@ -56,7 +63,6 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    padding-left: 0.5rem; /* Um pequeno ajuste para alinhar com a borda do card abaixo */
 }
 
 /* --- NOVO: Estilo de Card apenas para o Container da Tabela --- */
@@ -76,9 +82,105 @@
 .badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
 
 /* Cores das Badges */
-.badge--high { background-color: var(--priority-high-bg); color: var(--priority-high-text); }
-.badge--medium { background-color: var(--priority-mid-bg); color: var(--priority-mid-text); }
-.badge--low { background-color: var(--priority-low-bg); color: var(--priority-low-text); }
-.badge--pending { background-color: var(--status-todo-bg); color: var(--status-todo-text); }
-.badge--doing { background-color: var(--status-doing-bg); color: var(--status-doing-text); }
-.badge--done { background-color: var(--status-done-bg); color: var(--status-done-text); }
+.badge--high {
+    background-color: var(--priority-high-bg);
+    color: var(--priority-high-text);
+}
+
+.badge--medium {
+    background-color: var(--priority-mid-bg);
+    color: var(--priority-mid-text);
+}
+
+.badge--low {
+    background-color: var(--priority-low-bg);
+    color: var(--priority-low-text);
+}
+
+.badge--pending {
+    background-color: var(--status-todo-bg);
+    color: var(--status-todo-text);
+}
+
+.badge--doing {
+    background-color: var(--status-doing-bg);
+    color: var(--status-doing-text);
+}
+
+.badge--done {
+    background-color: var(--status-done-bg);
+    color: var(--status-done-text);
+}
+
+/* Dark mode adjustments for better contrast */
+.dark-mode #tasks-container {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Manter space-between no section-header */
+    .section-header {
+        width: 100%;
+    }
+
+    .section-title {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .projects-section .header-actions {
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 40px;
+        display: flex;
+    }
+
+    /* Botão de ver todos os projetos - mostrar apenas ícone */
+    .projects-section .header-actions .btn[data-action="go-projects"] {
+        padding: 0.625rem;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .projects-section .header-actions .btn[data-action="go-projects"] .btn-text {
+        display: none;
+    }
+
+    .projects-section .header-actions .btn[data-action="go-projects"] i {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    /* Ajustes para o carrossel */
+    .projects-carousel {
+        gap: 1rem;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .project-card {
+        min-width: 280px;
+    }
+
+    /* Tabela de tarefas com scroll horizontal */
+    #tasks-container {
+        overflow-x: auto;
+    }
+}

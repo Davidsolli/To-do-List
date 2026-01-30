@@ -75,6 +75,7 @@ export class DashboardView extends Component {
             projectId,
             onSuccess: () => {
                 this.loadRecentProjects();
+                app.sidebar?.refreshProjectsList();
             }
         });
 
@@ -91,6 +92,7 @@ export class DashboardView extends Component {
                 try {
                     await ProjectService.deleteProject(projectId);
                     this.loadRecentProjects();
+                    app.sidebar?.refreshProjectsList();
                 } catch (error) {
                     console.error('Erro ao excluir projeto:', error);
                 }

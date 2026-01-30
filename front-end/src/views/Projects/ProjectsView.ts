@@ -7,6 +7,7 @@ import { ProjectService } from '../../services/ProjectService';
 import { ProjectModal } from '../../components/ProjectModal/ProjectModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
 import { ContextMenu } from '../../components/ContextMenu/ContextMenu';
+import { Button } from '../../components/Button/Button';
 import { app } from '../../App';
 
 export class ProjectsView extends Component {
@@ -14,7 +15,14 @@ export class ProjectsView extends Component {
     private filteredProjects: Project[] = [];
 
     getTemplate(): string {
-        return template;
+        const btnNewProject = new Button({
+            text: 'Novo Projeto',
+            variant: 'primary',
+            action: 'new-project',
+            icon: 'fa-solid fa-plus'
+        });
+
+        return template.replace('{{btn_new_project}}', btnNewProject.render());
     }
 
     protected async afterRender(): Promise<void> {
@@ -35,19 +43,21 @@ export class ProjectsView extends Component {
     }
 
     private renderProjects(): void {
-        const list = this.container.querySelector('[data-bind="projects-list"]');
-        const emptyState = this.container.querySelector('[data-bind="empty-state"]');
+        const list = this.container.querySelector('[data-bind="projects-list"]') as HTMLElement;
+        const emptyState = this.container.querySelector('[data-bind="empty-state"]') as HTMLElement;
 
         if (!list || !emptyState) return;
 
         list.innerHTML = '';
 
         if (this.filteredProjects.length === 0) {
-            emptyState.removeAttribute('hidden');
+            list.style.display = 'none';
+            emptyState.style.display = 'block';
             return;
         }
 
-        emptyState.setAttribute('hidden', 'true');
+        list.style.display = 'grid';
+        emptyState.style.display = 'none';
 
         this.filteredProjects.forEach(project => {
             const card = new ProjectCard(project);
@@ -102,10 +112,8 @@ export class ProjectsView extends Component {
         });
 
         const newProjectBtn = this.container.querySelector('[data-action="new-project"]');
-        const emptyNewBtn = this.container.querySelector('[data-action="empty-new-project"]');
 
         newProjectBtn?.addEventListener('click', () => this.openCreateModal());
-        emptyNewBtn?.addEventListener('click', () => this.openCreateModal());
     }
 
     private openCreateModal(): void {
@@ -115,6 +123,7 @@ export class ProjectsView extends Component {
                 this.projects.push(project);
                 this.filteredProjects = this.projects;
                 this.renderProjects();
+                app.sidebar?.refreshProjectsList();
             }
         });
 
@@ -131,6 +140,7 @@ export class ProjectsView extends Component {
                     this.projects[index] = updatedProject;
                     this.filteredProjects = this.projects;
                     this.renderProjects();
+                    app.sidebar?.refreshProjectsList();
                 }
             }
         });
@@ -150,6 +160,7 @@ export class ProjectsView extends Component {
                     this.projects = this.projects.filter(p => p.id !== project.id);
                     this.filteredProjects = this.projects;
                     this.renderProjects();
+                    app.sidebar?.refreshProjectsList();
                 } catch (error) {
                     console.error('Failed to delete project', error);
                 }

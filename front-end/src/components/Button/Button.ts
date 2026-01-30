@@ -4,7 +4,7 @@ import './Button.css';
 interface ButtonProps {
     text: string;
     type?: 'button' | 'submit';
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
     fullWidth?: boolean;
     action?: string; // Para o data-action
     disabled?: boolean;

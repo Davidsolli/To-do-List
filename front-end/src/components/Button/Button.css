@@ -43,3 +43,16 @@
 .btn--full { width: 100%; }
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn--link {
+    background: transparent;
+    color: var(--color-primary-dark-text);
+    padding: 0;
+    font-weight: 600;
+    min-height: auto;
+}
+.btn--link:hover {
+    text-decoration: underline;
+    background: transparent;
+    filter: none;
+}

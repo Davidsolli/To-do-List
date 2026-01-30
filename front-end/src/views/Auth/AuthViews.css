@@ -75,6 +75,10 @@
   max-width: 400px;
 }
 
+.auth-form-content .form-group:last-of-type{
+  margin-bottom: 1rem;
+}
+
 .auth-form-content h2 {
   margin-bottom: 0.5rem;
 }

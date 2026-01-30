@@ -1,0 +1,153 @@
+.custom-select {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.875rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 42px;
+}
+
+.select-trigger:hover {
+    border-color: var(--text-secondary);
+}
+
+.custom-select.active .select-trigger {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
+}
+
+.select-value {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    flex: 1;
+}
+
+.select-value.placeholder {
+    color: var(--text-tertiary);
+}
+
+.select-arrow {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+    margin-left: 0.5rem;
+}
+
+.custom-select.active .select-arrow {
+    transform: rotate(180deg);
+    color: var(--color-primary);
+}
+
+.select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    display: none;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+    max-height: 250px;
+    overflow: hidden;
+}
+
+.custom-select.active .select-dropdown {
+    opacity: 1;
+    display: block;
+    transform: translateY(0);
+}
+
+.select-options {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 0.25rem 0;
+}
+
+/* Scrollbar customizada */
+.select-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.select-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.select-options::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.select-options::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+.select-option {
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.select-option:hover {
+    background-color: var(--bg-page);
+}
+
+.select-option.selected {
+    background-color: var(--color-primary);
+    color: var(--color-primary-btn-text);
+    font-weight: 600;
+}
+
+.select-option.selected::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.75rem;
+    color: var(--color-primary-btn-text);
+}
+
+/* Light mode adjustments - force white background to match other inputs */
+:root:not(.dark-mode) .select-trigger,
+:root:not(.dark-mode) .select-dropdown {
+    background-color: #FFFFFF;
+}
+
+/* Dark mode adjustments */
+.dark-mode .select-dropdown {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .select-option.selected {
+    background-color: var(--color-primary);
+}
+
+/* Disabled state */
+.custom-select.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.custom-select.disabled .select-trigger {
+    cursor: not-allowed;
+    background-color: var(--bg-page);
+}

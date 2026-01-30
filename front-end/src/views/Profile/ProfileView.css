@@ -117,7 +117,7 @@
 .avatar-initial {
     font-size: 3rem;
     font-weight: 700;
-    color: var(--color-primary-dark-text);
+    color: var(--color-icon-text);
 }
 
 .avatar-upload-btn {

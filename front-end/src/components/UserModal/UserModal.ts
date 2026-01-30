@@ -3,6 +3,7 @@ import './UserModal.css';
 import { UserService } from '../../services/UserService';
 import { User } from '../../models/User';
 import { Validator } from '../../utils/Validator';
+import { Select } from '../Select/Select';
 
 export interface UserModalOptions {
     mode: 'create' | 'edit';
@@ -16,6 +17,7 @@ export class UserModal {
     private options: UserModalOptions;
     private user: User | null = null;
     private userService: UserService;
+    private roleSelect: Select | null = null;
 
     constructor(options: UserModalOptions) {
         this.options = options;
@@ -56,6 +58,13 @@ export class UserModal {
         // Bind events
         this.bindEvents();
 
+        if (this.overlay && this.roleSelect) {
+            const selectEl = this.overlay.querySelector('[data-name="role"]');
+            if (selectEl) {
+                this.roleSelect.bindEvents(selectEl as HTMLElement);
+            }
+        }
+
         // Prevent body scroll
         document.body.style.overflow = 'hidden';
 
@@ -68,9 +77,18 @@ export class UserModal {
         const title = this.options.mode === 'create' ? 'Novo Usuário' : 'Editar Usuário';
         const submitText = this.options.mode === 'create' ? 'Criar' : 'Salvar';
 
+        this.roleSelect = new Select({
+            name: 'role',
+            options: [
+                { value: 'user', label: 'Usuário', selected: true },
+                { value: 'admin', label: 'Admin' }
+            ]
+        });
+
         return template
             .replace('{{title}}', title)
-            .replace('{{submitText}}', submitText);
+            .replace('{{submitText}}', submitText)
+            .replace('{{role_select}}', this.roleSelect.render());
     }
 
     private populateForm(): void {
@@ -86,7 +104,7 @@ export class UserModal {
 
         if (nameInput) nameInput.value = this.user.name || '';
         if (emailInput) emailInput.value = this.user.email || '';
-        if (roleSelect) roleSelect.value = this.user.role || 'user';
+        if (this.roleSelect) this.roleSelect.setValue(this.user.role || 'user');
 
         // Ajustar campo de senha no modo edit (opcional)
         if (passwordSection && passwordLabel && passwordInput && passwordHint) {
@@ -135,6 +153,29 @@ export class UserModal {
 
         // Close on ESC key
         document.addEventListener('keydown', this.handleEscKey);
+
+        // Toggle Password Visibility
+        const toggleBtn = this.overlay.querySelector('[data-action="toggle-password"]');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = (toggleBtn as HTMLElement).dataset.target;
+                const input = this.overlay?.querySelector(`#${targetId}`) as HTMLInputElement;
+                const icon = toggleBtn.querySelector('i');
+
+                if (input && icon) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                }
+            });
+        }
     }
 
     private async handleSubmit(): Promise<void> {
@@ -147,7 +188,7 @@ export class UserModal {
 
         const name = nameInput?.value.trim();
         const email = emailInput?.value.trim();
-        const role = roleSelect?.value as 'admin' | 'user';
+        const role = this.roleSelect?.getValue() as 'admin' | 'user';
         const password = passwordInput?.value;
 
         // Validation

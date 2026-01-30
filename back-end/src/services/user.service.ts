@@ -5,6 +5,32 @@ import bcrypt from "bcrypt";
 export default class UserService {
   private readonly SALT_ROUNDS = process.env.SALT || 10;
 
+  async create(userData: { name: string; email: string; password: string; role?: string }): Promise<UserResponseDTO> {
+    // Verificar se email já existe
+    const existingUser = UserRepository.findByEmail(userData.email);
+    if (existingUser) {
+      throw new Error("E-mail já cadastrado");
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(userData.password, this.SALT_ROUNDS);
+
+    // Criar usuário
+    const userId = UserRepository.create({
+      name: userData.name,
+      email: userData.email,
+      password: hashedPassword,
+      role: userData.role || 'user'
+    });
+
+    const newUser = UserRepository.findById(userId);
+    if (!newUser) {
+      throw new Error("Erro ao criar usuário");
+    }
+
+    return newUser;
+  }
+
   async getById(id: number): Promise<UserResponseDTO> {
     const user = UserRepository.findById(id);
 

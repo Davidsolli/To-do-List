@@ -77,6 +77,7 @@
 
 @media (prefers-color-scheme: dark) {
   .dark-mode {
+    /* Cores de texto e fundo */
     --text-main: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-tertiary: #94a3b8;
@@ -84,5 +85,21 @@
     --bg-surface: #0f172a;
     --border-color: #334155;
     --bg-active-item: rgba(19, 236, 91, 0.15);
+
+    /* Ajustes de prioridades para dark mode */
+    --priority-high-bg: rgba(239, 68, 68, 0.2);
+    --priority-high-text: #fca5a5;
+    --priority-mid-bg: rgba(245, 158, 11, 0.2);
+    --priority-mid-text: #fcd34d;
+    --priority-low-bg: rgba(34, 197, 94, 0.2);
+    --priority-low-text: #86efac;
+
+    /* Ajustes de status para dark mode */
+    --status-doing-bg: rgba(59, 130, 246, 0.2);
+    --status-doing-text: #93c5fd;
+    --status-todo-bg: rgba(148, 163, 184, 0.2);
+    --status-todo-text: #cbd5e1;
+    --status-done-bg: rgba(34, 197, 94, 0.2);
+    --status-done-text: #86efac;
   }
 }

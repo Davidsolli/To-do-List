@@ -29,7 +29,14 @@ export class UserService {
     }
 
     /**
-     * Buscar usuário por ID
+     * Buscar usuário por ID (método estático do HEAD - necessário para Kanban)
+     */
+    static async getById(id: number): Promise<User> {
+        return await ApiService.get<User>(`users/${id}`);
+    }
+
+    /**
+     * Buscar usuário por ID (método de instância do develop)
      */
     async getById(userId: number): Promise<User> {
         return await ApiService.get<User>(`${this.endpoint}/${userId}`);

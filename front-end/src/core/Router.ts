@@ -4,13 +4,19 @@ import { Sidebar } from '../components/Sidebar';
 
 
 // Tipo que define uma Classe de Componente (o construtor)
-export type ViewConstructor = new (containerId: string) => Component;
+export type ViewConstructor = new (containerId: string, params?: Record<string, string>) => Component;
 
 export interface RouteDefinition {
     path: string;
     view: ViewConstructor;
     protected?: boolean; // Novo flag
     roles?: string[]; // Role required
+}
+
+// Interface para resultado do matching de rota
+interface RouteMatch {
+    route: RouteDefinition;
+    params: Record<string, string>;
 }
 
 
@@ -43,6 +49,37 @@ export class Router {
     private sessionChecked = false;
 
     /**
+     * Verifica se um path corresponde a um padrão de rota e extrai parâmetros
+     */
+    private matchRoute(pattern: string, path: string): RouteMatch | null {
+        // Escapar caracteres especiais e converter :param em grupo de captura
+        const regexPattern = pattern
+            .replace(/\//g, '\\/') // Escapar barras
+            .replace(/:([^\/]+)/g, '([^/]+)'); // Converter :param em grupo de captura
+
+        const regex = new RegExp(`^${regexPattern}$`);
+        const match = path.match(regex);
+
+        if (!match) return null;
+
+        // Extrair nomes dos parâmetros
+        const paramNames: string[] = [];
+        const paramRegex = /:([^\/]+)/g;
+        let paramMatch;
+        while ((paramMatch = paramRegex.exec(pattern)) !== null) {
+            paramNames.push(paramMatch[1]);
+        }
+
+        // Construir objeto de parâmetros
+        const params: Record<string, string> = {};
+        paramNames.forEach((name, index) => {
+            params[name] = match[index + 1];
+        });
+
+        return { route: this.routes.find(r => r.path === pattern)!, params };
+    }
+
+    /**
      * Lógica principal: Descobre a rota atual e renderiza a View correspondente
      */
     public async handleRoute(): Promise<void> {
@@ -54,8 +91,24 @@ export class Router {
             this.sessionChecked = true;
         }
 
-        // Procura a rota exata ou usa a primeira como fallback (geralmente Login ou Home)
-        const route = this.routes.find((r) => r.path === path) || this.routes[0];
+        // Procura a rota (com suporte a parâmetros dinâmicos)
+        let routeMatch: RouteMatch | null = null;
+
+        for (const routeDef of this.routes) {
+            const match = this.matchRoute(routeDef.path, path);
+            if (match) {
+                routeMatch = match;
+                break;
+            }
+        }
+
+        // Se não encontrou, usa a primeira rota como fallback
+        if (!routeMatch) {
+            routeMatch = { route: this.routes[0], params: {} };
+        }
+
+        const route = routeMatch.route;
+        const params = routeMatch.params;
 
         if (route) {
             const isAuth = AuthService.isAuthenticated();
@@ -90,8 +143,8 @@ export class Router {
                 this.removeSidebar();
             }
 
-            // 3. Instancia a nova View
-            const viewInstance = new route.view(this.rootId);
+            // 3. Instancia a nova View passando os parâmetros
+            const viewInstance = new route.view(this.rootId, params);
 
             // 4. Renderiza
             viewInstance.render();

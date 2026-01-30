@@ -6,12 +6,15 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 2rem 1rem;
 }
 
 .modal-overlay.modal-overlay--visible {
@@ -25,10 +28,11 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    margin: auto;
+    overflow: visible; /* IMPORTANTE: Para Select dropdown */
     transform: scale(0.9) translateY(-20px);
     transition: transform 0.2s;
+    position: relative;
 }
 
 .modal-overlay--visible .modal {
@@ -78,10 +82,10 @@
 }
 
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
 
-.form-group:last-child {
+.form-group:last-of-type {
     margin-bottom: 0;
 }
 
@@ -112,17 +116,53 @@
     box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
 }
 
+/* --- Input Wrappers & Toggles (Standardization) --- */
+.form-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.form-input--has-toggle {
+    padding-right: 44px;
+}
+
+.input-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.input-toggle-btn:hover {
+    color: var(--text-main);
+}
+
+
 select.form-input {
     cursor: pointer;
 }
 
 .form-error {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
     background-color: #fee2e2;
     color: #991b1b;
     border-radius: 6px;
     font-size: 0.875rem;
+    display: none;
+}
+
+.form-error:not(:empty) {
+    display: block;
 }
 
 .modal__footer {

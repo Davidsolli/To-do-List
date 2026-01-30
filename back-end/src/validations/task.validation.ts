@@ -1,5 +1,7 @@
+import { TaskPriority, TaskStatus } from "../enums/task.enums";
 import { TaskCreateDTO } from "../interfaces/task";
 
+// Mantendo versão do HEAD que usa enums (mais type-safe)
 export class TaskValidation {
   static validateTaskCreation(taskData: TaskCreateDTO) {
     this.validateTitle(taskData.title);
@@ -34,17 +36,17 @@ export class TaskValidation {
 
   static validatePriority(priority?: string) {
     if (!priority) return true;
-    const validPriorities = ["low", "medium", "high"];
+    const validPriorities = Object.values(TaskPriority) as string[];
     if (!validPriorities.includes(priority.toLowerCase())) {
-      throw new Error("Prioridade deve ser low, medium ou high");
+      throw new Error(`Prioridade deve ser uma das seguintes: ${validPriorities.join(", ")}`);
     }
   }
 
   static validateStatus(status?: string) {
     if (!status) return true;
-    const validStatuses = ["pending", "in_progress", "completed"];
+    const validStatuses = Object.values(TaskStatus) as string[];
     if (!validStatuses.includes(status.toLowerCase())) {
-      throw new Error("Status deve ser pending, in_progress ou completed");
+      throw new Error(`Status deve ser um dos seguintes: ${validStatuses.join(", ")}`);
     }
   }
 

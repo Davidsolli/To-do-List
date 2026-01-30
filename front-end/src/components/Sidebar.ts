@@ -108,13 +108,7 @@ export class Sidebar extends Component {
           // Se for o toggle de projetos, verificar se foi na setinha
           // Isso permite expandir o menu sem fechar a sidebar
           if (item.getAttribute('data-action') === 'toggle-projects') {
-            const target = e.target as HTMLElement;
-            // Apenas a setinha mantém o menu aberto (para expandir)
-            // O resto (texto/ícone) deve navegar e fechar o menu
-            if (target.classList.contains('sidebar-chevron-container') ||
-              target.closest('.sidebar-chevron-container')) {
-              return;
-            }
+            return;
           }
 
           sidebar?.classList.remove('sidebar-open');
@@ -213,39 +207,44 @@ export class Sidebar extends Component {
   }
 
   /**
-   * Alterna a expansão/colapso da lista de projetos OU navega para render
+   * Alterna a expansão/colapso da lista de projetos OU navega para /projetos
    */
   private handleToggleProjects(e: Event): void {
     e.preventDefault();
 
     const target = e.target as HTMLElement;
-    const isChevron = target.classList.contains('sidebar-chevron-container') || !!target.closest('.sidebar-chevron-container');
-
-    // Se NÃO clicou na setinha, navegar para projetos
-    if (!isChevron) {
-      app.navigate('/projetos');
-      // Opcional: Expandir ao entrar na rota? Por padrão, o comportamento de navegar não expande obrigatoriamente, 
-      // mas se o usuário quiser ver os projetos, ele clicaria na seta.
-      // Manteremos apenas a navegação conforme pedido.
-      return;
-    }
-
-    // Lógica de toggle (apenas se clicou na setinha)
     const projectsBtn = e.currentTarget as HTMLElement;
     const projectsList = this.container.querySelector('#projects-list') as HTMLElement;
     const chevron = projectsBtn.querySelector('.sidebar-chevron') as HTMLElement;
 
-    this.isProjectsExpanded = !this.isProjectsExpanded;
+    // Se clicou na seta (chevron ou seu container), apenas toggle
+    const isChevronClick = target.classList.contains('sidebar-chevron') ||
+      target.classList.contains('sidebar-chevron-container') ||
+      target.closest('.sidebar-chevron-container');
 
-    if (this.isProjectsExpanded) {
-      projectsList.style.display = 'block';
-      chevron.textContent = 'expand_less';
-      // projectsBtn.classList.add('sidebar-item-active'); // Não adicionamos active aqui pois a rota define o active
-      this.populateProjectsList();
+    if (isChevronClick) {
+      // Apenas expande/colapsa
+      this.isProjectsExpanded = !this.isProjectsExpanded;
+
+      if (this.isProjectsExpanded) {
+        projectsList.style.display = 'block';
+        chevron.textContent = 'expand_less';
+        this.populateProjectsList();
+      } else {
+        projectsList.style.display = 'none';
+        chevron.textContent = 'expand_more';
+      }
     } else {
-      projectsList.style.display = 'none';
-      chevron.textContent = 'expand_more';
-      // projectsBtn.classList.remove('sidebar-item-active');
+      // Clicou no texto/ícone - navega para /projetos
+      app.navigate('/projetos');
+
+      // Fechar sidebar no mobile
+      if (window.innerWidth < 1024) {
+        const sidebar = this.container.querySelector('#sidebar');
+        const overlay = this.container.querySelector('#sidebarOverlay');
+        sidebar?.classList.remove('sidebar-open');
+        overlay?.classList.remove('sidebar-overlay-active');
+      }
     }
   }
 
@@ -290,7 +289,14 @@ export class Sidebar extends Component {
           item.addEventListener('click', (e) => {
             e.preventDefault();
             const projectId = (e.currentTarget as HTMLElement).getAttribute('data-project-id');
-            app.navigate(`/projetos/${projectId}`);
+            console.log('[Sidebar] Clicked project. ID:', projectId);
+            if (projectId) {
+              const navUrl = `/projetos/${projectId}`;
+              console.log('[Sidebar] Navigating to:', navUrl);
+              app.navigate(navUrl);
+            } else {
+              console.error('[Sidebar] Project ID missing in click!');
+            }
           });
         });
       }
@@ -374,13 +380,61 @@ export class Sidebar extends Component {
    */
   public setActiveMenuItem(route: string): void {
     const allItems = this.container.querySelectorAll('[data-action="menu-item"], [data-action="toggle-projects"]');
+    let foundMainItem = false;
+
     allItems.forEach(item => {
       const itemRoute = item.getAttribute('data-route');
       if (itemRoute === route) {
         item.classList.add('sidebar-item-active');
+        foundMainItem = true;
       } else {
         item.classList.remove('sidebar-item-active');
       }
     });
+
+    // Se não encontrou item principal e é uma rota de projeto
+    if (!foundMainItem && route.startsWith('projetos/')) {
+      const projectId = route.split('/')[1];
+      if (projectId) {
+        this.expandAndHighlightProject(projectId);
+      }
+    }
+  }
+
+  /**
+   * Expande a lista de projetos e destaca o projeto atual
+   */
+  private async expandAndHighlightProject(projectId: string): Promise<void> {
+    // 1. Garantir que a lista esteja expandida e carregada
+    if (!this.isProjectsExpanded) {
+      this.isProjectsExpanded = true;
+
+      const projectsList = this.container.querySelector('#projects-list') as HTMLElement;
+      const chevron = this.container.querySelector('.sidebar-chevron') as HTMLElement;
+
+      if (projectsList) projectsList.style.display = 'block';
+      if (chevron) chevron.textContent = 'expand_less';
+
+      // Carrega a lista se necessário
+      await this.populateProjectsList();
+    }
+
+    // 2. Destacar o item do projeto
+    const projectItems = this.container.querySelectorAll('.sidebar-project-item');
+    projectItems.forEach(item => {
+      const id = item.getAttribute('data-project-id');
+      if (id === projectId) {
+        item.classList.add('sidebar-project-item-active');
+      } else {
+        item.classList.remove('sidebar-project-item-active');
+      }
+    });
+
+    // 3. Destacar ou manter estilo no pai "Projetos"
+    // Opcional: manter o menu "Projetos" com estilo ativo também
+    const projectsToggle = this.container.querySelector('[data-action="toggle-projects"]');
+    if (projectsToggle) {
+      projectsToggle.classList.add('sidebar-item-active');
+    }
   }
 }

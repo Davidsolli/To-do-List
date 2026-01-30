@@ -5,6 +5,8 @@
   --color-primary: #13EC5B;           /* Botões, Logo */
   --color-primary-light: #A1E7A8;     /* Hover, Detalhes */
   --color-primary-dark-text: #0D7A2D; /* Textos em destaque */
+  --color-primary-btn-text: #1E1F24;  /* Texto do botão primário */
+  --color-icon-text: #0D7A2D;         /* Texto de ícones/avatars (não muda no dark) */
 
 
   /* =========================================
@@ -85,6 +87,11 @@
     --bg-surface: #0f172a;
     --border-color: #334155;
     --bg-active-item: rgba(19, 236, 91, 0.15);
+
+    /* Cores da marca - ajustadas para dark mode */
+    --color-primary-dark-text: #13EC5B; /* Mais brilhante no dark mode para contraste */
+    --color-primary-btn-text: #1E1F24; /* Mantém texto escuro no botão primário */
+    /* --color-icon-text NÃO é redefinido - mantém #0D7A2D em ambos os modos */
 
     /* Ajustes de prioridades para dark mode */
     --priority-high-bg: rgba(239, 68, 68, 0.2);

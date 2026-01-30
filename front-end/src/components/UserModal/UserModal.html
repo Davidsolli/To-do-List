@@ -10,50 +10,31 @@
         <form class="modal__body" data-form="user">
             <div class="form-group">
                 <label for="user-name" class="form-label">Nome Completo *</label>
-                <input
-                    type="text"
-                    id="user-name"
-                    class="form-input"
-                    placeholder="Digite o nome completo"
-                    data-bind="name"
-                    required
-                />
+                <input type="text" id="user-name" class="form-input" placeholder="Digite o nome completo"
+                    data-bind="name" required />
             </div>
 
             <div class="form-group">
                 <label for="user-email" class="form-label">E-mail *</label>
-                <input
-                    type="email"
-                    id="user-email"
-                    class="form-input"
-                    placeholder="Digite o e-mail"
-                    data-bind="email"
-                    required
-                />
+                <input type="email" id="user-email" class="form-input" placeholder="Digite o e-mail" data-bind="email"
+                    required />
             </div>
 
             <div class="form-group">
                 <label for="user-role" class="form-label">Função *</label>
-                <select
-                    id="user-role"
-                    class="form-input"
-                    data-bind="role"
-                    required
-                >
-                    <option value="user">Usuário</option>
-                    <option value="admin">Admin</option>
-                </select>
+                {{role_select}}
             </div>
 
             <div class="form-group" data-section="password-fields">
                 <label for="user-password" class="form-label">Senha *</label>
-                <input
-                    type="password"
-                    id="user-password"
-                    class="form-input"
-                    placeholder="Digite a senha (mín. 8 caracteres)"
-                    data-bind="password"
-                />
+                <div class="form-input-wrapper">
+                    <input type="password" id="user-password" class="form-input form-input--has-toggle"
+                        placeholder="Digite a senha (mín. 8 caracteres)" data-bind="password" />
+                    <button type="button" class="input-toggle-btn" data-action="toggle-password"
+                        data-target="user-password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <small class="text-tertiary">Mínimo 8 caracteres com letras, números e símbolos</small>
             </div>
 

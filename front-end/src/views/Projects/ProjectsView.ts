@@ -98,7 +98,10 @@ export class ProjectsView extends Component {
     }
 
     private bindEvents(): void {
-        const searchInput = this.container.querySelector<HTMLInputElement>('[data-action="search"]');
+        const view = this.container.querySelector('.projects-container');
+        if (!view) return;
+
+        const searchInput = view.querySelector<HTMLInputElement>('[data-action="search"]');
 
         searchInput?.addEventListener('input', () => {
             const value = searchInput.value.toLowerCase();
@@ -111,7 +114,7 @@ export class ProjectsView extends Component {
             this.renderProjects();
         });
 
-        const newProjectBtn = this.container.querySelector('[data-action="new-project"]');
+        const newProjectBtn = view.querySelector('[data-action="new-project"]');
 
         newProjectBtn?.addEventListener('click', () => this.openCreateModal());
     }

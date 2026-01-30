@@ -25,24 +25,32 @@ body {
 
 
 /* --- Tipografia Global --- */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   font-weight: 700;
   color: var(--text-main);
 }
 
 h1 {
-  font-size: 2.5rem; /* 40px */
+  font-size: 2.5rem;
+  /* 40px */
   line-height: 1.2;
 }
 
 h2 {
-  font-size: 2rem; /* 32px */
+  font-size: 2rem;
+  /* 32px */
   line-height: 1.3;
 }
 
 h3 {
-  font-size: 1.5rem; /* 24px */
+  font-size: 1.5rem;
+  /* 24px */
   line-height: 1.4;
 }
 
@@ -59,7 +67,8 @@ a {
 }
 
 .link {
-  color: var(--color-primary-dark-text, #0056b3); /* Fallback se var nao existir */
+  color: var(--color-primary-dark-text, #0056b3);
+  /* Fallback se var nao existir */
   font-weight: 600;
   transition: color 0.2s ease;
 }
@@ -83,4 +92,67 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* --- Estados de Carregamento (Loading States) --- */
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  width: 100%;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--bg-surface);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state-msg {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  background: var(--bg-surface);
+  border-radius: 12px;
+  border: 2px dashed var(--border-color);
+  width: 100%;
+}
+
+/* --- Global Scrollbar Styling --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+*::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
 }

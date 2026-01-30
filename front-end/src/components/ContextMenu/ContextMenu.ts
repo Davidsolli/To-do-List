@@ -28,7 +28,7 @@ export class ContextMenu {
         // Se já existe um menu aberto para o mesmo ID, apenas fecha (toggle)
         if (ContextMenu.currentOpenMenu &&
             ContextMenu.currentOpenMenu.menuId === this.menuId) {
-            ContextMenu.currentOpenMenu.hide();
+            ContextMenu.hideAll();
             return;
         }
 
@@ -46,19 +46,19 @@ export class ContextMenu {
 
         // Show menu with animation
         requestAnimationFrame(() => {
-            this.element?.classList.add('context-menu--visible');
+            if (this.element) {
+                this.element.classList.add('context-menu--visible');
+            }
         });
 
-        // Bind events
+        // Bind internal events
         this.bindEvents();
 
         // Marcar como menu atualmente aberto
         ContextMenu.currentOpenMenu = this;
 
-        // Close menu when clicking outside
-        setTimeout(() => {
-            document.addEventListener('click', this.handleClickOutside);
-        }, 0);
+        // Inicia a escuta global para fechar ao clicar fora, se ainda não estiver ativa
+        ContextMenu.initGlobalClickListener();
     }
 
     private positionMenu(triggerElement: HTMLElement): void {
@@ -66,7 +66,6 @@ export class ContextMenu {
 
         const rect = triggerElement.getBoundingClientRect();
         const menuWidth = 160;
-        const menuHeight = this.element.offsetHeight;
 
         let top = rect.bottom + 8;
         let left = rect.left;
@@ -74,11 +73,6 @@ export class ContextMenu {
         // Adjust if menu would go off-screen horizontally
         if (left + menuWidth > window.innerWidth) {
             left = rect.right - menuWidth;
-        }
-
-        // Adjust if menu would go off-screen vertically
-        if (top + menuHeight > window.innerHeight) {
-            top = rect.top - menuHeight - 8;
         }
 
         this.element.style.top = `${top}px`;
@@ -91,42 +85,72 @@ export class ContextMenu {
         const editBtn = this.element.querySelector('[data-action="edit"]');
         const deleteBtn = this.element.querySelector('[data-action="delete"]');
 
-        editBtn?.addEventListener('click', () => {
+        editBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
             this.options.onEdit?.(this.options.id);
             this.hide();
         });
 
-        deleteBtn?.addEventListener('click', () => {
+        deleteBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
             this.options.onDelete?.(this.options.id);
             this.hide();
         });
     }
 
-    private handleClickOutside = (e: Event): void => {
-        if (this.element && !this.element.contains(e.target as Node)) {
-            this.hide();
-        }
-    };
-
+    /**
+     * Esconde apenas esta instância
+     */
     hide(): void {
         if (this.element) {
             this.element.classList.remove('context-menu--visible');
+            const el = this.element;
             setTimeout(() => {
-                this.element?.remove();
-                this.element = null;
+                el.remove();
             }, 200);
+            this.element = null;
         }
-        document.removeEventListener('click', this.handleClickOutside);
 
-        // Limpar referência se este era o menu aberto
         if (ContextMenu.currentOpenMenu === this) {
             ContextMenu.currentOpenMenu = null;
         }
     }
 
+    /**
+     * Limpeza global de todos os menus e listeners
+     */
     static hideAll(): void {
+        if (ContextMenu.currentOpenMenu) {
+            ContextMenu.currentOpenMenu.hide();
+        }
+        // Fallback: remover qualquer elemento que tenha sobrado no DOM
         const menus = document.querySelectorAll('.context-menu');
         menus.forEach(menu => menu.remove());
         ContextMenu.currentOpenMenu = null;
     }
+
+    // Gestão global de cliques para fechar menus
+    private static isGlobalListenerActive = false;
+
+    private static initGlobalClickListener(): void {
+        if (ContextMenu.isGlobalListenerActive) return;
+
+        document.addEventListener('click', ContextMenu.handleGlobalClick, true); // Use capture phase
+        ContextMenu.isGlobalListenerActive = true;
+    }
+
+    private static handleGlobalClick = (e: MouseEvent): void => {
+        // Se não houver menu aberto, não faz nada
+        if (!ContextMenu.currentOpenMenu) return;
+
+        const target = e.target as HTMLElement;
+        const menuElement = ContextMenu.currentOpenMenu.element;
+
+        // Se o clique foi fora do menu aberto, fecha ele
+        if (menuElement && !menuElement.contains(target)) {
+            // Pequeno delay para permitir que eventos de botões internos (se houver) processem
+            // Ou simplesmente fechar se não for o botão de trigger (que já tem stopPropagation)
+            ContextMenu.hideAll();
+        }
+    };
 }

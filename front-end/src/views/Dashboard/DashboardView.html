@@ -1,12 +1,12 @@
 <div class="dashboard-container">
-    
+
     <div class="page-header">
         <div class="header-content">
             <h1>Visão Geral</h1>
             <p class="text-secondary">Bem-vindo(a) de volta!</p>
         </div>
     </div>
-    
+
     <section class="projects-section">
         <div class="section-header">
             <h3 class="section-title">Projetos Recentes</h3>
@@ -14,22 +14,28 @@
                 {{btn_all_projects}}
             </div>
         </div>
-        
+
         <div id="projects-carousel" class="projects-carousel">
-            <p class="text-secondary">Carregando...</p>
+            <div class="loading-wrapper">
+                <div class="spinner"></div>
+                <span>Carregando projetos...</span>
+            </div>
         </div>
     </section>
 
     <section class="tasks-section">
-        
+
         <div class="section-header">
-            <h3>Minhas Tarefas</h3>
+            <h3>Tarefas Pendentes</h3>
         </div>
-        
+
         <div id="tasks-container">
-            <p class="text-secondary">Carregando tarefas...</p>
+            <div class="loading-wrapper">
+                <div class="spinner"></div>
+                <span>Carregando tarefas...</span>
+            </div>
         </div>
-        
+
     </section>
 
 </div>

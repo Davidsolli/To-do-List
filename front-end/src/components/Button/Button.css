@@ -14,7 +14,7 @@
 
 .btn--primary {
   background-color: var(--color-primary);
-  color: var(--text-main);
+  color: var(--color-primary-btn-text);
 }
 .btn--primary:hover { background-color: var(--color-primary-light); }
 
@@ -40,6 +40,36 @@
   color: var(--text-main);
 }
 
+.btn--ghost-icon {
+  background: transparent;
+  color: var(--text-tertiary);
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+}
+.btn--ghost-icon:hover {
+  background: var(--bg-page);
+  color: var(--text-main);
+}
+.btn--ghost-icon .btn-text {
+  display: none;
+}
+
+.btn--ghost-icon-danger {
+  background: transparent;
+  color: var(--text-tertiary);
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+}
+.btn--ghost-icon-danger:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+.btn--ghost-icon-danger .btn-text {
+  display: none;
+}
+
 .btn--full { width: 100%; }
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -56,3 +86,26 @@
     background: transparent;
     filter: none;
 }
+
+.btn--danger {
+    background-color: #ef4444;
+    color: white;
+}
+.btn--danger:hover {
+    background-color: #dc2626;
+}
+
+.btn--danger-icon {
+    background-color: #ef4444;
+    color: white;
+    padding: 8px;
+    min-width: 36px;
+    min-height: 36px;
+}
+.btn--danger-icon:hover {
+    background-color: #dc2626;
+}
+.btn--danger-icon .btn-text {
+    display: none;
+}
+

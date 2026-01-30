@@ -34,13 +34,15 @@ export class DashboardView extends Component {
     }
 
     private bindEvents(): void {
+        const dashboard = this.container.querySelector('.dashboard-container');
+        if (!dashboard) return;
+
         // 1. Botão "Ver todos os projetos"
-        const btnAll = this.container.querySelector('[data-action="go-projects"]');
-        btnAll?.addEventListener('click', () => app.navigate('/projects'));
+        const btnAll = dashboard.querySelector('[data-action="go-projects"]');
+        btnAll?.addEventListener('click', () => app.navigate('/projetos'));
 
         // 2. Event Delegation para o Menu (3 pontinhos)
-        // Nota: O clique do botão "Acessar" já é tratado dentro do loadRecentProjects
-        this.container.addEventListener('click', (e) => {
+        dashboard.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
             const menuBtn = target.closest('[data-action="menu"]') as HTMLElement;
 
@@ -113,6 +115,7 @@ export class DashboardView extends Component {
             if (projects.length === 0) {
                 carousel.innerHTML = '<div class="empty-state-msg">Você ainda não tem projetos recentes.</div>';
                 carousel.classList.remove('projects-carousel');
+                (carousel as HTMLElement).style.display = 'block'; // Garante que a mensagem ocupe a largura toda
                 return;
             }
 
@@ -125,7 +128,7 @@ export class DashboardView extends Component {
                 .join('');
 
             // Adiciona evento de navegação aos botões "Acessar projeto"
-            const btns = carousel.querySelectorAll('.btn--link');
+            const btns = carousel.querySelectorAll('[data-action="access-project"]');
             btns.forEach((btn, index) => {
                 btn.addEventListener('click', () => app.navigate(`/projetos/${recentProjects[index].id}`));
             });
@@ -158,6 +161,33 @@ export class DashboardView extends Component {
                 console.warn("Não foi possível encontrar uma lista de tarefas na resposta.");
                 tasks = [];
             }
+
+            // Filtrar tarefas concluídas
+            tasks = tasks.filter(task => task.status !== TaskStatus.COMPLETED);
+
+            // Ordenar por prazo (estimate) e prioridade
+            tasks.sort((a, b) => {
+                // 1. Prazo: menor timestamp (mais próximo/antigo) primeiro. Sem prazo (=undefined) vai pro final.
+                const dateA = a.estimate || Number.MAX_SAFE_INTEGER;
+                const dateB = b.estimate || Number.MAX_SAFE_INTEGER;
+
+                if (dateA !== dateB) return dateA - dateB;
+
+                // 2. Prioridade: Alta > Média > Baixa
+                const priorityWeight: Record<string, number> = {
+                    [TaskPriority.HIGH]: 3,
+                    [TaskPriority.MEDIUM]: 2,
+                    [TaskPriority.LOW]: 1
+                };
+
+                const pA = priorityWeight[a.priority] || 0;
+                const pB = priorityWeight[b.priority] || 0;
+
+                return pB - pA;
+            });
+
+            // Pegar apenas as 10 primeiras
+            tasks = tasks.slice(0, 10);
 
             if (tasks.length === 0) {
                 container.innerHTML = '<div class="empty-state-msg">Nenhuma tarefa pendente encontrada.</div>';

@@ -84,6 +84,29 @@ export class PasswordModal {
             }
         });
 
+        // Toggle password visibility
+        const toggleBtns = this.overlay.querySelectorAll('[data-action="toggle-password"]');
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = (btn as HTMLElement).dataset.target;
+                const input = this.overlay?.querySelector(`#${targetId}`) as HTMLInputElement;
+                const icon = btn.querySelector('i');
+
+                if (input && icon) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                }
+            });
+        });
+
         // Close on ESC key
         document.addEventListener('keydown', this.handleEscKey);
     }

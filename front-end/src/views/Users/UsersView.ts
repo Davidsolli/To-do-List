@@ -45,17 +45,24 @@ export class UsersView extends Component {
     private renderUsers(): void {
         const list = this.container.querySelector('[data-bind="users-list"]') as HTMLElement;
         const emptyState = this.container.querySelector('[data-bind="empty-state"]') as HTMLElement;
+        const loadingState = this.container.querySelector('[data-bind="loading-state"]') as HTMLElement;
+        const table = this.container.querySelector('[data-bind="users-table"]') as HTMLElement;
 
-        if (!list || !emptyState) return;
+        if (!list || !emptyState || !loadingState || !table) return;
+
+        // Hide loading state
+        loadingState.style.display = 'none';
 
         list.innerHTML = '';
 
         if (this.filteredUsers.length === 0) {
             emptyState.style.display = 'block';
+            table.style.display = 'none';
             return;
         }
 
         emptyState.style.display = 'none';
+        table.style.display = 'table'; // Show table (headers + body)
 
         this.filteredUsers.forEach(user => {
             const row = this.createUserRow(user);

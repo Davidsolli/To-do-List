@@ -38,7 +38,7 @@
     width: 40px;
     height: 40px;
     background-color: var(--bg-active-item);
-    color: var(--color-primary-dark-text);
+    color: var(--color-icon-text);
     border-radius: 8px;
     display: flex;
     align-items: center;

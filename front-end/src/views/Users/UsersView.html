@@ -10,16 +10,17 @@
     </header>
 
     <div class="search-section">
-        <input
-            type="text"
-            class="search-input"
-            placeholder="Buscar por nome ou email..."
-            data-action="search"
-        />
+        <input type="text" class="search-input" placeholder="Buscar por nome ou email..." data-action="search" />
     </div>
 
     <div class="users-table-container">
-        <table class="users-table">
+
+        <div class="loading-wrapper" data-bind="loading-state">
+            <div class="spinner"></div>
+            <span>Carregando usuários...</span>
+        </div>
+
+        <table class="users-table" data-bind="users-table" style="display: none;">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -29,7 +30,6 @@
                 </tr>
             </thead>
             <tbody data-bind="users-list">
-                <!-- Users will be inserted here -->
             </tbody>
         </table>
     </div>

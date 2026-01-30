@@ -15,20 +15,20 @@ export class DateFormatter {
         }
 
         try {
-            // Converte timestamp de segundos para milissegundos
-            const date = new Date(timestamp * 1000);
+            // Converte timestamp para objeto Date (assume milissegundos como no restante do projeto)
+            const date = new Date(timestamp);
 
             // Verifica se é uma data válida
             if (isNaN(date.getTime())) {
                 return 'Sem prazo';
             }
 
-            // Formata usando o fuso horário local do navegador
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-
-            return `${day}/${month}/${year}`;
+            // Formata usando o padrão do projeto: dd de mmm. de yyyy
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
         } catch (error) {
             console.error('Erro ao formatar data:', error);
             return 'Sem prazo';
@@ -46,7 +46,7 @@ export class DateFormatter {
         }
 
         try {
-            const date = new Date(timestamp * 1000);
+            const date = new Date(timestamp);
 
             if (isNaN(date.getTime())) {
                 return 'Sem prazo';
@@ -76,7 +76,7 @@ export class DateFormatter {
         }
 
         try {
-            const date = new Date(timestamp * 1000);
+            const date = new Date(timestamp);
             const now = new Date();
 
             if (isNaN(date.getTime())) {
@@ -97,7 +97,7 @@ export class DateFormatter {
             if (diffDays < -1 && diffDays >= -7) return `Há ${Math.abs(diffDays)} dias`;
 
             // Para datas mais distantes, usa formato padrão
-            return this.formatDate(timestamp);
+            return DateFormatter.formatDate(timestamp);
         } catch (error) {
             console.error('Erro ao formatar data relativa:', error);
             return 'Sem prazo';
@@ -111,7 +111,7 @@ export class DateFormatter {
      */
     static isoToTimestamp(isoDate: string): number {
         const date = new Date(isoDate);
-        return Math.floor(date.getTime() / 1000);
+        return date.getTime();
     }
 
     /**
@@ -120,7 +120,7 @@ export class DateFormatter {
      * @returns true se a data já passou
      */
     static isPast(timestamp: number): boolean {
-        const date = new Date(timestamp * 1000);
+        const date = new Date(timestamp);
         const now = new Date();
         return date < now;
     }
@@ -131,7 +131,7 @@ export class DateFormatter {
      * @returns true se a data é hoje
      */
     static isToday(timestamp: number): boolean {
-        const date = new Date(timestamp * 1000);
+        const date = new Date(timestamp);
         const now = new Date();
 
         return (

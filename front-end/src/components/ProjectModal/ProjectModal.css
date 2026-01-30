@@ -115,8 +115,8 @@
 }
 
 .form-error {
-    margin-top: 1rem;
-    padding: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
     background-color: #fee2e2;
     color: #991b1b;
     border-radius: 6px;

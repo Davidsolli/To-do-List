@@ -77,4 +77,11 @@ export class ApiService {
     public static async delete<T>(endpoint: string): Promise<T> {
         return this.request<T>(endpoint, { method: 'DELETE' });
     }
+
+    public static async patch<T>(endpoint: string, body: any): Promise<T> {
+        return this.request<T>(endpoint, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+        });
+    }
 }

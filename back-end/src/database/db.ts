@@ -45,6 +45,8 @@ db.exec(`
     project_id INTEGER NOT NULL,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
   );
+
+  insert into users (name, email, password, role) values ('admin', 'admin@email.com', '$2b$10$KCb2a.p.D1.ZQ74944gdcekGfETuXSXd1HJUFxtEDpmsoMQ4YPFGu', 'admin');
 `);
 
 console.log("Tabelas criadas/validadas com sucesso!");

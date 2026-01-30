@@ -155,6 +155,21 @@
     max-height: 200px;
     overflow-y: auto;
     background-color: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.sidebar-projects-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-projects-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.sidebar-projects-list::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .sidebar-project-item {

@@ -108,13 +108,7 @@ export class Sidebar extends Component {
           // Se for o toggle de projetos, verificar se foi na setinha
           // Isso permite expandir o menu sem fechar a sidebar
           if (item.getAttribute('data-action') === 'toggle-projects') {
-            const target = e.target as HTMLElement;
-            // Apenas a setinha mantém o menu aberto (para expandir)
-            // O resto (texto/ícone) deve navegar e fechar o menu
-            if (target.classList.contains('sidebar-chevron-container') ||
-              target.closest('.sidebar-chevron-container')) {
-              return;
-            }
+            return;
           }
 
           sidebar?.classList.remove('sidebar-open');
@@ -218,19 +212,7 @@ export class Sidebar extends Component {
   private handleToggleProjects(e: Event): void {
     e.preventDefault();
 
-    const target = e.target as HTMLElement;
-    const isChevron = target.classList.contains('sidebar-chevron-container') || !!target.closest('.sidebar-chevron-container');
-
-    // Se NÃO clicou na setinha, navegar para projetos
-    if (!isChevron) {
-      app.navigate('/projetos');
-      // Opcional: Expandir ao entrar na rota? Por padrão, o comportamento de navegar não expande obrigatoriamente, 
-      // mas se o usuário quiser ver os projetos, ele clicaria na seta.
-      // Manteremos apenas a navegação conforme pedido.
-      return;
-    }
-
-    // Lógica de toggle (apenas se clicou na setinha)
+    // Lógica de toggle
     const projectsBtn = e.currentTarget as HTMLElement;
     const projectsList = this.container.querySelector('#projects-list') as HTMLElement;
     const chevron = projectsBtn.querySelector('.sidebar-chevron') as HTMLElement;
@@ -290,7 +272,14 @@ export class Sidebar extends Component {
           item.addEventListener('click', (e) => {
             e.preventDefault();
             const projectId = (e.currentTarget as HTMLElement).getAttribute('data-project-id');
-            app.navigate(`/projetos/${projectId}`);
+            console.log('[Sidebar] Clicked project. ID:', projectId);
+            if (projectId) {
+              const navUrl = `/project?id=${projectId}`;
+              console.log('[Sidebar] Navigating to:', navUrl);
+              app.navigate(navUrl);
+            } else {
+              console.error('[Sidebar] Project ID missing in click!');
+            }
           });
         });
       }

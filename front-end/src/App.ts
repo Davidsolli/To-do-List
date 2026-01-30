@@ -21,6 +21,10 @@ export class App {
         // Método público de navegação
         this.router.navigate(path);
     }
+
+    public get sidebar() {
+        return this.router.sidebar;
+    }
 }
 
 // Singleton: Instância global exportada para usar router.navigate() em outros lugares

@@ -52,7 +52,7 @@ export function checkOwnership(
     return res.status(401).json({ error: "Usuário não autenticado" });
   }
 
-  if ( req.user?.role === UserRole.ADMIN) {
+  if (req.user?.role === UserRole.ADMIN) {
     return next();
   }
 

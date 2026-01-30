@@ -2,6 +2,22 @@ import { Request, Response } from 'express';
 import UserService from "../services/user.service";
 
 export default class UserController {
+    async create(req: Request, res: Response): Promise<Response> {
+        try {
+            const service = new UserService();
+            const { name, email, password, role } = req.body;
+
+            if (!name || !email || !password) {
+                return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
+            }
+
+            const newUser = await service.create({ name, email, password, role: role || 'user' });
+            return res.status(201).json(newUser);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
     async getById(req: Request, res: Response): Promise<Response> {
         try {
             const service = new UserService();

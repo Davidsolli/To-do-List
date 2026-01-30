@@ -15,6 +15,20 @@ export class UserService {
     private endpoint = 'users';
 
     /**
+     * Buscar todos os usuários (somente admin)
+     */
+    static async getAll(): Promise<User[]> {
+        return await ApiService.get<User[]>('users');
+    }
+
+    /**
+     * Criar novo usuário (somente admin)
+     */
+    static async create(user: Partial<User>): Promise<User> {
+        return await ApiService.post<User>('users', user);
+    }
+
+    /**
      * Buscar usuário por ID
      */
     async getById(userId: number): Promise<User> {
@@ -22,10 +36,17 @@ export class UserService {
     }
 
     /**
-     * Atualizar informações do usuário
+     * Atualizar informações do usuário (método de instância)
      */
     async update(userId: number, data: UpdateUserDTO): Promise<User> {
         return await ApiService.put<User>(`${this.endpoint}/${userId}`, data);
+    }
+
+    /**
+     * Atualizar usuário (método estático para admin)
+     */
+    static async update(userId: number, data: UpdateUserDTO): Promise<User> {
+        return await ApiService.put<User>(`users/${userId}`, data);
     }
 
     /**
@@ -53,6 +74,13 @@ export class UserService {
      */
     async delete(userId: number): Promise<void> {
         return await ApiService.delete<void>(`${this.endpoint}/${userId}`);
+    }
+
+    /**
+     * Deletar usuário (método estático para admin)
+     */
+    static async delete(userId: number): Promise<void> {
+        return await ApiService.delete<void>(`users/${userId}`);
     }
 
     /**

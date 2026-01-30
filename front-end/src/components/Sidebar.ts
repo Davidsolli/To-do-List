@@ -362,7 +362,7 @@ export class Sidebar extends Component {
    * Define qual item do menu está ativo (usado para sincronizar com navegação)
    */
   public setActiveMenuItem(route: string): void {
-    const allItems = this.container.querySelectorAll('[data-action="menu-item"]');
+    const allItems = this.container.querySelectorAll('[data-action="menu-item"], [data-action="toggle-projects"]');
     allItems.forEach(item => {
       const itemRoute = item.getAttribute('data-route');
       if (itemRoute === route) {

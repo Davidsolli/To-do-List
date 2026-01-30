@@ -31,6 +31,25 @@
   box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
 }
 
+.form-input.error {
+  border-color: #ef4444;
+}
+
+.form-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-page);
+}
+
+/* Dark mode */
+.dark-mode .form-input {
+  background-color: var(--bg-surface);
+}
+
 /* --- Modificadores de Padding (Adicionados pelo TS) --- */
 
 /* Se tiver ícone na esquerda, empurra o texto para a direita */
@@ -76,6 +95,18 @@
   color: var(--text-main);
 }
 
-.form-error{
-    color: var(--priority-high-dot);
+.form-error {
+    display: none;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+/* Dark mode */
+.dark-mode .form-error {
+    background-color: rgba(220, 38, 38, 0.15);
+    color: #fca5a5;
 }

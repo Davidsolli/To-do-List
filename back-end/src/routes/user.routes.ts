@@ -10,6 +10,13 @@ import { UserRole } from "../enums/userRoles.enums";
 const userRoutes = Router();
 const userController = new UserController();
 
+userRoutes.post(
+  "/",
+  authenticate,
+  authorize([UserRole.ADMIN]),
+  userController.create,
+);
+
 userRoutes.get(
   "/",
   authenticate,

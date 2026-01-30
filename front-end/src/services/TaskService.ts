@@ -1,26 +1,21 @@
 import { ApiService } from './ApiService';
 import { AuthService } from './AuthService';
+import { Task } from '../models/Task';
 
-// Interface que define o formato da Tarefa
-export interface Task {
-    id: number;
-    title: string;
-    project_name?: string; 
-    priority: 'Alta' | 'Média' | 'Baixa';
-    status: 'Pendente' | 'Em andamento' | 'Concluída';
-    due_date: string;
+// Interface para resposta da API - Task já tem estimate e project_id
+export interface TaskResponse extends Task {
+    project_name?: string; // Campo extra que pode vir da API ou será preenchido
 }
 
 export class TaskService {
-    
-    static async getUserTasks(): Promise<Task[]> {
+
+    static async getUserTasks(): Promise<TaskResponse[]> {
         const user = AuthService.user;
-        
+
         if (!user) return [];
 
         try {
-
-            const response = await ApiService.get<Task[]>(`tasks/user/${user.id}`);
+            const response = await ApiService.get<TaskResponse[]>(`tasks/user/${user.id}`);
             return response;
 
         } catch (error) {

@@ -47,7 +47,7 @@
 }
 
 .project-card {
-    background-color: #FFFFFF;
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
@@ -138,7 +138,7 @@
    TABELA DE TAREFAS (Estilo Bonito)
    ========================================= */
 .tasks-section {
-    background-color: #FFFFFF;
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
@@ -151,7 +151,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #FFFFFF;
+    background-color: var(--bg-surface);
 }
 
 .tasks-header h3 {
@@ -255,7 +255,7 @@
 
 .generic-table-wrapper {
     overflow-x: auto;
-    background: #fff;
+    background: var(--bg-surface);
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
@@ -285,18 +285,40 @@
 .generic-table tr:hover td { background-color: var(--bg-page); }
 
 /* =========================================
+   DARK MODE SUPPORT
+   ========================================= */
+
+/* Light mode override - cards e tabelas devem ser brancas */
+:root:not(.dark-mode) .project-card,
+:root:not(.dark-mode) .tasks-section,
+:root:not(.dark-mode) .tasks-header,
+:root:not(.dark-mode) .generic-table-wrapper {
+    background-color: #FFFFFF;
+}
+
+/* Dark mode adjustments */
+.dark-mode .project-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .tasks-section,
+.dark-mode .generic-table-wrapper {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================
    RESPONSIVIDADE
    ========================================= */
 @media (max-width: 768px) {
     .dashboard-container {
         padding: 1rem;
     }
-    
+
     .page-header {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .header-actions {
         max-width: 100%;
         flex-direction: column;

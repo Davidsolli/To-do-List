@@ -60,4 +60,11 @@ tasksRoutes.delete(
   TaskController.deleteTask,
 );
 
+tasksRoutes.post(
+  "/:id/generate-tip",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.generateTip,
+);
+
 export default tasksRoutes;

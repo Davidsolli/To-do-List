@@ -1,14 +1,59 @@
 import { Component } from '../../core/Component';
 import { Project } from '../../models/Project';
-import { Task } from '../../models/Task';
+import { Task, TaskStatus, TaskPriority } from '../../models/Task';
 import { User } from '../../models/User';
 import { ProjectService } from '../../services/ProjectService';
 import { UserService } from '../../services/UserService';
 import { TaskService } from '../../services/TaskService';
 import { TaskCard } from '../../components/TaskCard/TaskCard';
-import { Modal } from '../../components/Modal/Modal';
+import { Modal as ModalInstance } from '../../components/Modal/Modal';
 import template from './KanbanView.html';
 import './KanbanView.css';
+
+// Adaptador para manter compatibilidade com API antiga do Modal
+class ModalAdapter {
+    private static instances: Map<string, ModalInstance> = new Map();
+
+    constructor(private id: string, private title: string, private content: string) {}
+
+    render(): string {
+        return `
+            <div class="modal-overlay-legacy" id="${this.id}" data-modal-id="${this.id}">
+                <div class="modal-content-legacy" onclick="event.stopPropagation()">
+                    <div class="modal-header-legacy">
+                        <h2>${this.title}</h2>
+                        <button class="modal-close" type="button" data-modal-close="${this.id}">&times;</button>
+                    </div>
+                    <div class="modal-body-legacy">
+                        ${this.content}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    static open(id: string): void {
+        const overlay = document.querySelector(`[data-modal-id="${id}"]`);
+        if (overlay) {
+            (overlay as HTMLElement).style.display = 'flex';
+            (overlay as HTMLElement).style.opacity = '1';
+            (overlay as HTMLElement).style.pointerEvents = 'all';
+        }
+    }
+
+    static close(id: string): void {
+        const overlay = document.querySelector(`[data-modal-id="${id}"]`);
+        if (overlay) {
+            (overlay as HTMLElement).style.opacity = '0';
+            (overlay as HTMLElement).style.pointerEvents = 'none';
+            setTimeout(() => {
+                (overlay as HTMLElement).style.display = 'none';
+            }, 300);
+        }
+    }
+}
+
+const Modal = ModalAdapter;
 
 export class KanbanView extends Component {
     private projectId: string | null = null;

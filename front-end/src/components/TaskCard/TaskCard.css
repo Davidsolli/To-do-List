@@ -2,8 +2,8 @@
     background: #ffffff;
     border-radius: 12px;
     padding: 1.25rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
     cursor: grab;
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
@@ -12,8 +12,12 @@
     position: relative;
 }
 
+.dark-mode .task-card {
+    background: var(--bg-surface);
+}
+
 .task-card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
 }
 
@@ -30,22 +34,23 @@
 
 .task-card__date {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-tertiary);
     font-weight: 500;
 }
 
 .task-card__priority {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 10px;
-    display: flex;
+    padding: 4px 10px;
+    border-radius: 99px;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .task-card__priority::before {
     content: '';
+    display: block;
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -53,31 +58,31 @@
 }
 
 .task-card__priority--high {
-    background: #fee2e2;
-    color: #ef4444;
+    background-color: var(--priority-high-bg);
+    color: var(--priority-high-text);
 }
 
 .task-card__priority--medium {
-    background: #fef3c7;
-    color: #f59e0b;
+    background-color: var(--priority-mid-bg);
+    color: var(--priority-mid-text);
 }
 
 .task-card__priority--low {
-    background: #dcfce7;
-    color: #10b981;
+    background-color: var(--priority-low-bg);
+    color: var(--priority-low-text);
 }
 
 .task-card__title {
     font-size: 1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     margin: 0;
     line-height: 1.4;
 }
 
 .task-card__desc {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-secondary);
     margin: 0;
     line-height: 1.5;
     display: -webkit-box;
@@ -97,7 +102,7 @@
 .action-icon {
     background: none;
     border: none;
-    color: #cbd5e1;
+    color: var(--text-tertiary);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -108,8 +113,8 @@
 }
 
 .action-icon:hover {
-    color: #94a3b8;
-    background: #f1f5f9;
+    color: var(--text-secondary);
+    background: var(--bg-page);
 }
 
 .action-icon span {

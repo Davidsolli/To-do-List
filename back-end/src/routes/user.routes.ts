@@ -10,6 +10,13 @@ import { UserRole } from "../enums/userRoles.enums";
 const userRoutes = Router();
 const userController = new UserController();
 
+userRoutes.post(
+  "/",
+  authenticate,
+  authorize([UserRole.ADMIN]),
+  userController.create,
+);
+
 userRoutes.get(
   "/",
   authenticate,
@@ -31,6 +38,14 @@ userRoutes.put(
   authorize([UserRole.ADMIN, UserRole.USER]),
   checkOwnership,
   userController.update,
+);
+
+userRoutes.put(
+  "/:id/password",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  userController.changePassword,
 );
 
 userRoutes.delete(

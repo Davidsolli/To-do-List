@@ -119,26 +119,22 @@
     gap: 0;
 }
 
-.sidebar-item[data-action="toggle-projects"] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
 /* Container da setinha - Área de clique maior */
 .sidebar-chevron-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: auto; /* Empurra para a direita */
-    width: 2rem;
-    height: 2rem;
+    margin-left: auto;
+    padding: 0;
     border-radius: 0.5rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
 }
 
 .sidebar-chevron-container:hover {
-    background-color: rgba(0, 0, 0, 0.05); /* Feedback visual sutil */
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Dark mode hover */
@@ -159,6 +155,21 @@
     max-height: 200px;
     overflow-y: auto;
     background-color: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.sidebar-projects-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-projects-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.sidebar-projects-list::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .sidebar-project-item {
@@ -214,9 +225,9 @@
 .sidebar-item {
     display: flex;
     align-items: center;
-    align-items: center;
     gap: 0.75rem;
-    padding: 0.2rem 1rem; /* Reduzido padding vertical pois o container da seta compensa */
+    padding: 0.625rem 1rem;
+    min-height: 2.5rem;
     color: var(--text-secondary);
     text-decoration: none;
     border-radius: 0.75rem;

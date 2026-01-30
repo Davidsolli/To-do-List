@@ -1,16 +1,25 @@
-// Status compatíveis com o Backend
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'under_review';
+// Enums do develop (padrão do projeto)
+export enum TaskPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
 
-export type TaskPriority = 'high' | 'medium' | 'low';
+export enum TaskStatus {
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  UNDER_REVIEW = "under_review",
+}
 
+// Interface com campos opcionais do HEAD (necessários para o Kanban)
 export interface Task {
-    id: number; // Backend uses number
+    id: number;
     title: string;
-    description?: string;
-    tip?: string; // Backend has tip
+    description?: string; // Opcional (HEAD)
+    tip?: string; // Opcional (HEAD) - Backend has tip
+    priority: TaskPriority;
     status: TaskStatus;
-    priority: TaskPriority; // Backend expects usage of priority
-    estimate?: number;
-    project_id: number; // Backend uses project_id
-    // helper fields for frontend only if needed, but best to stick to backend shape
+    estimate?: number; // Opcional (HEAD)
+    project_id: number;
 }

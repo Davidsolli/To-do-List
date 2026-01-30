@@ -1,6 +1,6 @@
 import { Component } from '../../core/Component';
 import { TaskCard } from '../../components/TaskCard/TaskCard';
-import { Task, TaskStatus } from '../../models/Task';
+import { Task, TaskStatus, TaskPriority } from '../../models/Task';
 import { Project } from '../../models/Project';
 import { ProjectService } from '../../services/ProjectService';
 import { TaskService } from '../../services/TaskService';
@@ -114,8 +114,8 @@ export class ProjectView extends Component {
                 await TaskService.create({
                     title,
                     project_id: Number(this.projectId),
-                    status: 'pending',
-                    priority: 'medium',
+                    status: TaskStatus.PENDING,
+                    priority: TaskPriority.MEDIUM,
                     description: '',
                     estimate: 1 // Default estimate
                 });

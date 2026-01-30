@@ -1,9 +1,10 @@
 import { Task } from './Task';
 
+// Interface combinada: id como number (develop) + tasks opcionais (HEAD para Kanban)
 export interface Project {
-    id: string;
-    name: string;        // Alterado de 'title' para 'name'
-    description: string;
+    id: number;
+    name: string;
     user_id: number;
-    tasks?: Task[];
+    description: string;
+    tasks?: Task[]; // Campo adicional do HEAD usado no Kanban
 }

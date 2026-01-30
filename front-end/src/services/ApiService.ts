@@ -78,6 +78,7 @@ export class ApiService {
         return this.request<T>(endpoint, { method: 'DELETE' });
     }
 
+    // Método PATCH necessário para updateStatus no Kanban (HEAD)
     public static async patch<T>(endpoint: string, body: any): Promise<T> {
         return this.request<T>(endpoint, {
             method: 'PATCH',

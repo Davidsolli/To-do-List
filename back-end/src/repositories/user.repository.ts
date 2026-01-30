@@ -6,7 +6,7 @@ export default class UserRepository {
     return db
       .prepare(
         `
-      SELECT id, name, email
+      SELECT id, name, email, role
       FROM users
     `,
       )
@@ -23,6 +23,43 @@ export default class UserRepository {
     `,
       )
       .get(id) as User | undefined;
+  }
+
+  static findByEmail(email: string): User | undefined {
+    return db
+      .prepare(
+        `
+      SELECT id, name, email, role
+      FROM users
+      WHERE email = ?
+    `,
+      )
+      .get(email) as User | undefined;
+  }
+
+  static create(user: { name: string; email: string; password: string; role: string }): number {
+    const result = db
+      .prepare(
+        `
+      INSERT INTO users (name, email, password, role)
+      VALUES (?, ?, ?, ?)
+    `,
+      )
+      .run(user.name, user.email, user.password, user.role);
+
+    return result.lastInsertRowid as number;
+  }
+
+  static findByIdWithPassword(id: number): (User & { password: string }) | undefined {
+    return db
+      .prepare(
+        `
+      SELECT id, name, email, role, password
+      FROM users
+      WHERE id = ?
+    `,
+      )
+      .get(id) as (User & { password: string }) | undefined;
   }
 
   static update(id: number, user: UserUpdateDTO): boolean {

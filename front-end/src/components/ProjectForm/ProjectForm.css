@@ -1,0 +1,37 @@
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.project-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.project-form__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Estados de erro */
+.form-input--error,
+.form-textarea--error {
+  border-color: var(--priority-high-dot);
+}
+
+.form-input--error:focus,
+.form-textarea--error:focus {
+  border-color: var(--priority-high-dot);
+}
+
+.form-error {
+  color: var(--priority-high-dot);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+  min-height: 1rem;
+}

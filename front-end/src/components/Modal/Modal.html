@@ -1,11 +1,14 @@
-<div class="modal-overlay" id="{{id}}" data-action="close-modal">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="modal-header">
-            <h2>{{title}}</h2>
-            <button class="btn-close" type="button" data-action="close-modal" data-target="{{id}}">&times;</button>
-        </div>
-        <div class="modal-body">
-            {{content}}
-        </div>
+<div class="modal__overlay" data-action="close-backdrop">
+  <div class="modal__container">
+    <div class="modal__header">
+      <h2 class="modal__title">{{title}}</h2>
+      <button class="modal__close-btn" data-action="close-modal" aria-label="Fechar modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
+
+    <div class="modal__content">
+      {{content}}
+    </div>
+  </div>
 </div>

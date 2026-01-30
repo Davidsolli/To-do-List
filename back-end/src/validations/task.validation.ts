@@ -1,6 +1,7 @@
 import { TaskPriority, TaskStatus } from "../enums/task.enums";
 import { TaskCreateDTO } from "../interfaces/task";
 
+// Mantendo versão do HEAD que usa enums (mais type-safe)
 export class TaskValidation {
   static validateTaskCreation(taskData: TaskCreateDTO) {
     this.validateTitle(taskData.title);

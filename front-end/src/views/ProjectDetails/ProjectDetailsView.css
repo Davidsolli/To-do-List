@@ -1,0 +1,563 @@
+.kanban-container {
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 640px) {
+    .kanban-container {
+        padding: 1rem;
+    }
+}
+
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.kanban-header-left {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.project-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--priority-low-bg, #dcfce7);
+    color: var(--priority-low-text, #166534);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.kanban-header-info h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.75rem;
+}
+
+.kanban-header-info p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.kanban-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Custom buttons for this view */
+.btn--light {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.header-options {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+}
+
+.icon-btn-ghost {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.icon-btn-ghost:hover {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+.icon-btn-ghost--danger:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    flex: 1;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+@media (max-width: 1400px) {
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+
+    .kanban-column {
+        min-width: 100%;
+    }
+
+    .kanban-header-left {
+        width: 100%;
+    }
+
+    .kanban-actions {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+}
+
+.kanban-column {
+    background: #f4f7f9;
+    /* Mockup column color */
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    height: 100%;
+}
+
+.kanban-column-header {
+    padding: 1.5rem 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.kanban-column-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.task-count {
+    background: #eef2f6;
+    color: var(--text-secondary);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.kanban-column-body {
+    padding: 1rem 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (max-width: 480px) {
+    .kanban-header-left {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .project-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .kanban-header-info h1 {
+        font-size: 1.5rem;
+    }
+}
+
+.kanban-column.drag-over {
+    background: #ebf0f3;
+    outline: 2px dashed #cbd5e1;
+    outline-offset: -2px;
+}
+
+.add-task-placeholder {
+    margin-top: 0.5rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #94a3b8;
+}
+
+.add-task-placeholder:hover {
+    border-color: var(--color-primary);
+    background: #ffffff;
+    color: var(--color-primary);
+}
+
+.add-task-placeholder span {
+    font-size: 2rem;
+}
+
+/* Detailed Task View Styles */
+.large-modal-wrapper .modal-content {
+    max-width: 900px;
+    width: 95%;
+    border-radius: 24px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.large-modal-wrapper .modal-body {
+    padding: 2.5rem;
+}
+
+.task-detail-breadcrumb {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.task-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.task-detail-header-info h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+}
+
+.task-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #059669;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.task-detail-meta span {
+    font-size: 1.2rem;
+}
+
+.task-detail-header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn--edit-task {
+    background: #00ed64;
+    color: #001e2b;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn--edit-task:hover {
+    background: #00d65a;
+    transform: translateY(-2px);
+}
+
+.btn--delete-task-outline {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn--delete-task-outline:hover {
+    background: #fee2e2;
+}
+
+.task-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (max-width: 640px) {
+    .task-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .task-detail-header-info h1 {
+        font-size: 1.75rem;
+    }
+
+    .large-modal-wrapper .modal-body {
+        padding: 1.5rem;
+    }
+}
+
+.task-detail-section label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.task-detail-badges {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.badge {
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.badge--status {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.task-detail-assignee {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 16px;
+}
+
+.assignee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.assignee-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.assignee-info strong {
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.assignee-info span {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.description-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.section-header label {
+    margin-bottom: 0;
+}
+
+.section-header span {
+    color: #94a3b8;
+}
+
+.description-content {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 20px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: -20px;
+    width: 2px;
+    background: #f1f5f9;
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dcfce7;
+    color: #166534;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.timeline-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.timeline-content {
+    padding-top: 10px;
+    color: #475569;
+}
+
+.timeline-time {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.badge--mini {
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.timeline-bubble {
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 16px;
+    flex-grow: 1;
+}
+
+.bubble-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+/* Estilos para Modal Adapter (compatibilidade com API antiga) */
+.modal-overlay-legacy {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-content-legacy {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-header-legacy {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal-header-legacy h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body-legacy {
+    max-height: 70vh;
+    overflow-y: auto;
+}

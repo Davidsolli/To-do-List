@@ -5,6 +5,32 @@ import bcrypt from "bcrypt";
 export default class UserService {
   private readonly SALT_ROUNDS = process.env.SALT || 10;
 
+  async create(userData: { name: string; email: string; password: string; role?: string }): Promise<UserResponseDTO> {
+    // Verificar se email já existe
+    const existingUser = UserRepository.findByEmail(userData.email);
+    if (existingUser) {
+      throw new Error("E-mail já cadastrado");
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(userData.password, this.SALT_ROUNDS);
+
+    // Criar usuário
+    const userId = UserRepository.create({
+      name: userData.name,
+      email: userData.email,
+      password: hashedPassword,
+      role: userData.role || 'user'
+    });
+
+    const newUser = UserRepository.findById(userId);
+    if (!newUser) {
+      throw new Error("Erro ao criar usuário");
+    }
+
+    return newUser;
+  }
+
   async getById(id: number): Promise<UserResponseDTO> {
     const user = UserRepository.findById(id);
 
@@ -56,6 +82,50 @@ export default class UserService {
     if (!success) {
       throw new Error("Usuário não encontrado ou já deletado");
     }
+    return true;
+  }
+
+  async changePassword(
+    id: number,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<boolean> {
+    const user = UserRepository.findById(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    // Buscar a senha com hash do repositório (versão completa)
+    const userWithPassword = UserRepository.findByIdWithPassword(id);
+    if (!userWithPassword) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    // Verificar se a senha atual está correta
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      userWithPassword.password
+    );
+
+    if (!isPasswordValid) {
+      throw new Error("Senha atual incorreta");
+    }
+
+    // Hash da nova senha
+    const newPasswordHash = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
+
+    // Atualizar apenas a senha
+    const success = UserRepository.update(id, {
+      name: user.name,
+      email: user.email,
+      password: newPasswordHash,
+    });
+
+    if (!success) {
+      throw new Error("Erro ao alterar senha");
+    }
+
     return true;
   }
 }

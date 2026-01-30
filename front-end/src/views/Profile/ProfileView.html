@@ -1,0 +1,77 @@
+<div class="profile-container">
+    <!-- Header -->
+    <header class="profile-header">
+        <div>
+            <h1 class="profile-title">Configurações de Perfil</h1>
+            <p class="profile-subtitle">Gerencie suas informações pessoais e segurança da conta.</p>
+        </div>
+        {{btn_edit}}
+    </header>
+
+    <!-- Informações Pessoais -->
+    <section class="profile-card">
+        <div class="card-header">
+            <i class="material-icons-outlined">person</i>
+            <h2>Informações Pessoais</h2>
+        </div>
+
+        <div class="profile-content">
+            <!-- Avatar Section -->
+            <div class="avatar-section">
+                <div class="avatar-circle">
+                    <span class="avatar-initial">{{userInitial}}</span>
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="form-fields">
+                <div class="form-group">
+                    <label for="profile-name">Nome Completo</label>
+                    <input
+                        type="text"
+                        id="profile-name"
+                        class="form-input"
+                        value="{{userName}}"
+                        data-bind="name"
+                        disabled
+                    />
+                    <span class="field-error" data-bind="name-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-email">Endereço de E-mail</label>
+                    <input
+                        type="email"
+                        id="profile-email"
+                        class="form-input"
+                        value="{{userEmail}}"
+                        data-bind="email"
+                        disabled
+                    />
+                    <span class="field-error" data-bind="email-error"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Segurança -->
+    <section class="profile-card">
+        <div class="card-header">
+            <i class="material-icons-outlined">security</i>
+            <h2>Segurança</h2>
+        </div>
+
+        <div class="security-item">
+            <div class="security-info">
+                <h3>Senha da conta</h3> 
+            </div>
+            {{btn_change_password}}
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" data-section="action-buttons" style="display: none;">
+        {{btn_cancel}}
+        {{btn_save}}
+    </div>
+</div>

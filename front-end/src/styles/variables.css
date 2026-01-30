@@ -1,0 +1,112 @@
+:root {
+  /* =========================================
+     1. PALETA DA MARCA (BRAND)
+     ========================================= */
+  --color-primary: #13EC5B;           /* Botões, Logo */
+  --color-primary-light: #A1E7A8;     /* Hover, Detalhes */
+  --color-primary-dark-text: #0D7A2D; /* Textos em destaque */
+  --color-primary-btn-text: #1E1F24;  /* Texto do botão primário */
+  --color-icon-text: #0D7A2D;         /* Texto de ícones/avatars (não muda no dark) */
+
+
+  /* =========================================
+     2. TIPOGRAFIA (TEXT)
+     ========================================= */
+  --text-main: #1E1F24;      /* Títulos */
+  --text-secondary: #585962; /* Parágrafos */
+  --text-tertiary: #80828D;  /* Desabilitados */
+
+
+  /* =========================================
+     3. FUNDOS E SUPERFÍCIES (BACKGROUNDS)
+     ========================================= */
+  --bg-page: #F6F8F6;       /* Fundo da tela */
+  --bg-surface: #F0F0F2;    /* Cards, Sidebar */
+  --bg-decorative: #EBF3EB; /* Detalhes visuais */
+
+
+  /* =========================================
+     4. ESTADOS INTERATIVOS (UI)
+     ========================================= */
+  --bg-active-item: #D1F3D3; /* Menu ativo */
+  --border-color: #E0E0E0;   /* Bordas gerais */
+
+
+  /* =========================================
+     5. SISTEMA DE PRIORIDADE (URGÊNCIA)
+     ========================================= */
+  
+  /* --- ALTA (Vermelho) --- */
+  --priority-high-bg: #FFC5C5;
+  --priority-high-dot: #FF3939;
+  --priority-high-text: #451D1D; /* Marrom avermelhado escuro para leitura */
+
+  /* --- MÉDIA (Amarelo/Laranja) --- */
+  --priority-mid-bg: #FFF4CC;
+  --priority-mid-dot: #B87503;
+  --priority-mid-text: #451D1D; /* Mantido o mesmo tom escuro para consistência */
+
+  /* --- BAIXA (Verde) --- */
+  --priority-low-bg: #DCFCE7;
+  --priority-low-dot: #166534;
+  --priority-low-text: #166534;
+
+
+  /* =========================================
+     6. SISTEMA DE STATUS (KANBAN / PROCESSO)
+     ========================================= */
+  
+  /* --- FAZENDO / EM ANDAMENTO (Azul) --- */
+  /* Renomeei de 'mid' para 'doing' para não confundir com prioridade média */
+  --status-doing-bg: #D6E4FF;
+  --status-doing-dot: #2F80ED;
+  --status-doing-text: #2F80ED;
+
+  /* --- PENDENTE (Cinza ou usar a cor de Alta Prioridade se for urgente) --- */
+  --status-todo-bg: #E3E3E5;
+  --status-todo-dot: #585962;
+  --status-todo-text: #585962;
+
+  /* --- CONCLUÍDO (Verde igual Baixa Prioridade) --- */
+  --status-done-bg: #DCFCE7;
+  --status-done-dot: #166534;
+  --status-done-text: #166534;
+}
+
+/* ============================================
+   DARK MODE VARIABLES
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    /* Cores de texto e fundo */
+    --text-main: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --bg-page: #1a1a2e;
+    --bg-surface: #0f172a;
+    --border-color: #334155;
+    --bg-active-item: rgba(19, 236, 91, 0.15);
+
+    /* Cores da marca - ajustadas para dark mode */
+    --color-primary-dark-text: #13EC5B; /* Mais brilhante no dark mode para contraste */
+    --color-primary-btn-text: #1E1F24; /* Mantém texto escuro no botão primário */
+    /* --color-icon-text NÃO é redefinido - mantém #0D7A2D em ambos os modos */
+
+    /* Ajustes de prioridades para dark mode */
+    --priority-high-bg: rgba(239, 68, 68, 0.2);
+    --priority-high-text: #fca5a5;
+    --priority-mid-bg: rgba(245, 158, 11, 0.2);
+    --priority-mid-text: #fcd34d;
+    --priority-low-bg: rgba(34, 197, 94, 0.2);
+    --priority-low-text: #86efac;
+
+    /* Ajustes de status para dark mode */
+    --status-doing-bg: rgba(59, 130, 246, 0.2);
+    --status-doing-text: #93c5fd;
+    --status-todo-bg: rgba(148, 163, 184, 0.2);
+    --status-todo-text: #cbd5e1;
+    --status-done-bg: rgba(34, 197, 94, 0.2);
+    --status-done-text: #86efac;
+  }
+}

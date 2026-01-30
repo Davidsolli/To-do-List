@@ -1,0 +1,111 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  gap: 8px;
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-btn-text);
+}
+.btn--primary:hover { background-color: var(--color-primary-light); }
+
+.btn--secondary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark-text);
+}
+.btn--secondary:hover { filter: brightness(0.95); }
+
+.btn--outline {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-main);
+}
+.btn--outline:hover {
+  border-color: var(--text-main);
+  background-color: rgba(0,0,0,0.05);
+}
+
+.btn--ghost { background: transparent; color: var(--color-primary-dark-text); }
+.btn--ghost:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--text-main);
+}
+
+.btn--ghost-icon {
+  background: transparent;
+  color: var(--text-tertiary);
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+}
+.btn--ghost-icon:hover {
+  background: var(--bg-page);
+  color: var(--text-main);
+}
+.btn--ghost-icon .btn-text {
+  display: none;
+}
+
+.btn--ghost-icon-danger {
+  background: transparent;
+  color: var(--text-tertiary);
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+}
+.btn--ghost-icon-danger:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+.btn--ghost-icon-danger .btn-text {
+  display: none;
+}
+
+.btn--full { width: 100%; }
+
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn--link {
+    background: transparent;
+    color: var(--color-primary-dark-text);
+    padding: 0;
+    font-weight: 600;
+    min-height: auto;
+}
+.btn--link:hover {
+    text-decoration: underline;
+    background: transparent;
+    filter: none;
+}
+
+.btn--danger {
+    background-color: #ef4444;
+    color: white;
+}
+.btn--danger:hover {
+    background-color: #dc2626;
+}
+
+.btn--danger-icon {
+    background-color: #ef4444;
+    color: white;
+    padding: 8px;
+    min-width: 36px;
+    min-height: 36px;
+}
+.btn--danger-icon:hover {
+    background-color: #dc2626;
+}
+.btn--danger-icon .btn-text {
+    display: none;
+}
+

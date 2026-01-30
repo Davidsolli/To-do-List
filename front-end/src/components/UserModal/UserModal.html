@@ -1,0 +1,53 @@
+<div class="modal-overlay">
+    <div class="modal">
+        <div class="modal__header">
+            <h3 class="modal__title">{{title}}</h3>
+            <button class="modal__close-btn" data-action="close" aria-label="Fechar">
+                <i class="material-icons-outlined">close</i>
+            </button>
+        </div>
+
+        <form class="modal__body" data-form="user">
+            <div class="form-group">
+                <label for="user-name" class="form-label">Nome Completo *</label>
+                <input type="text" id="user-name" class="form-input" placeholder="Digite o nome completo"
+                    data-bind="name" required />
+            </div>
+
+            <div class="form-group">
+                <label for="user-email" class="form-label">E-mail *</label>
+                <input type="email" id="user-email" class="form-input" placeholder="Digite o e-mail" data-bind="email"
+                    required />
+            </div>
+
+            <div class="form-group">
+                <label for="user-role" class="form-label">Função *</label>
+                {{role_select}}
+            </div>
+
+            <div class="form-group" data-section="password-fields">
+                <label for="user-password" class="form-label">Senha *</label>
+                <div class="form-input-wrapper">
+                    <input type="password" id="user-password" class="form-input form-input--has-toggle"
+                        placeholder="Digite a senha (mín. 8 caracteres)" data-bind="password" />
+                    <button type="button" class="input-toggle-btn" data-action="toggle-password"
+                        data-target="user-password">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <small class="text-tertiary">Mínimo 8 caracteres com letras, números e símbolos</small>
+            </div>
+
+            <p class="form-error" data-bind="error" style="display: none;"></p>
+        </form>
+
+        <div class="modal__footer">
+            <button class="btn btn--outline" data-action="cancel" type="button">
+                Cancelar
+            </button>
+            <button class="btn btn--primary" data-action="save" type="submit">
+                {{submitText}}
+            </button>
+        </div>
+    </div>
+</div>

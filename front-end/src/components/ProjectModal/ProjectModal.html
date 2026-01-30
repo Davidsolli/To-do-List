@@ -1,0 +1,46 @@
+<div class="modal-overlay">
+    <div class="modal">
+        <div class="modal__header">
+            <h3 class="modal__title">{{title}}</h3>
+            <button class="modal__close-btn" data-action="close" aria-label="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form class="modal__body" data-form="project">
+            <div class="form-group">
+                <label for="project-name" class="form-label">Nome do Projeto *</label>
+                <input
+                    type="text"
+                    id="project-name"
+                    class="form-input"
+                    placeholder="Digite o nome do projeto"
+                    data-bind="name"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="project-description" class="form-label">Descrição</label>
+                <textarea
+                    id="project-description"
+                    class="form-textarea"
+                    rows="4"
+                    placeholder="Digite a descrição do projeto (opcional)"
+                    data-bind="description"
+                ></textarea>
+            </div>
+
+            <p class="form-error" data-bind="error" style="display: none;"></p>
+        </form>
+
+        <div class="modal__footer">
+            <button class="btn btn--outline" data-action="cancel" type="button">
+                Cancelar
+            </button>
+            <button class="btn btn--primary" data-action="save" type="submit">
+                {{submitText}}
+            </button>
+        </div>
+    </div>
+</div>

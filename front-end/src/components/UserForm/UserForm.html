@@ -1,0 +1,27 @@
+<form class="user-form" data-form="user-form">
+  <div class="form-group">
+    {{name_input}}
+  </div>
+
+  <div class="form-group">
+    {{email_input}}
+  </div>
+
+  <div class="form-group">
+    {{password_input}}
+  </div>
+
+  <div class="form-group">
+    <label for="user-role" class="form-label">Função</label>
+    <select id="user-role" class="form-select">
+      <option value="user">Usuário</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <span id="error-user-role" class="form-error"></span>
+  </div>
+
+  <div class="form-actions">
+    {{cancel_button}}
+    {{submit_button}}
+  </div>
+</form>

@@ -1,0 +1,40 @@
+<div class="users-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Gerenciamento de Usuários</h1>
+            <p class="text-secondary">Visualize e gerencie todos os usuários do sistema</p>
+        </div>
+        <div class="header-actions">
+            {{btn_new_user}}
+        </div>
+    </header>
+
+    <div class="search-section">
+        <input type="text" class="search-input" placeholder="Buscar por nome ou email..." data-action="search" />
+    </div>
+
+    <div class="users-table-container">
+
+        <div class="loading-wrapper" data-bind="loading-state">
+            <div class="spinner"></div>
+            <span>Carregando usuários...</span>
+        </div>
+
+        <table class="users-table" data-bind="users-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Função</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody data-bind="users-list">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="empty-state-msg" data-bind="empty-state" style="display: none;">
+        Nenhum usuário encontrado no sistema.
+    </div>
+</div>

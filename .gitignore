@@ -1,5 +1,8 @@
-# Ignorar pasta node_modules
+# Ignorar pastas
 **/node_modules/
+**/dist/
+**/src/database/app.db
 
-# Remover as variaveis de ambiente
-*/.env
+# Ignorar arquivos
+*.env
+.vscode/

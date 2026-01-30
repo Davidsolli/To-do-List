@@ -1,0 +1,166 @@
+<div class="profile-container">
+    <!-- Header -->
+    <header class="profile-header">
+        <div>
+            <h1 class="profile-title">Configurações de Perfil</h1>
+            <p class="profile-subtitle">Gerencie suas informações pessoais e segurança da conta.</p>
+        </div>
+        <button id="edit-profile-btn" class="btn-edit">
+            <i class="fas fa-edit"></i>
+            Editar Perfil
+        </button>
+    </header>
+
+    <!-- Informações Pessoais -->
+    <section class="profile-card">
+        <div class="card-header">
+            <i class="material-icons-outlined">person</i>
+            <h2>Informações Pessoais</h2>
+        </div>
+
+        <div class="profile-content">
+            <!-- Avatar Section -->
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    <div class="avatar-circle">
+                        <span class="avatar-initial">{{userInitial}}</span>
+                    </div>
+                    <button id="avatar-upload-btn" class="avatar-upload-btn" title="Alterar foto">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <p class="avatar-hint">JPG, PNG ou GIF.<br>Máx 2MB.</p>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="form-fields">
+                <div class="form-group">
+                    <label for="profile-name">Nome Completo</label>
+                    <input
+                        type="text"
+                        id="profile-name"
+                        class="form-input"
+                        value="{{userName}}"
+                        disabled
+                    />
+                    <span id="name-error" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-email">Endereço de E-mail</label>
+                    <input
+                        type="email"
+                        id="profile-email"
+                        class="form-input"
+                        value="{{userEmail}}"
+                        disabled
+                    />
+                    <span id="email-error" class="field-error"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Segurança -->
+    <section class="profile-card">
+        <div class="card-header">
+            <i class="material-icons-outlined">security</i>
+            <h2>Segurança</h2>
+        </div>
+
+        <div class="security-item">
+            <div class="security-info">
+                <h3>Senha da conta</h3>
+                <p id="last-password-change">Última alteração há 3 meses.</p>
+            </div>
+            <button id="change-password-btn" class="btn-secondary">
+                <i class="fas fa-lock"></i>
+                Alterar Senha
+            </button>
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div id="action-buttons" class="action-buttons" style="display: none;">
+        <button id="cancel-btn" class="btn-cancel">
+            Cancelar
+        </button>
+        <button id="save-profile-btn" class="btn-save">
+            <i class="fas fa-save"></i>
+            Salvar Alterações
+        </button>
+    </div>
+</div>
+
+<!-- Modal de Alteração de Senha -->
+<div id="password-modal" class="modal">
+    <div class="modal-overlay" onclick="document.getElementById('password-modal').classList.remove('active')"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>
+                <i class="fas fa-lock"></i>
+                Alterar Senha
+            </h2>
+            <button id="close-modal-btn" class="modal-close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="current-password">Senha Atual</label>
+                <input
+                    type="password"
+                    id="current-password"
+                    class="form-input"
+                    placeholder="Digite sua senha atual"
+                    autocomplete="current-password"
+                />
+                <span id="current-password-error" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="new-password">Nova Senha</label>
+                <input
+                    type="password"
+                    id="new-password"
+                    class="form-input"
+                    placeholder="Digite a nova senha (mín. 8 caracteres)"
+                    autocomplete="new-password"
+                />
+                <span id="new-password-error" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm-password">Confirmar Nova Senha</label>
+                <input
+                    type="password"
+                    id="confirm-password"
+                    class="form-input"
+                    placeholder="Digite a nova senha novamente"
+                    autocomplete="new-password"
+                />
+                <span id="confirm-password-error" class="field-error"></span>
+            </div>
+
+            <div class="password-requirements">
+                <p class="requirements-title">Requisitos da senha:</p>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Mínimo de 8 caracteres</li>
+                    <li><i class="fas fa-check-circle"></i> Contendo maiúsculas, minúsculas, números e caracteres especiais (#, @, $, %, etc...)</li>
+                    <li><i class="fas fa-check-circle"></i> Não use senhas óbvias ou comuns</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button id="cancel-modal-btn" class="btn-cancel">
+                Cancelar
+            </button>
+            <button id="save-password-btn" class="btn-save">
+                <i class="fas fa-lock"></i>
+                Alterar Senha
+            </button>
+        </div>
+    </div>
+</div>

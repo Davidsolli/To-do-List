@@ -33,6 +33,14 @@ userRoutes.put(
   userController.update,
 );
 
+userRoutes.put(
+  "/:id/password",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  checkOwnership,
+  userController.changePassword,
+);
+
 userRoutes.delete(
   "/:id",
   authenticate,

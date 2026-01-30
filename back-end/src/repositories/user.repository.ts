@@ -25,6 +25,18 @@ export default class UserRepository {
       .get(id) as User | undefined;
   }
 
+  static findByIdWithPassword(id: number): (User & { password: string }) | undefined {
+    return db
+      .prepare(
+        `
+      SELECT id, name, email, role, password
+      FROM users
+      WHERE id = ?
+    `,
+      )
+      .get(id) as (User & { password: string }) | undefined;
+  }
+
   static update(id: number, user: UserUpdateDTO): boolean {
     const fields: string[] = [];
     const values: any[] = [];

@@ -6,56 +6,14 @@ import { ProjectService } from '../../services/ProjectService';
 import { UserService } from '../../services/UserService';
 import { TaskService } from '../../services/TaskService';
 import { TaskCard } from '../../components/TaskCard/TaskCard';
-import { Modal as ModalInstance } from '../../components/Modal/Modal';
+import { Modal } from '../../components/Modal/Modal';
+import { Button } from '../../components/Button/Button';
+import { Select } from '../../components/Select/Select';
+import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
+import { ProjectModal } from '../../components/ProjectModal/ProjectModal';
+import { app } from '../../App';
 import template from './ProjectDetailsView.html';
 import './ProjectDetailsView.css';
-
-// Adaptador para manter compatibilidade com API antiga do Modal
-class ModalAdapter {
-    private static instances: Map<string, ModalInstance> = new Map();
-
-    constructor(private id: string, private title: string, private content: string) {}
-
-    render(): string {
-        // Retorna HTML que será inserido no container
-        return `
-            <div class="modal-overlay-legacy" id="${this.id}" data-modal-id="${this.id}">
-                <div class="modal-content-legacy" onclick="event.stopPropagation()">
-                    <div class="modal-header-legacy">
-                        <h2>${this.title}</h2>
-                        <button class="modal-close" type="button" data-modal-close="${this.id}">&times;</button>
-                    </div>
-                    <div class="modal-body-legacy">
-                        ${this.content}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    static open(id: string): void {
-        const overlay = document.querySelector(`[data-modal-id="${id}"]`);
-        if (overlay) {
-            (overlay as HTMLElement).style.display = 'flex';
-            (overlay as HTMLElement).style.opacity = '1';
-            (overlay as HTMLElement).style.pointerEvents = 'all';
-        }
-    }
-
-    static close(id: string): void {
-        const overlay = document.querySelector(`[data-modal-id="${id}"]`);
-        if (overlay) {
-            (overlay as HTMLElement).style.opacity = '0';
-            (overlay as HTMLElement).style.pointerEvents = 'none';
-            setTimeout(() => {
-                (overlay as HTMLElement).style.display = 'none';
-            }, 300);
-        }
-    }
-}
-
-// Alias para facilitar uso
-const Modal = ModalAdapter;
 
 export class ProjectDetailsView extends Component {
     private projectId: string | null = null;
@@ -79,7 +37,41 @@ export class ProjectDetailsView extends Component {
     }
 
     getTemplate(): string {
-        return template;
+        const btnFilter = new Button({
+            text: 'Filtrar',
+            variant: 'ghost',
+            action: 'btn-filter',
+            icon: 'fa-solid fa-filter'
+        });
+
+        const btnAddTask = new Button({
+            text: 'Nova Tarefa',
+            variant: 'primary',
+            action: 'btn-add-task',
+            icon: 'fa-solid fa-plus'
+        });
+
+        const btnEditProject = new Button({
+            text: '',
+            variant: 'ghost-icon',
+            action: 'btn-edit-project',
+            icon: 'fa-solid fa-pen',
+            title: 'Editar Projeto'
+        });
+
+        const btnDeleteProject = new Button({
+            text: '',
+            variant: 'danger-icon',
+            action: 'btn-delete-project',
+            icon: 'fa-solid fa-trash',
+            title: 'Excluir Projeto'
+        });
+
+        return template
+            .replace('{{btn_filter}}', btnFilter.render())
+            .replace('{{btn_add_task}}', btnAddTask.render())
+            .replace('{{btn_edit_project}}', btnEditProject.render())
+            .replace('{{btn_delete_project}}', btnDeleteProject.render());
     }
 
     protected async afterRender(): Promise<void> {
@@ -194,13 +186,13 @@ export class ProjectDetailsView extends Component {
         if (counts.under_review) counts.under_review.textContent = countMap.under_review;
         if (counts.completed) counts.completed.textContent = countMap.completed;
 
-        // Add Dotted Button to each column for better UX (Mockup shows it in the last one at least)
+        // Add Dotted Button to each column for better UX
         Object.keys(cols).forEach(status => {
             const colBody = cols[status as keyof typeof cols];
             if (colBody) {
                 const addBtn = document.createElement('div');
                 addBtn.className = 'add-task-placeholder';
-                addBtn.innerHTML = '<span class="material-icons-outlined">add_circle_outline</span>';
+                addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
                 addBtn.addEventListener('click', () => this.openTaskModal(undefined, status));
                 colBody.appendChild(addBtn);
             }
@@ -208,18 +200,20 @@ export class ProjectDetailsView extends Component {
     }
 
     private bindEvents() {
-        this.container.querySelector('#btn-add-task')?.addEventListener('click', () => this.openTaskModal());
-        this.container.querySelector('#btn-filter')?.addEventListener('click', () => this.openFilterModal());
+        const view = this.container.querySelector('.project-details-container');
+        if (!view) return;
 
-        this.container.querySelector('#btn-edit-project')?.addEventListener('click', () => this.openEditProjectModal());
-        this.container.querySelector('#btn-delete-project')?.addEventListener('click', () => this.openDeleteProjectModal());
+        view.querySelector('[data-action="btn-add-task"]')?.addEventListener('click', () => this.openTaskModal());
+        view.querySelector('[data-action="btn-filter"]')?.addEventListener('click', () => this.openFilterModal());
+        view.querySelector('[data-action="btn-edit-project"]')?.addEventListener('click', () => this.openEditProjectModal());
+        view.querySelector('[data-action="btn-delete-project"]')?.addEventListener('click', () => this.openDeleteProjectModal());
 
         // Drag and Drop
-        this.setupDragAndDrop();
+        this.setupDragAndDrop(view as HTMLElement);
     }
 
-    private setupDragAndDrop() {
-        const columns = this.container.querySelectorAll('.kanban-column');
+    private setupDragAndDrop(view: HTMLElement) {
+        const columns = view.querySelectorAll('.kanban-column');
         columns.forEach(col => {
             col.addEventListener('dragover', (e: any) => {
                 e.preventDefault();
@@ -267,7 +261,6 @@ export class ProjectDetailsView extends Component {
         if (task && task.estimate) {
             const date = new Date(task.estimate);
             if (!isNaN(date.getTime())) {
-                // Use local date components to avoid timezone shifts
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
@@ -275,46 +268,86 @@ export class ProjectDetailsView extends Component {
             }
         }
 
+        // Create buttons using Button component
+        const btnCancel = new Button({
+            text: 'Cancelar',
+            variant: 'outline',
+            type: 'button',
+            action: 'cancel-task'
+        });
+
+        const btnSubmit = new Button({
+            text: isEdit ? 'Salvar' : 'Criar',
+            variant: 'primary',
+            type: 'submit'
+        });
+
+        const prioritySelect = new Select({
+            name: 'priority',
+            options: [
+                { value: 'low', label: 'Baixa', selected: task?.priority === 'low' },
+                { value: 'medium', label: 'Média', selected: task?.priority === 'medium' || !task },
+                { value: 'high', label: 'Alta', selected: task?.priority === 'high' }
+            ]
+        });
+
         // Form HTML
         const formHtml = `
-            <form id="task-form" class="task-form">
+            <form id="task-form" class="form">
                 <div class="form-group">
                     <label>Título</label>
-                    <input type="text" name="title" value="${task?.title || ''}" required class="form-control">
+                    <input type="text" name="title" value="${task?.title || ''}" required class="form-input">
                 </div>
                 <div class="form-group">
                     <label>Descrição</label>
-                    <textarea name="description" class="form-control" rows="3">${task?.description || ''}</textarea>
+                    <textarea name="description" class="form-input" rows="3">${task?.description || ''}</textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Prioridade</label>
-                        <select name="priority" class="form-control">
-                            <option value="low" ${task?.priority === 'low' ? 'selected' : ''}>Baixa</option>
-                            <option value="medium" ${task?.priority === 'medium' ? 'selected' : (!task ? 'selected' : '')}>Média</option>
-                            <option value="high" ${task?.priority === 'high' ? 'selected' : ''}>Alta</option>
-                        </select>
+                        ${prioritySelect.render()}
                     </div>
                      <div class="form-group">
                         <label>Data de Conclusão</label>
-                        <input type="date" name="estimate" value="${dateValue}" class="form-control">
+                        <div class="input-with-icon">
+                            <input type="date" name="estimate" value="${dateValue}" class="form-input">
+                            <i class="fa-solid fa-calendar"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="form-actions" style="margin-top: 1rem; text-align: right;">
-                     <button type="button" class="btn btn--secondary" id="cancel-task">Cancelar</button>
-                     <button type="submit" class="btn btn--primary">${isEdit ? 'Salvar' : 'Criar'}</button>
+                <div class="form-actions">
+                     ${btnCancel.render()}
+                     ${btnSubmit.render()}
                 </div>
             </form>
         `;
 
-        this.showModal('task-modal', isEdit ? 'Editar Tarefa' : 'Nova Tarefa', formHtml, (container) => {
-            const form = container.querySelector('#task-form') as HTMLFormElement;
-            form.addEventListener('submit', (e) => this.handleSaveTask(e));
-            container.querySelector('#cancel-task')?.addEventListener('click', () => Modal.close('task-modal'));
+        const modal = new Modal({
+            title: isEdit ? 'Editar Tarefa' : 'Nova Tarefa',
+            content: formHtml,
+            onClose: () => { }
         });
+
+        modal.open();
+
+        const modalEl = modal.getElement();
+        if (modalEl) {
+            // Bind select events
+            const selectEl = modalEl.querySelector('[data-name="priority"]');
+            if (selectEl) {
+                prioritySelect.bindEvents(selectEl as HTMLElement);
+            }
+
+            const form = modalEl.querySelector('#task-form') as HTMLFormElement;
+            form.addEventListener('submit', (e) => {
+                this.handleSaveTask(e, prioritySelect);
+                modal.close();
+            });
+            modalEl.querySelector('[data-action="cancel-task"]')?.addEventListener('click', () => modal.close());
+        }
     }
 
-    private async handleSaveTask(e: Event) {
+    private async handleSaveTask(e: Event, prioritySelect: Select) {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
 
@@ -322,7 +355,6 @@ export class ProjectDetailsView extends Component {
         const dateStr = formData.get('estimate') as string;
         let timestamp: number | undefined = undefined;
         if (dateStr) {
-            // Parse local components to avoid UTC shift
             const [year, month, day] = dateStr.split('-').map(Number);
             const dateObj = new Date(year, month - 1, day, 12, 0, 0);
             if (!isNaN(dateObj.getTime())) {
@@ -333,7 +365,7 @@ export class ProjectDetailsView extends Component {
         const data = {
             title: formData.get('title') as string,
             description: formData.get('description') as string,
-            priority: formData.get('priority') as any,
+            priority: prioritySelect.getValue() as any,
             estimate: timestamp,
             project_id: Number(this.projectId)
         };
@@ -346,7 +378,6 @@ export class ProjectDetailsView extends Component {
                 await TaskService.create({ ...data, status: this.currentStatusForCreation as any });
                 (window as any).toast.success('Tarefa criada!');
             }
-            Modal.close('task-modal');
             this.loadProjectData();
         } catch (error) {
             console.error(error);
@@ -357,304 +388,324 @@ export class ProjectDetailsView extends Component {
     private openEditProjectModal() {
         if (!this.project) return;
 
-        const formHtml = `
-            <form id="edit-project-form" class="task-form">
-                <div class="form-group">
-                    <label>Nome do Projeto</label>
-                    <input type="text" name="name" value="${this.project.name}" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <textarea name="description" class="form-control" rows="3">${this.project.description || ''}</textarea>
-                </div>
-                <div class="form-actions" style="margin-top: 1rem; text-align: right;">
-                     <button type="button" class="btn btn--secondary" id="cancel-edit-project">Cancelar</button>
-                     <button type="submit" class="btn btn--primary">Salvar Alterações</button>
-                </div>
-            </form>
-        `;
-
-        this.showModal('project-modal', 'Editar Projeto', formHtml, (container) => {
-            const form = container.querySelector('#edit-project-form') as HTMLFormElement;
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                const data = {
-                    name: formData.get('name') as string,
-                    description: formData.get('description') as string
-                };
-
-                try {
-                    await ProjectService.update(String(this.project!.id), data);
-                    (window as any).toast.success('Projeto atualizado!');
-                    Modal.close('project-modal');
-                    this.loadProjectData();
-                } catch (err) {
-                    (window as any).toast.error('Erro ao atualizar projeto.');
-                }
-            });
-            container.querySelector('#cancel-edit-project')?.addEventListener('click', () => Modal.close('project-modal'));
+        const modal = new ProjectModal({
+            mode: 'edit',
+            projectId: this.project.id,
+            onSuccess: () => {
+                this.loadProjectData();
+                app.sidebar?.refreshProjectsList();
+            }
         });
+
+        modal.show();
     }
 
     private openDeleteProjectModal() {
         if (!this.project) return;
 
-        const contentHtml = `
-            <p>Tem certeza que deseja excluir o projeto <strong>"${this.project.name}"</strong>? Esta ação não pode ser desfeita.</p>
-            <div class="form-actions" style="margin-top: 1.5rem; text-align: right;">
-                <button type="button" class="btn btn--secondary" id="cancel-delete-project">Cancelar</button>
-                <button type="button" class="btn btn--danger" id="confirm-delete-project">Excluir Projeto</button>
-            </div>
-        `;
-
-        this.showModal('delete-project-modal', 'Excluir Projeto', contentHtml, (container) => {
-            container.querySelector('#cancel-delete-project')?.addEventListener('click', () => Modal.close('delete-project-modal'));
-            container.querySelector('#confirm-delete-project')?.addEventListener('click', async () => {
+        const dialog = new ConfirmDialog({
+            title: 'Excluir Projeto',
+            message: `Tem certeza que deseja excluir o projeto "${this.project.name}"? Esta ação não pode ser desfeita.`,
+            confirmText: 'Excluir',
+            cancelText: 'Cancelar',
+            onConfirm: async () => {
                 try {
-                    await ProjectService.delete(String(this.project!.id));
+                    await ProjectService.deleteProject(this.project!.id);
                     (window as any).toast.success('Projeto excluído.');
-                    Modal.close('delete-project-modal');
-                    (window as any).app.navigate('/projects');
+                    app.navigate('/projetos');
                 } catch (err) {
                     (window as any).toast.error('Erro ao excluir projeto.');
                 }
-            });
+            }
         });
+
+        dialog.show();
     }
 
     private openDeleteTaskModal(task: Task) {
-        const contentHtml = `
-            <p>Tem certeza que deseja excluir a tarefa <strong>"${task.title}"</strong>?</p>
-            <div class="form-actions" style="margin-top: 1.5rem; text-align: right;">
-                <button type="button" class="btn btn--secondary" id="cancel-delete-task">Cancelar</button>
-                <button type="button" class="btn btn--danger" id="confirm-delete-task">Excluir Tarefa</button>
-            </div>
-        `;
-
-        this.showModal('delete-task-modal', 'Excluir Tarefa', contentHtml, (container) => {
-            container.querySelector('#cancel-delete-task')?.addEventListener('click', () => Modal.close('delete-task-modal'));
-            container.querySelector('#confirm-delete-task')?.addEventListener('click', async () => {
+        const dialog = new ConfirmDialog({
+            title: 'Excluir Tarefa',
+            message: `Tem certeza que deseja excluir a tarefa "${task.title}"?`,
+            confirmText: 'Excluir',
+            cancelText: 'Cancelar',
+            onConfirm: async () => {
                 try {
                     await TaskService.delete(String(task.id));
                     (window as any).toast.success('Tarefa excluída.');
-                    Modal.close('delete-task-modal');
                     this.loadProjectData();
                 } catch (err) {
                     (window as any).toast.error('Erro ao excluir tarefa.');
                 }
-            });
+            }
         });
+
+        dialog.show();
     }
 
     private openFilterModal() {
+        // Create buttons using Button component
+        const btnClear = new Button({
+            text: 'Limpar Filtros',
+            variant: 'outline',
+            type: 'button',
+            action: 'clear-filters'
+        });
+
+        const btnApply = new Button({
+            text: 'Aplicar Filtros',
+            variant: 'primary',
+            type: 'submit'
+        });
+
+        const prioritySelect = new Select({
+            name: 'priority',
+            options: [
+                { value: 'all', label: 'Todas', selected: this.filters.priority === 'all' },
+                { value: 'low', label: 'Baixa', selected: this.filters.priority === 'low' },
+                { value: 'medium', label: 'Média', selected: this.filters.priority === 'medium' },
+                { value: 'high', label: 'Alta', selected: this.filters.priority === 'high' }
+            ]
+        });
+
         const formHtml = `
-            <form id="filter-form" class="task-form">
+            <form id="filter-form" class="form">
                 <div class="form-group">
                     <label>Buscar por título ou descrição</label>
-                    <input type="text" name="search" value="${this.filters.search}" class="form-control" placeholder="Digite para buscar...">
+                    <input type="text" name="search" value="${this.filters.search}" class="form-input" placeholder="Digite para buscar...">
                 </div>
                 <div class="form-group">
                     <label>Prioridade</label>
-                    <select name="priority" class="form-control">
-                        <option value="all" ${this.filters.priority === 'all' ? 'selected' : ''}>Todas</option>
-                        <option value="low" ${this.filters.priority === 'low' ? 'selected' : ''}>Baixa</option>
-                        <option value="medium" ${this.filters.priority === 'medium' ? 'selected' : ''}>Média</option>
-                        <option value="high" ${this.filters.priority === 'high' ? 'selected' : ''}>Alta</option>
-                    </select>
+                    ${prioritySelect.render()}
                 </div>
-                <div class="form-actions" style="margin-top: 1rem; text-align: right;">
-                     <button type="button" class="btn btn--secondary" id="clear-filters">Limpar Filtros</button>
-                     <button type="submit" class="btn btn--primary">Aplicar Filtros</button>
+                <div class="form-actions">
+                     ${btnClear.render()}
+                     ${btnApply.render()}
                 </div>
             </form>
         `;
 
-        this.showModal('filter-modal', 'Filtrar Tarefas', formHtml, (container) => {
-            const form = container.querySelector('#filter-form') as HTMLFormElement;
+        const modal = new Modal({
+            title: 'Filtrar Tarefas',
+            content: formHtml,
+            onClose: () => { }
+        });
+
+        modal.open();
+
+        const modalEl = modal.getElement();
+        if (modalEl) {
+            // Bind select events
+            const selectEl = modalEl.querySelector('[data-name="priority"]');
+            if (selectEl) {
+                prioritySelect.bindEvents(selectEl as HTMLElement);
+            }
+
+            const form = modalEl.querySelector('#filter-form') as HTMLFormElement;
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const formData = new FormData(form);
                 this.filters.search = formData.get('search') as string;
-                this.filters.priority = formData.get('priority') as string;
+                this.filters.priority = prioritySelect.getValue();
                 this.applyFilters();
-                Modal.close('filter-modal');
+                modal.close();
             });
 
-            container.querySelector('#clear-filters')?.addEventListener('click', () => {
+            modalEl.querySelector('[data-action="clear-filters"]')?.addEventListener('click', () => {
                 this.filters.search = '';
                 this.filters.priority = 'all';
                 this.applyFilters();
-                Modal.close('filter-modal');
+                modal.close();
             });
-        });
+        }
     }
 
     private openTaskDetailModal(task: Task) {
-        const priorityLabels: Record<string, { label: string, color: string }> = {
-            low: { label: 'Baixa Prioridade', color: '#dcfce7' },
-            medium: { label: 'Média Prioridade', color: '#fef9c3' },
-            high: { label: 'Alta Prioridade', color: '#fee2e2' }
+        // Format deadline
+        const deadline = task.estimate ? new Date(task.estimate).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }) : null;
+
+        // Priority labels
+        const priorityLabels: Record<string, string> = {
+            'low': 'Baixa',
+            'medium': 'Média',
+            'high': 'Alta'
         };
 
+        // Status labels (usando os mesmos do DashboardView)
         const statusLabels: Record<string, string> = {
-            pending: 'Pendente',
-            in_progress: 'Em Progresso',
-            under_review: 'Revisão',
-            completed: 'Concluído'
+            'pending': 'Pendente',
+            'in_progress': 'Em Andamento',
+            'under_review': 'Em Revisão',
+            'completed': 'Concluído'
         };
 
-        const deadline = task.estimate ? new Date(task.estimate).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Sem prazo';
-        const priorityInfo = priorityLabels[task.priority] || priorityLabels.medium;
-        const owner = this.projectOwner || { name: 'Administrador', role: 'admin' };
+        const statusClasses: Record<string, string> = {
+            'pending': 'pending',
+            'in_progress': 'doing',
+            'under_review': 'review',
+            'completed': 'done'
+        };
 
-        // Calculate move time
-        const moveTime = localStorage.getItem(`task_move_${task.id}`);
-        let timeDisplay = 'agora mesmo';
-        if (moveTime) {
-            const diffMs = Date.now() - Number(moveTime);
-            const diffMin = Math.floor(diffMs / 60000);
-            const diffHrs = Math.floor(diffMin / 60);
-            const diffDays = Math.floor(diffHrs / 24);
+        const priorityLabel = priorityLabels[task.priority] || task.priority;
+        const statusLabel = statusLabels[task.status] || task.status;
+        const statusClass = statusClasses[task.status] || 'pending';
 
-            if (diffDays > 0) timeDisplay = `há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
-            else if (diffHrs > 0) timeDisplay = `há ${diffHrs} ${diffHrs === 1 ? 'hora' : 'horas'}`;
-            else if (diffMin > 0) timeDisplay = `há ${diffMin} ${diffMin === 1 ? 'minuto' : 'minutos'}`;
-            else timeDisplay = 'há poucos segundos';
-        }
+        // Create buttons
+        const btnEdit = new Button({
+            text: 'Editar Tarefa',
+            variant: 'primary',
+            type: 'button',
+            action: 'detail-edit-btn',
+            icon: 'fa-solid fa-pen'
+        });
+
+        const btnDelete = new Button({
+            text: 'Excluir',
+            variant: 'danger',
+            type: 'button',
+            action: 'detail-delete-btn',
+            icon: 'fa-solid fa-trash'
+        });
 
         const detailHtml = `
-            <div class="task-detail">
-                <div class="task-detail-breadcrumb">Kanban Board / Detalhes da Tarefa</div>
-                
+            <div class="task-detail-view">
                 <div class="task-detail-header">
-                    <div class="task-detail-header-info">
-                        <h1>${task.title}</h1>
-                        <p class="task-detail-meta"><span class="material-icons-outlined">calendar_today</span> Prazo: ${deadline}</p>
-                    </div>
-                    <div class="task-detail-header-actions">
-                        <button class="btn btn--edit-task" id="detail-edit-btn">
-                            <span class="material-icons-outlined">edit</span> Editar Tarefa
-                        </button>
-                        <button class="btn btn--delete-task-outline" id="detail-delete-btn">
-                            <span class="material-icons-outlined">delete_outline</span> Excluir
-                        </button>
-                    </div>
-                </div>
-
-                <div class="task-detail-grid">
-                    <div class="task-detail-section">
-                        <label>CLASSIFICAÇÃO</label>
+                    <h2 class="task-detail-title">${task.title}</h2>
+                    <div class="task-detail-meta">
                         <div class="task-detail-badges">
-                            <span class="badge badge--priority" style="background: ${priorityInfo.color}">${priorityInfo.label}</span>
-                            <span class="badge badge--status">${statusLabels[task.status]}</span>
+                            <span class="badge badge--${task.priority}">
+                                ${priorityLabel}
+                            </span>
+                            <span class="badge badge--${statusClass}">
+                                ${statusLabel}
+                            </span>
                         </div>
+                        ${deadline ? `
+                            <div class="task-deadline">
+                                <i class="fa-solid fa-calendar"></i>
+                                <span>${deadline}</span>
+                            </div>
+                        ` : ''}
                     </div>
+                </div>
+
+                <div class="task-detail-body">
                     <div class="task-detail-section">
-                        <label>ADMINISTRADOR</label>
-                        <div class="task-detail-assignee">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(owner.name)}&background=00ed64&color=001e2b" alt="Avatar" class="assignee-avatar">
-                            <div class="assignee-info">
-                                <strong>${owner.name}</strong>
-                                <span>${owner.role === 'admin' ? 'Administrador' : 'Usuário Responsável'}</span>
+                        <div class="section-label">
+                            <i class="fa-solid fa-align-left"></i>
+                            <span>Descrição</span>
+                        </div>
+                        <div class="section-content">
+                            ${task.description || '<em class="text-muted">Nenhuma descrição fornecida</em>'}
+                        </div>
+                    </div>
+
+                    <div class="task-detail-section">
+                        <div class="section-label">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span>Dica da IA</span>
+                        </div>
+                        <div class="ai-tip-container">
+                            <div class="ai-tip-content" id="ai-tip-content">
+                                ${task.tip ? `<p>${task.tip}</p>` : '<p class="text-muted loading-tip"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando dica...</p>'}
                             </div>
+                            <button class="btn-regenerate-tip" id="btn-regenerate-tip" ${!task.tip ? 'disabled' : ''}>
+                                <i class="fa-solid fa-rotate"></i>
+                                Regenerar
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="task-detail-section description-section">
-                    <div class="section-header">
-                        <span class="material-icons-outlined">subject</span>
-                        <label>DESCRIÇÃO</label>
-                    </div>
-                    <div class="description-content">
-                        ${task.description || 'Nenhuma descrição fornecida.'}
-                    </div>
-                </div>
-
-                <div class="task-detail-section activity-section">
-                    <div class="section-header">
-                        <span class="material-icons-outlined">history</span>
-                        <label>HISTÓRICO</label>
-                    </div>
-                    <div class="activity-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-icon status-change"><span class="material-icons-outlined">history</span></div>
-                            <div class="timeline-content">
-                                <strong>${owner.name}</strong> alterou o status para <span class="badge badge--mini">${statusLabels[task.status]}</span>
-                                <span class="timeline-time">${timeDisplay}</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="task-detail-footer">
+                    ${btnEdit.render()}
+                    ${btnDelete.render()}
                 </div>
             </div>
         `;
 
-        this.showLargeModal('task-detail-modal', '', detailHtml, (container) => {
-            container.querySelector('#detail-edit-btn')?.addEventListener('click', () => {
-                Modal.close('task-detail-modal');
+        const modal = new Modal({
+            title: 'Detalhes da Tarefa',
+            content: detailHtml,
+            onClose: () => { }
+        });
+
+        modal.open();
+
+        const modalEl = modal.getElement();
+        if (modalEl) {
+            // Edit button
+            modalEl.querySelector('[data-action="detail-edit-btn"]')?.addEventListener('click', () => {
+                modal.close();
                 this.openTaskModal(task);
             });
-            container.querySelector('#detail-delete-btn')?.addEventListener('click', () => {
-                Modal.close('task-detail-modal');
+
+            // Delete button
+            modalEl.querySelector('[data-action="detail-delete-btn"]')?.addEventListener('click', () => {
+                modal.close();
                 this.openDeleteTaskModal(task);
             });
-        });
-    }
 
-    private showLargeModal(id: string, title: string, content: string, bindFn: (container: HTMLElement) => void) {
-        let modalContainer = document.getElementById(`${id}-container`);
-        if (!modalContainer) {
-            modalContainer = document.createElement('div');
-            modalContainer.id = `${id}-container`;
-            modalContainer.className = 'large-modal-wrapper';
-            this.container.appendChild(modalContainer);
+            // Generate tip if null
+            if (!task.tip) {
+                this.generateAndDisplayTip(task.id, modalEl, false);
+            }
+
+            // Regenerate tip button
+            const btnRegenerate = modalEl.querySelector('#btn-regenerate-tip');
+            btnRegenerate?.addEventListener('click', () => {
+                this.generateAndDisplayTip(task.id, modalEl, true);
+            });
         }
+    }
 
-        const modal = new Modal(id, title, content);
-        modalContainer.innerHTML = modal.render();
+    private async generateAndDisplayTip(taskId: number, modalEl: HTMLElement, force: boolean) {
+        const tipContent = modalEl.querySelector('#ai-tip-content');
+        const btnRegenerate = modalEl.querySelector('#btn-regenerate-tip') as HTMLButtonElement;
 
-        bindFn(modalContainer);
+        if (!tipContent) return;
 
-        const close = () => Modal.close(id);
-        modalContainer.querySelector('.modal-close')?.addEventListener('click', close);
-        modalContainer.querySelector('.modal-overlay')?.addEventListener('click', close);
+        // Show loading
+        tipContent.innerHTML = '<p class="text-muted loading-tip"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando dica...</p>';
+        if (btnRegenerate) btnRegenerate.disabled = true;
 
-        // Hide standard modal header if title is empty
-        if (!title) {
-            const header = modalContainer.querySelector('.modal-header') as HTMLElement;
-            if (header) header.style.display = 'none';
+        try {
+            const updatedTask = await TaskService.generateTip(String(taskId), force);
+
+            if (updatedTask.tip) {
+                // Typing effect
+                this.typeWriterEffect(tipContent, updatedTask.tip, () => {
+                    if (btnRegenerate) btnRegenerate.disabled = false;
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao gerar dica:', error);
+            tipContent.innerHTML = '<p class="text-muted error-tip"><i class="fa-solid fa-triangle-exclamation"></i> Erro ao gerar dica. Tente novamente.</p>';
+            if (btnRegenerate) btnRegenerate.disabled = false;
         }
-
-        Modal.open(id);
     }
 
-    private showModal(id: string, title: string, content: string, bindFn: (container: HTMLElement) => void) {
-        let modalContainer = document.getElementById(`${id}-container`);
-        if (!modalContainer) {
-            modalContainer = document.createElement('div');
-            modalContainer.id = `${id}-container`;
-            this.container.appendChild(modalContainer);
-        }
+    private typeWriterEffect(element: Element, text: string, onComplete?: () => void) {
+        element.innerHTML = '<p></p>';
+        const p = element.querySelector('p');
+        if (!p) return;
 
-        const modal = new Modal(id, title, content);
-        modalContainer.innerHTML = modal.render();
+        let index = 0;
+        const speed = 20; // ms per character
 
-        bindFn(modalContainer);
+        const type = () => {
+            if (index < text.length) {
+                p.textContent += text.charAt(index);
+                index++;
+                setTimeout(type, speed);
+            } else if (onComplete) {
+                onComplete();
+            }
+        };
 
-        // Standard close buttons
-        const close = () => Modal.close(id);
-        modalContainer.querySelector('.modal-close')?.addEventListener('click', close);
-        modalContainer.querySelector('.modal-overlay')?.addEventListener('click', close);
-
-        Modal.open(id);
-    }
-
-    private async handleEditProject() {
-        this.openEditProjectModal();
-    }
-
-    private async handleDeleteProject() {
-        this.openDeleteProjectModal();
+        type();
     }
 }

@@ -4,12 +4,13 @@ import './Button.css';
 interface ButtonProps {
     text: string;
     type?: 'button' | 'submit';
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'ghost-icon' | 'ghost-icon-danger' | 'danger' | 'danger-icon';
     fullWidth?: boolean;
     action?: string; // Para o data-action
     disabled?: boolean;
     loading?: boolean;
     icon?: string; // Classe do FontAwesome (ex: 'fa-solid fa-user')
+    title?: string; // Para tooltip
 }
 
 export class Button {
@@ -24,7 +25,8 @@ export class Button {
             action = '',
             disabled = false,
             loading = false,
-            icon
+            icon,
+            title = ''
         } = this.props;
 
         const isDisable = disabled || loading;
@@ -40,6 +42,7 @@ export class Button {
             .replace('{{widthClass}}', fullWidth ? 'btn--full' : '')
             .replace('{{action}}', action)
             .replace('{{disabledAttribute}}', isDisable ? 'disabled' : '')
-            .replace('{{icon}}', iconHtml);
+            .replace('{{icon}}', iconHtml)
+            .replace('{{title}}', title ? `title="${title}"` : '');
     }
 }

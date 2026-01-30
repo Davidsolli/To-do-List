@@ -1,32 +1,26 @@
-<div class="kanban-container">
-    <header class="kanban-header">
-        <div class="kanban-header-left">
-            <div class="project-icon" id="project-icon">M</div>
-            <div class="kanban-header-info">
-                <h1 id="project-title">Carregando...</h1>
-                <p id="project-desc">...</p>
-            </div>
-        </div>
-        <div class="kanban-actions">
-            <button class="btn btn--light" id="btn-filter">
-                <span class="material-icons-outlined">tune</span>
-                Filtrar
-            </button>
-            <button class="btn btn--primary" id="btn-add-task">
-                <span class="material-icons-outlined">add</span>
-                Nova tarefa
-            </button>
+<div class="project-details-container">
 
-            <div class="header-options">
-                <button class="icon-btn-ghost" id="btn-edit-project" title="Editar Projeto">
-                    <span class="material-icons-outlined">edit</span>
-                </button>
-                <button class="icon-btn-ghost icon-btn-ghost--danger" id="btn-delete-project" title="Excluir Projeto">
-                    <span class="material-icons-outlined">delete</span>
-                </button>
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-title-group">
+                <div class="project-icon" id="project-icon">M</div>
+                <div class="project-info-wrapper">
+                    <div class="title-row">
+                        <h1 id="project-title">Carregando...</h1>
+                        <div class="project-context-actions">
+                            {{btn_edit_project}}
+                            {{btn_delete_project}}
+                        </div>
+                    </div>
+                    <p class="text-secondary" id="project-desc">...</p>
+                </div>
             </div>
         </div>
-    </header>
+        <div class="header-actions">
+            {{btn_filter}}
+            {{btn_add_task}}
+        </div>
+    </div>
 
     <div class="kanban-board">
         <!-- Column: Pending -->
@@ -37,7 +31,9 @@
                 <span class="task-count" id="count-pending">0</span>
             </div>
             <div class="kanban-column-body" id="col-pending">
-                <!-- Tasks go here -->
+                <div class="loading-wrapper">
+                    <div class="spinner spinner-sm"></div>
+                </div>
             </div>
         </div>
 
@@ -49,29 +45,37 @@
                 <span class="task-count" id="count-in_progress">0</span>
             </div>
             <div class="kanban-column-body" id="col-in_progress">
-                <!-- Tasks go here -->
+                <div class="loading-wrapper">
+                    <div class="spinner spinner-sm"></div>
+                </div>
             </div>
         </div>
 
         <!-- Column: Under Review -->
         <div class="kanban-column" data-status="under_review">
             <div class="kanban-column-header">
+                <span class="status-indicator status-review"></span>
                 <h2>Revisão</h2>
                 <span class="task-count" id="count-under_review">0</span>
             </div>
             <div class="kanban-column-body" id="col-under_review">
-                <!-- Tasks go here -->
+                <div class="loading-wrapper">
+                    <div class="spinner spinner-sm"></div>
+                </div>
             </div>
         </div>
 
         <!-- Column: Completed -->
         <div class="kanban-column" data-status="completed">
             <div class="kanban-column-header">
+                <span class="status-indicator status-completed"></span>
                 <h2>Concluído</h2>
                 <span class="task-count" id="count-completed">0</span>
             </div>
             <div class="kanban-column-body" id="col-completed">
-                <!-- Tasks go here -->
+                <div class="loading-wrapper">
+                    <div class="spinner spinner-sm"></div>
+                </div>
             </div>
         </div>
     </div>

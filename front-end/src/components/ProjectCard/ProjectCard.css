@@ -1,5 +1,5 @@
 .project-card {
-    background-color: #FFFFFF;
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
@@ -88,4 +88,14 @@
     justify-content: flex-end;
     align-items: center;
     margin-top: auto;
+}
+
+/* Light mode override - cards should be white */
+:root:not(.dark-mode) .project-card {
+    background-color: #FFFFFF;
+}
+
+/* Dark mode - ensure proper hover shadow */
+.dark-mode .project-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }

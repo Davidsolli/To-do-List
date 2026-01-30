@@ -5,7 +5,12 @@ import { Button } from '../../components/Button/Button';
 import { ProjectCard } from '../../components/ProjectCard/ProjectCard';
 import { Table } from '../../components/Table/Table';
 import { ProjectService } from '../../services/ProjectService';
-import { TaskService } from '../../services/TaskService';
+import { TaskService, TaskResponse } from '../../services/TaskService';
+import { TaskPriority, TaskStatus } from '../../models/Task';
+import { ContextMenu } from '../../components/ContextMenu/ContextMenu';
+import { ProjectModal } from '../../components/ProjectModal/ProjectModal';
+import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
+import { DateFormatter } from '../../utils/DateFormatter';
 import { app } from '../../App';
 
 export class DashboardView extends Component {
@@ -14,8 +19,9 @@ export class DashboardView extends Component {
         // Botão para ir para a página de todos os projetos
         const btnAll = new Button({
             text: 'Ver todos os projetos',
-            variant: 'primary',
-            action: 'go-projects'
+            variant: 'ghost',
+            action: 'go-projects',
+            icon: 'fa-solid fa-arrow-right'
         });
 
         return template.replace('{{btn_all_projects}}', btnAll.render());
@@ -36,14 +42,62 @@ export class DashboardView extends Component {
         // Nota: O clique do botão "Acessar" já é tratado dentro do loadRecentProjects
         this.container.addEventListener('click', (e) => {
             const target = e.target as HTMLElement;
-            const menuBtn = target.closest('[data-action="menu"]');
+            const menuBtn = target.closest('[data-action="menu"]') as HTMLElement;
 
             if (menuBtn) {
+                e.stopPropagation();
                 const id = menuBtn.getAttribute('data-id');
-                // Aqui você implementará o Dropdown no futuro
-                alert(`Menu do projeto ${id} clicado!`);
+
+                if (id) {
+                    this.showProjectMenu(menuBtn, id);
+                }
             }
         });
+    }
+
+    private showProjectMenu(triggerElement: HTMLElement, projectId: string): void {
+        const menu = new ContextMenu({
+            id: projectId,
+            onEdit: (id) => {
+                this.showEditProjectModal(Number(id));
+            },
+            onDelete: (id) => {
+                this.showDeleteProjectConfirm(Number(id));
+            }
+        });
+
+        menu.show(triggerElement);
+    }
+
+    private showEditProjectModal(projectId: number): void {
+        const modal = new ProjectModal({
+            mode: 'edit',
+            projectId,
+            onSuccess: () => {
+                this.loadRecentProjects();
+            }
+        });
+
+        modal.show();
+    }
+
+    private showDeleteProjectConfirm(projectId: number): void {
+        const dialog = new ConfirmDialog({
+            title: 'Excluir Projeto',
+            message: 'Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.',
+            confirmText: 'Excluir',
+            cancelText: 'Cancelar',
+            onConfirm: async () => {
+                try {
+                    await ProjectService.deleteProject(projectId);
+                    this.loadRecentProjects();
+                } catch (error) {
+                    console.error('Erro ao excluir projeto:', error);
+                }
+            }
+        });
+
+        dialog.show();
     }
 
     private async loadRecentProjects() {
@@ -85,43 +139,39 @@ export class DashboardView extends Component {
         if (!container) return;
 
         try {
-            // 1. Pega o retorno cru da API
             const response: any = await TaskService.getUserTasks();
-            
-            console.log("📦 RESPOSTA DA API:", response); // Olhe no F12 o que aparece aqui!
 
-            // 2. Lógica para encontrar a lista (Array) onde quer que ela esteja
-            let tasks: any[] = [];
+            console.log("📦 RESPOSTA DA API:", response);
+
+            // Lógica para encontrar a lista (Array) onde quer que ela esteja
+            let tasks: TaskResponse[] = [];
 
             if (Array.isArray(response)) {
-                // Cenário A: A API devolveu a lista direta: [ {...}, {...} ]
                 tasks = response;
             } else if (response && Array.isArray(response.data)) {
-                // Cenário B: A API devolveu embrulhado: { data: [...] }
                 tasks = response.data;
             } else if (response && Array.isArray(response.tasks)) {
-                // Cenário C: A API devolveu embrulhado: { tasks: [...] }
                 tasks = response.tasks;
             } else {
-                // Cenário D: Não achou lista nenhuma (pode ser erro ou objeto vazio)
                 console.warn("Não foi possível encontrar uma lista de tarefas na resposta.");
                 tasks = [];
             }
 
-            // 3. Se a lista estiver vazia
             if (tasks.length === 0) {
                 container.innerHTML = '<div class="empty-state-msg">Nenhuma tarefa pendente encontrada.</div>';
                 return;
             }
 
-            // 4. Agora é seguro fazer o .map, pois garantimos que 'tasks' é uma lista
-            const rows = tasks.map((t: any) => `
+            // Buscar nomes dos projetos para as tarefas que têm project_id
+            const tasksWithProjects = await this.enrichTasksWithProjectNames(tasks);
+
+            const rows = tasksWithProjects.map((task: TaskResponse) => `
                 <tr>
-                    <td><strong>${t.title}</strong></td>
-                    <td class="text-secondary">${t.project_name || (t.project ? t.project.name : '-')}</td>
-                    <td>${this.getPriorityBadge(t.priority)}</td>
-                    <td>${this.getStatusBadge(t.status)}</td>
-                    <td class="text-secondary">${t.due_date || 'Sem prazo'}</td>
+                    <td><strong>${task.title}</strong></td>
+                    <td class="text-secondary">${task.project_name || '-'}</td>
+                    <td>${this.getPriorityBadge(task.priority)}</td>
+                    <td>${this.getStatusBadge(task.status)}</td>
+                    <td class="text-secondary">${DateFormatter.formatDate(task.estimate)}</td>
                 </tr>
             `);
 
@@ -138,16 +188,64 @@ export class DashboardView extends Component {
         }
     }
 
-    // Helpers para as Badges Coloridas
-    private getPriorityBadge(priority: string): string {
-        const map: any = { 'Alta': 'high', 'Média': 'medium', 'Baixa': 'low' };
-        const type = map[priority] || 'low';
-        return `<span class="badge badge--${type}">${priority}</span>`;
+    private async enrichTasksWithProjectNames(tasks: TaskResponse[]): Promise<TaskResponse[]> {
+        // Busca todos os projetos do usuário uma única vez
+        try {
+            const projects = await ProjectService.getUserProjects();
+
+            // Cria um mapa de id -> nome para acesso rápido
+            const projectMap = new Map(projects.map(p => [p.id, p.name]));
+
+            // Enriquece cada tarefa com o nome do projeto
+            return tasks.map(task => ({
+                ...task,
+                project_name: task.project_id ? projectMap.get(task.project_id) : undefined
+            }));
+        } catch (error) {
+            console.error('Erro ao buscar nomes dos projetos:', error);
+            // Se falhar, retorna as tarefas sem os nomes dos projetos
+            return tasks;
+        }
     }
 
-    private getStatusBadge(status: string): string {
-        const map: any = { 'Pendente': 'pending', 'Em andamento': 'doing', 'Concluída': 'done' };
-        const type = map[status] || 'pending';
-        return `<span class="badge badge--${type}">${status}</span>`;
+    // Helpers para as Badges Coloridas
+    private getPriorityBadge(priority: TaskPriority): string {
+        const labels: Record<TaskPriority, string> = {
+            [TaskPriority.HIGH]: 'Alta',
+            [TaskPriority.MEDIUM]: 'Média',
+            [TaskPriority.LOW]: 'Baixa'
+        };
+
+        const cssClasses: Record<TaskPriority, string> = {
+            [TaskPriority.HIGH]: 'high',
+            [TaskPriority.MEDIUM]: 'medium',
+            [TaskPriority.LOW]: 'low'
+        };
+
+        const label = labels[priority] || 'Baixa';
+        const cssClass = cssClasses[priority] || 'low';
+
+        return `<span class="badge badge--${cssClass}">${label}</span>`;
+    }
+
+    private getStatusBadge(status: TaskStatus): string {
+        const labels: Record<TaskStatus, string> = {
+            [TaskStatus.PENDING]: 'Pendente',
+            [TaskStatus.IN_PROGRESS]: 'Em andamento',
+            [TaskStatus.COMPLETED]: 'Concluída',
+            [TaskStatus.UNDER_REVIEW]: 'Em revisão'
+        };
+
+        const cssClasses: Record<TaskStatus, string> = {
+            [TaskStatus.PENDING]: 'pending',
+            [TaskStatus.IN_PROGRESS]: 'doing',
+            [TaskStatus.COMPLETED]: 'done',
+            [TaskStatus.UNDER_REVIEW]: 'doing' // Usa mesmo estilo de "em andamento"
+        };
+
+        const label = labels[status] || 'Pendente';
+        const cssClass = cssClasses[status] || 'pending';
+
+        return `<span class="badge badge--${cssClass}">${label}</span>`;
     }
 }

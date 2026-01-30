@@ -300,6 +300,17 @@ export class Sidebar extends Component {
     }
   }
 
+  /**
+   * Método público para recarregar a lista de projetos
+   * Usado quando criar/editar/excluir um projeto
+   */
+  public async refreshProjectsList(): Promise<void> {
+    // Se a lista estiver expandida, recarrega
+    if (this.isProjectsExpanded) {
+      await this.populateProjectsList();
+    }
+  }
+
   private async handleCreateProject(): Promise<void> {
     const name = prompt('Nome do novo projeto:');
     if (name) {

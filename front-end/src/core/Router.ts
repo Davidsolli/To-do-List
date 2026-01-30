@@ -186,4 +186,11 @@ export class Router {
         this.sidebarInstance = null;
     }
 
+    /**
+     * Retorna a instância atual da sidebar
+     */
+    public get sidebar(): Sidebar | null {
+        return this.sidebarInstance;
+    }
+
 }

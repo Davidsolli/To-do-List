@@ -150,10 +150,7 @@ export class ProjectModal {
             let savedProject: Project;
 
             if (this.options.mode === 'create') {
-                savedProject = await ProjectService.createProject(name);
-                if (description) {
-                    savedProject = await ProjectService.updateProject(savedProject.id, { description });
-                }
+                savedProject = await ProjectService.createProject(name, description);
             } else if (this.options.projectId) {
                 savedProject = await ProjectService.updateProject(this.options.projectId, {
                     name,

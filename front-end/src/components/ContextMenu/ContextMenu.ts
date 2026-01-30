@@ -11,6 +11,7 @@ export class ContextMenu {
     private menuId: string;
     private element: HTMLElement | null = null;
     private options: ContextMenuOptions;
+    private static currentOpenMenu: ContextMenu | null = null;
 
     constructor(options: ContextMenuOptions) {
         this.options = options;
@@ -24,8 +25,15 @@ export class ContextMenu {
     }
 
     show(triggerElement: HTMLElement): void {
-        // Remove any existing menu
-        this.hide();
+        // Se já existe um menu aberto para o mesmo ID, apenas fecha (toggle)
+        if (ContextMenu.currentOpenMenu &&
+            ContextMenu.currentOpenMenu.menuId === this.menuId) {
+            ContextMenu.currentOpenMenu.hide();
+            return;
+        }
+
+        // Remove ALL existing menus before creating a new one
+        ContextMenu.hideAll();
 
         // Create and append menu to document
         const div = document.createElement('div');
@@ -43,6 +51,9 @@ export class ContextMenu {
 
         // Bind events
         this.bindEvents();
+
+        // Marcar como menu atualmente aberto
+        ContextMenu.currentOpenMenu = this;
 
         // Close menu when clicking outside
         setTimeout(() => {
@@ -106,10 +117,16 @@ export class ContextMenu {
             }, 200);
         }
         document.removeEventListener('click', this.handleClickOutside);
+
+        // Limpar referência se este era o menu aberto
+        if (ContextMenu.currentOpenMenu === this) {
+            ContextMenu.currentOpenMenu = null;
+        }
     }
 
     static hideAll(): void {
         const menus = document.querySelectorAll('.context-menu');
         menus.forEach(menu => menu.remove());
+        ContextMenu.currentOpenMenu = null;
     }
 }

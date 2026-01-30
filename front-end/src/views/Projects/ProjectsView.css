@@ -1,0 +1,132 @@
+.projects-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-content h1 {
+    font-size: 2rem;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+}
+
+.header-content p {
+    margin: 0;
+}
+
+/* Search Section */
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    background-color: var(--bg-surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Projects Grid */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.projects-grid .project-card {
+    max-width: none;
+    width: 100%;
+}
+
+/* Empty State */
+.empty-state-msg {
+    color: var(--text-secondary);
+    font-style: italic;
+    background: var(--bg-surface);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    margin-top: 2rem;
+}
+
+/* Light mode */
+:root:not(.dark-mode) .search-input {
+    background-color: #FFFFFF;
+}
+
+/* Dark mode */
+.dark-mode .search-input {
+    background-color: var(--bg-surface);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .projects-container {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+    }
+
+    .search-input {
+        max-width: 100%;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .projects-grid .project-card {
+        min-width: 100%;
+    }
+}
+
+/* Tablets e telas médias */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .projects-grid .project-card {
+        min-width: 100%;
+    }
+}

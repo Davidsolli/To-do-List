@@ -1,0 +1,24 @@
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-main);
+  transition: border-color 0.2s;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
+}
+
+.form-textarea::placeholder {
+  color: var(--text-tertiary);
+}

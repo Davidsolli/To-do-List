@@ -1,0 +1,26 @@
+<div class="projects-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Projetos</h1>
+            <p class="text-secondary">Gerencie todos os seus projetos</p>
+        </div>
+        <div class="header-actions">
+            {{btn_new_project}}
+        </div>
+    </header>
+
+    <div class="search-section">
+        <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar projetos..."
+            data-action="search"
+        />
+    </div>
+
+    <div class="projects-grid" data-bind="projects-list"></div>
+
+    <div class="empty-state-msg" data-bind="empty-state" style="display: none;">
+        Nenhum projeto encontrado. Crie seu primeiro projeto!
+    </div>
+</div>

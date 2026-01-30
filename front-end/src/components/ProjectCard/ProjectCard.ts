@@ -12,7 +12,7 @@ export class ProjectCard {
 
         const btnAccess = new Button({
             text: 'Acessar projeto',
-            variant: 'link',
+            variant: 'ghost',
             icon: 'fa-solid fa-arrow-right',
             action: `access-project`,
         });

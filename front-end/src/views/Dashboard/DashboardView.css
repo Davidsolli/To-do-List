@@ -58,7 +58,7 @@
     padding: 0 !important;              /* Remove preenchimentos extras */
 }
 
-.section-header {
+.dashboard-container .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;

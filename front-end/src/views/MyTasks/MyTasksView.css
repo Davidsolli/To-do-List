@@ -1,0 +1,263 @@
+/* ============================================
+   MyTasksView - Padronizado com Design System
+   ============================================ */
+
+.my-tasks-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.header-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+}
+
+.header-content .text-secondary {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   Filtros
+   ============================================ */
+.task-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.filter-input,
+.filter-select {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    min-height: 42px;
+}
+
+.filter-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23585962' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.5rem;
+}
+
+.filter-input:hover,
+.filter-select:hover {
+    border-color: var(--text-secondary);
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
+}
+
+/* Dark mode for native selects */
+.dark-mode .filter-input,
+.dark-mode .filter-select {
+    background-color: var(--bg-surface);
+}
+
+.dark-mode .filter-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   Contagem
+   ============================================ */
+.task-count {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-decorative);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   Lista de tarefas
+   ============================================ */
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.task-item {
+    padding: 1.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.task-item:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.75rem;
+}
+
+.task-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.task-item-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.task-item-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.task-item-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.task-item-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.task-item-value {
+    font-size: 0.875rem;
+    color: var(--text-main);
+}
+
+/* ============================================
+   Badges - usando variáveis do design system
+   ============================================ */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.badge::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+/* Priority badges */
+.badge--high {
+    background-color: var(--priority-high-bg);
+    color: var(--priority-high-text);
+}
+
+.badge--medium {
+    background-color: var(--priority-mid-bg);
+    color: var(--priority-mid-text);
+}
+
+.badge--low {
+    background-color: var(--priority-low-bg);
+    color: var(--priority-low-text);
+}
+
+/* Status badges */
+.badge--pending {
+    background-color: var(--status-pending-bg);
+    color: var(--status-pending-text);
+}
+
+.badge--doing {
+    background-color: var(--status-doing-bg);
+    color: var(--status-doing-text);
+}
+
+.badge--ready {
+    background-color: var(--status-ready-bg);
+    color: var(--status-ready-text);
+}
+
+.badge--done {
+    background-color: var(--status-done-bg);
+    color: var(--status-done-text);
+}
+
+/* Role badges */
+.badge--assignee {
+    background-color: var(--status-doing-bg);
+    color: var(--status-doing-text);
+}
+
+.badge--reviewer {
+    background-color: var(--status-ready-bg);
+    color: var(--status-ready-text);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 768px) {
+    .my-tasks-container {
+        padding: 1rem;
+    }
+
+    .task-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .task-item-body {
+        grid-template-columns: 1fr;
+    }
+}

@@ -26,7 +26,6 @@
                 <span class="btn-text">Membros</span>
                 <span class="members-count" id="members-count">1</span>
             </button>
-            {{btn_filter}}
             {{btn_add_task}}
         </div>
     </div>
@@ -47,9 +46,29 @@
         </button>
     </div>
 
+    <!-- Task View Controls -->
+    <div class="task-view-controls" id="task-view-controls">
+        <div class="controls-left">
+            <div class="view-mode-selector">
+                <button class="view-mode-btn view-mode-btn--active" data-view-mode="kanban" title="Visualização Kanban">
+                    <span class="material-icons-outlined">view_kanban</span>
+                </button>
+                <button class="view-mode-btn" data-view-mode="table" title="Visualização em Tabela">
+                    <span class="material-icons-outlined">table_chart</span>
+                </button>
+            </div>
+            <button class="btn btn--ghost" data-action="btn-filter-sort-inline" title="Filtros & Ordenação">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Filtros</span>
+            </button>
+        </div>
+        <div class="active-filters-display" id="active-filters-display"></div>
+    </div>
+
     <!-- Kanban View -->
     <div class="view-content" id="kanban-view">
-        <div class="kanban-board">
+        <!-- Kanban Board (default) -->
+        <div class="kanban-board" id="kanban-board-view">
             <!-- Column: Pending -->
             <div class="kanban-column" data-status="pending">
                 <div class="kanban-column-header">
@@ -72,6 +91,20 @@
                     <span class="task-count" id="count-in_progress">0</span>
                 </div>
                 <div class="kanban-column-body" id="col-in_progress">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column: Ready -->
+            <div class="kanban-column" data-status="ready">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-ready"></span>
+                    <h2>Pronto</h2>
+                    <span class="task-count" id="count-ready">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-ready">
                     <div class="loading-wrapper">
                         <div class="spinner spinner-sm"></div>
                     </div>
@@ -106,6 +139,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Table View -->
+        <div class="task-table-view" id="table-view" style="display: none;"></div>
     </div>
 
     <!-- Members View -->

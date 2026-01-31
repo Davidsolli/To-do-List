@@ -14,6 +14,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
 import { ProjectModal } from '../../components/ProjectModal/ProjectModal';
 import { ProjectMembers } from '../../components/ProjectMembers/ProjectMembers';
 import { TaskComments } from '../../components/TaskComments/TaskComments';
+import { Table } from '../../components/Table/Table';
 import { ProjectRole, ProjectMember, AuditLog } from '../../models/Collaboration';
 import { AuthService } from '../../services/AuthService';
 import { app } from '../../App';
@@ -29,8 +30,14 @@ export class ProjectDetailsView extends Component {
     private allTasks: Task[] = [];
     private filters = {
         search: '',
-        priority: 'all'
+        priority: 'all',
+        status: 'all',
+        assignee: 'all',
+        reviewer: 'all'
     };
+    private sortBy: 'priority' | 'created' | 'estimate' | 'title' | 'status' = 'created';
+    private sortOrder: 'asc' | 'desc' = 'desc';
+    private taskView: 'kanban' | 'table' = 'kanban';
     private currentView: 'kanban' | 'members' | 'activity' = 'kanban';
     private projectMembersComponent: ProjectMembers | null = null;
     private userRole: ProjectRole | null = null;
@@ -46,13 +53,6 @@ export class ProjectDetailsView extends Component {
     }
 
     getTemplate(): string {
-        const btnFilter = new Button({
-            text: 'Filtrar',
-            variant: 'ghost',
-            action: 'btn-filter',
-            icon: 'fa-solid fa-filter'
-        });
-
         const btnAddTask = new Button({
             text: 'Nova Tarefa',
             variant: 'primary',
@@ -77,7 +77,6 @@ export class ProjectDetailsView extends Component {
         });
 
         return template
-            .replace('{{btn_filter}}', btnFilter.render())
             .replace('{{btn_add_task}}', btnAddTask.render())
             .replace('{{btn_edit_project}}', btnEditProject.render())
             .replace('{{btn_delete_project}}', btnDeleteProject.render());
@@ -92,20 +91,32 @@ export class ProjectDetailsView extends Component {
             return;
         }
 
-        // 2. Load Data
-        await this.loadProjectData();
+        // 2. Load project and tasks data (but don't render yet)
+        await this.loadProjectDataOnly();
 
-        // 3. Bind Events
+        // 3. Load user role and members (needs project data)
+        await this.loadUserRoleAndMembers();
+
+        // 4. Load preferences from localStorage (BEFORE rendering)
+        this.loadPreferences();
+
+        // 5. Now render tasks with proper permissions and saved view mode
+        this.renderTasksWithPermissions();
+
+        // 6. Bind Events
         this.bindEvents();
 
-        // 4. Setup tabs
+        // 7. Setup tabs
         this.setupTabs();
 
-        // 5. Setup ProjectMembers component
+        // 8. Setup ProjectMembers component
         this.setupProjectMembersComponent();
 
-        // 6. Load user role and members
-        await this.loadUserRoleAndMembers();
+        // 9. Setup view mode controls
+        this.setupViewModeControls();
+        
+        // 10. Initialize tab visibility (show controls for kanban view by default)
+        this.setupTabVisibility();
     }
 
     private async loadUserRoleAndMembers(): Promise<void> {
@@ -193,6 +204,12 @@ export class ProjectDetailsView extends Component {
             // Everyone can see members, but button shows management capability
             membersBtn.title = canEdit ? 'Gerenciar Membros' : 'Ver Membros';
         }
+
+        // Hide activity tab for regular members (only owner and admin can see)
+        const activityTab = this.container.querySelector('[data-view="activity"]') as HTMLElement;
+        if (activityTab) {
+            activityTab.style.display = canEdit ? '' : 'none';
+        }
     }
 
     private setupTabs(): void {
@@ -233,6 +250,9 @@ export class ProjectDetailsView extends Component {
                 }
             }
         });
+
+        // Show/hide task view controls (only for kanban view)
+        this.setupTabVisibility();
 
         // Load view-specific data
         if (view === 'activity') {
@@ -340,6 +360,8 @@ export class ProjectDetailsView extends Component {
             'task_updated': `atualizou a tarefa "${details.task_title || 'tarefa'}"`,
             'task_deleted': `excluiu a tarefa "${details.task_title || 'tarefa'}"`,
             'task_status_changed': `moveu "${details.task_title || 'tarefa'}" para ${details.new_status || 'novo status'}`,
+            'task_assigned': `atribuiu ${details.assigned_user_name || 'um usuário'} à tarefa "${details.task_title || 'tarefa'}"`,
+            'task_reviewer_assigned': `designou ${details.reviewer_user_name || 'um usuário'} como revisor da tarefa "${details.task_title || 'tarefa'}"`,
             'member_added': `adicionou ${details.member_name || 'um membro'} ao projeto`,
             'member_removed': `removeu ${details.member_name || 'um membro'} do projeto`,
             'member_role_changed': `alterou o papel de ${details.member_name || 'membro'} para ${details.new_role || 'novo papel'}`,
@@ -353,7 +375,12 @@ export class ProjectDetailsView extends Component {
     }
 
     private formatActivityTime(dateString: string): string {
-        const date = new Date(dateString);
+        // SQLite salva CURRENT_TIMESTAMP em UTC, precisamos tratar isso
+        // Adiciona 'Z' se não tiver timezone para indicar UTC
+        const isoString = dateString.includes('Z') || dateString.includes('+') 
+            ? dateString 
+            : dateString.replace(' ', 'T') + 'Z';
+        const date = new Date(isoString);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / 60000);
@@ -372,30 +399,41 @@ export class ProjectDetailsView extends Component {
         });
     }
 
-    private async loadProjectData() {
+    private async loadProjectDataOnly() {
         if (!this.projectId) return;
 
         try {
             const data = await ProjectService.getById(this.projectId);
             this.project = data.project;
 
-            // Render Header & Tasks
+            // Render Header only (not tasks yet)
             this.renderHeader(data.project);
             this.allTasks = data.tasks;
 
-            // 3. Fetch Owner
+            // Fetch Owner
             try {
                 this.projectOwner = await UserService.getById(data.project.user_id);
             } catch (err) {
                 console.warn('Could not fetch project owner', err);
             }
 
-            this.applyFilters();
+            // Don't render tasks yet - wait for userRole to be loaded
 
         } catch (error: any) {
             console.error('Error loading project:', error);
             (window as any).toast.error('Erro ao carregar projeto.');
         }
+    }
+
+    private renderTasksWithPermissions() {
+        // This is called after userRole is loaded
+        this.applyFilters();
+    }
+
+    private async loadProjectData() {
+        // Wrapper function for reloading data (used after CRUD operations)
+        await this.loadProjectDataOnly();
+        this.renderTasksWithPermissions();
     }
 
     private renderHeader(project: Project) {
@@ -411,6 +449,7 @@ export class ProjectDetailsView extends Component {
     private applyFilters() {
         let filtered = [...this.allTasks];
 
+        // Search filter
         if (this.filters.search) {
             const search = this.filters.search.toLowerCase();
             filtered = filtered.filter(t =>
@@ -419,18 +458,112 @@ export class ProjectDetailsView extends Component {
             );
         }
 
+        // Priority filter
         if (this.filters.priority !== 'all') {
             filtered = filtered.filter(t => t.priority === this.filters.priority);
         }
 
+        // Status filter
+        if (this.filters.status !== 'all') {
+            filtered = filtered.filter(t => t.status === this.filters.status);
+        }
+
+        // Assignee filter
+        if (this.filters.assignee !== 'all') {
+            const assigneeId = Number(this.filters.assignee);
+            filtered = filtered.filter(t => 
+                t.assignees?.some(a => a.user_id === assigneeId)
+            );
+        }
+
+        // Reviewer filter
+        if (this.filters.reviewer !== 'all') {
+            const reviewerId = Number(this.filters.reviewer);
+            filtered = filtered.filter(t => 
+                t.reviewers?.some(r => r.user_id === reviewerId)
+            );
+        }
+
+        // Apply sorting
+        filtered = this.sortTasks(filtered);
+
+        // Update active filters display
+        this.updateActiveFiltersDisplay();
+
+        // Render based on current view mode
         this.renderTasks(filtered);
     }
 
+    private sortTasks(tasks: Task[]): Task[] {
+        const sorted = [...tasks];
+        
+        sorted.sort((a, b) => {
+            let compareValue = 0;
+
+            switch (this.sortBy) {
+                case 'priority': {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 };
+                    compareValue = priorityOrder[a.priority as keyof typeof priorityOrder] - 
+                                   priorityOrder[b.priority as keyof typeof priorityOrder];
+                    break;
+                }
+                
+                case 'created': {
+                    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                    compareValue = dateA - dateB;
+                    break;
+                }
+                
+                case 'estimate': {
+                    const dateA = a.estimate ? new Date(a.estimate).getTime() : 0;
+                    const dateB = b.estimate ? new Date(b.estimate).getTime() : 0;
+                    compareValue = dateA - dateB;
+                    break;
+                }
+                
+                case 'title':
+                    compareValue = a.title.localeCompare(b.title);
+                    break;
+                
+                case 'status': {
+                    const statusOrder = { pending: 1, in_progress: 2, ready: 3, under_review: 4, completed: 5 };
+                    compareValue = statusOrder[a.status as keyof typeof statusOrder] - 
+                                   statusOrder[b.status as keyof typeof statusOrder];
+                    break;
+                }
+            }
+
+            return this.sortOrder === 'asc' ? compareValue : -compareValue;
+        });
+
+        return sorted;
+    }
+
     private renderTasks(tasks: Task[]) {
+        // Show/hide views based on taskView mode
+        const kanbanView = this.container.querySelector('#kanban-board-view') as HTMLElement;
+        const tableView = this.container.querySelector('#table-view') as HTMLElement;
+
+        if (kanbanView) kanbanView.style.display = this.taskView === 'kanban' ? '' : 'none';
+        if (tableView) tableView.style.display = this.taskView === 'table' ? '' : 'none';
+
+        switch (this.taskView) {
+            case 'kanban':
+                this.renderKanban(tasks);
+                break;
+            case 'table':
+                this.renderTable(tasks);
+                break;
+        }
+    }
+
+    private renderKanban(tasks: Task[]) {
         // Clear columns
         const cols = {
             pending: this.container.querySelector('#col-pending'),
             in_progress: this.container.querySelector('#col-in_progress'),
+            ready: this.container.querySelector('#col-ready'),
             under_review: this.container.querySelector('#col-under_review'),
             completed: this.container.querySelector('#col-completed')
         };
@@ -438,13 +571,14 @@ export class ProjectDetailsView extends Component {
         const counts = {
             pending: this.container.querySelector('#count-pending'),
             in_progress: this.container.querySelector('#count-in_progress'),
+            ready: this.container.querySelector('#count-ready'),
             under_review: this.container.querySelector('#count-under_review'),
             completed: this.container.querySelector('#count-completed')
         };
 
         // Reset
         Object.values(cols).forEach(el => { if (el) el.innerHTML = ''; });
-        let countMap: any = { pending: 0, in_progress: 0, under_review: 0, completed: 0 };
+        let countMap: any = { pending: 0, in_progress: 0, ready: 0, under_review: 0, completed: 0 };
 
         // Calculate permissions based on user role
         const canEdit = this.userRole === ProjectRole.OWNER || this.userRole === ProjectRole.ADMIN;
@@ -483,6 +617,7 @@ export class ProjectDetailsView extends Component {
         // Update Counts
         if (counts.pending) counts.pending.textContent = countMap.pending;
         if (counts.in_progress) counts.in_progress.textContent = countMap.in_progress;
+        if (counts.ready) counts.ready.textContent = countMap.ready;
         if (counts.under_review) counts.under_review.textContent = countMap.under_review;
         if (counts.completed) counts.completed.textContent = countMap.completed;
 
@@ -502,12 +637,192 @@ export class ProjectDetailsView extends Component {
         }
     }
 
+    private renderTable(tasks: Task[]) {
+        const tableView = this.container.querySelector('#table-view') as HTMLElement;
+        if (!tableView) return;
+
+        const canEdit = this.userRole === ProjectRole.OWNER || this.userRole === ProjectRole.ADMIN;
+        const userId = JSON.parse(localStorage.getItem('user_data') || '{}').id;
+
+        const statusLabels: Record<string, string> = {
+            pending: 'Pendente',
+            in_progress: 'Em Progresso',
+            ready: 'Pronto',
+            under_review: 'Revisão',
+            completed: 'Concluído'
+        };
+
+        const priorityLabels: Record<string, string> = {
+            low: 'BAIXA',
+            medium: 'MÉDIA',
+            high: 'ALTA'
+        };
+
+        if (tasks.length === 0) {
+            tableView.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: var(--color-text-secondary);">
+                    <span class="material-icons-outlined" style="font-size: 3rem; opacity: 0.5;">inbox</span>
+                    <p>Nenhuma tarefa encontrada</p>
+                </div>
+            `;
+            return;
+        }
+
+        tableView.innerHTML = `
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Responsável</th>
+                        <th>Revisor</th>
+                        <th>Estimativa</th>
+                        <th style="text-align: right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tasks.map(task => {
+                        const isAssignee = task.assignees?.some(a => a.user_id === userId) || false;
+                        const isReviewer = task.reviewers?.some(r => r.user_id === userId) || false;
+                        const canEditTask = canEdit || isAssignee || isReviewer;
+
+                        return `
+                            <tr data-task-id="${task.id}">
+                                <td>
+                                    ${canEditTask ? `
+                                        <input 
+                                            type="text" 
+                                            class="task-table-input" 
+                                            data-field="title" 
+                                            data-task-id="${task.id}" 
+                                            value="${task.title.replace(/"/g, '&quot;')}" 
+                                        />
+                                    ` : `<div class="task-table-title" data-task-id="${task.id}">${task.title}</div>`}
+                                </td>
+                                <td>
+                                    ${canEditTask ? `
+                                        <select class="task-table-select" data-field="status" data-task-id="${task.id}">
+                                            <option value="pending" ${task.status === 'pending' ? 'selected' : ''}>Pendente</option>
+                                            <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>Em Progresso</option>
+                                            <option value="ready" ${task.status === 'ready' ? 'selected' : ''}>Pronto</option>
+                                            <option value="under_review" ${task.status === 'under_review' ? 'selected' : ''}>Revisão</option>
+                                            <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Concluído</option>
+                                        </select>
+                                    ` : `<span class="task-badge task-badge-${task.status}">${statusLabels[task.status]}</span>`}
+                                </td>
+                                <td>
+                                    ${canEditTask ? `
+                                        <select class="task-table-select" data-field="priority" data-task-id="${task.id}">
+                                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>BAIXA</option>
+                                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>MÉDIA</option>
+                                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>ALTA</option>
+                                        </select>
+                                    ` : `<span class="task-badge task-badge-${task.priority}">${priorityLabels[task.priority]}</span>`}
+                                </td>
+                                <td>
+                                    ${task.assignees && task.assignees.length > 0 ? `
+                                        <div class="task-table-assignees">
+                                            ${task.assignees.slice(0, 3).map(a => `
+                                                <div class="task-table-avatar" title="${a.user_name || 'Usuário'}">
+                                                    ${(a.user_name || 'U').charAt(0).toUpperCase()}
+                                                </div>
+                                            `).join('')}
+                                            ${task.assignees.length > 3 ? `<span>+${task.assignees.length - 3}</span>` : ''}
+                                        </div>
+                                    ` : '-'}
+                                </td>
+                                <td>
+                                    ${task.reviewers && task.reviewers.length > 0 ? `
+                                        <div class="task-table-assignees">
+                                            ${task.reviewers.slice(0, 3).map(r => `
+                                                <div class="task-table-avatar" title="${r.user_name || 'Usuário'}">
+                                                    ${(r.user_name || 'U').charAt(0).toUpperCase()}
+                                                </div>
+                                            `).join('')}
+                                            ${task.reviewers.length > 3 ? `<span>+${task.reviewers.length - 3}</span>` : ''}
+                                        </div>
+                                    ` : '-'}
+                                </td>
+                                <td>${task.estimate ? new Date(task.estimate).toLocaleDateString('pt-BR') : '-'}</td>
+                                <td>
+                                    <div class="task-table-actions">
+                                        ${canEditTask ? `<button class="task-table-btn" data-action="edit-task" data-task-id="${task.id}" title="Editar">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>` : ''}
+                                        ${canEdit ? `<button class="task-table-btn" data-action="delete-task" data-task-id="${task.id}" title="Excluir">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>` : ''}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+
+        // Bind events
+        tableView.querySelectorAll('.task-table-title').forEach(title => {
+            title.addEventListener('click', () => {
+                const taskId = (title as HTMLElement).dataset.taskId;
+                const task = tasks.find(t => t.id === Number(taskId));
+                if (task) this.openTaskDetailModal(task);
+            });
+        });
+
+        // Inline editing - title
+        tableView.querySelectorAll('.task-table-input[data-field="title"]').forEach(input => {
+            input.addEventListener('blur', async () => {
+                const taskId = (input as HTMLElement).dataset.taskId;
+                const newValue = (input as HTMLInputElement).value.trim();
+                if (newValue && taskId) {
+                    await this.updateTaskField(Number(taskId), 'title', newValue);
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if ((e as KeyboardEvent).key === 'Enter') {
+                    (input as HTMLElement).blur();
+                }
+            });
+        });
+
+        // Inline editing - status and priority
+        tableView.querySelectorAll('.task-table-select').forEach(select => {
+            select.addEventListener('change', async () => {
+                const taskId = (select as HTMLElement).dataset.taskId;
+                const field = (select as HTMLElement).dataset.field;
+                const newValue = (select as HTMLSelectElement).value;
+                if (taskId && field) {
+                    await this.updateTaskField(Number(taskId), field as 'status' | 'priority', newValue);
+                }
+            });
+        });
+
+        tableView.querySelectorAll('[data-action="edit-task"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const taskId = (btn as HTMLElement).dataset.taskId;
+                const task = tasks.find(t => t.id === Number(taskId));
+                if (task) this.openTaskModal(task);
+            });
+        });
+
+        tableView.querySelectorAll('[data-action="delete-task"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const taskId = (btn as HTMLElement).dataset.taskId;
+                const task = tasks.find(t => t.id === Number(taskId));
+                if (task) this.openDeleteTaskModal(task);
+            });
+        });
+    }
+
     private bindEvents() {
         const view = this.container.querySelector('.project-details-container');
         if (!view) return;
 
         view.querySelector('[data-action="btn-add-task"]')?.addEventListener('click', () => this.openTaskModal());
-        view.querySelector('[data-action="btn-filter"]')?.addEventListener('click', () => this.openFilterModal());
+        view.querySelector('[data-action="btn-filter-sort"]')?.addEventListener('click', () => this.openFilterSortModal());
+        view.querySelector('[data-action="btn-filter-sort-inline"]')?.addEventListener('click', () => this.openFilterSortModal());
         view.querySelector('[data-action="btn-edit-project"]')?.addEventListener('click', () => this.openEditProjectModal());
         view.querySelector('[data-action="btn-delete-project"]')?.addEventListener('click', () => this.openDeleteProjectModal());
         view.querySelector('[data-action="btn-members"]')?.addEventListener('click', () => this.switchView('members'));
@@ -969,6 +1284,7 @@ export class ProjectDetailsView extends Component {
         const statusLabels: Record<string, string> = {
             'pending': 'Pendente',
             'in_progress': 'Em Andamento',
+            'ready': 'Pronto',
             'under_review': 'Em Revisão',
             'completed': 'Concluído'
         };
@@ -976,6 +1292,7 @@ export class ProjectDetailsView extends Component {
         const statusClasses: Record<string, string> = {
             'pending': 'pending',
             'in_progress': 'doing',
+            'ready': 'ready',
             'under_review': 'review',
             'completed': 'done'
         };
@@ -987,6 +1304,19 @@ export class ProjectDetailsView extends Component {
         // Get current user permissions
         const currentUser = AuthService.user;
         const canEdit = this.userRole === ProjectRole.OWNER || this.userRole === ProjectRole.ADMIN;
+
+        // Check if current user is assignee or reviewer
+        const isAssignee = task.assignees?.some(a => a.user_id === currentUser?.id) || false;
+        const isReviewer = task.reviewers?.some(r => r.user_id === currentUser?.id) || false;
+        const canGenerateTip = canEdit || isAssignee || isReviewer;
+
+        // Status editing permissions
+        const canEditStatus = canEdit || isAssignee || isReviewer;
+        
+        // Assignees can only use pending, in_progress, ready
+        // Reviewers and admins can use all statuses
+        const assigneeOnlyStatuses = ['pending', 'in_progress', 'ready'];
+        const canUseAllStatuses = canEdit || isReviewer;
 
         // Render assignees with edit capability
         const assignees = task.assignees || [];
@@ -1003,13 +1333,19 @@ export class ProjectDetailsView extends Component {
             { value: 'high', label: 'Alta' }
         ];
 
-        // Status options
-        const statusOptions = [
+        // Status options (all)
+        const allStatusOptions = [
             { value: 'pending', label: 'Pendente' },
             { value: 'in_progress', label: 'Em Andamento' },
+            { value: 'ready', label: 'Pronto' },
             { value: 'under_review', label: 'Em Revisão' },
             { value: 'completed', label: 'Concluído' }
         ];
+
+        // Filter status options based on permissions
+        const statusOptions = canUseAllStatuses 
+            ? allStatusOptions 
+            : allStatusOptions.filter(opt => assigneeOnlyStatuses.includes(opt.value));
 
         const detailHtml = `
             <div class="task-detail-modal" data-task-id="${task.id}">
@@ -1074,12 +1410,14 @@ export class ProjectDetailsView extends Component {
                             <div class="section-header">
                                 <i class="fa-solid fa-lightbulb"></i>
                                 <span>Dica da IA</span>
-                                <button class="btn-icon btn-regenerate" id="btn-regenerate-tip" title="Regenerar dica">
-                                    <i class="fa-solid fa-rotate"></i>
-                                </button>
+                                ${canGenerateTip ? `
+                                    <button class="btn-icon btn-regenerate" id="btn-regenerate-tip" title="Regenerar dica">
+                                        <i class="fa-solid fa-rotate"></i>
+                                    </button>
+                                ` : ''}
                             </div>
                             <div class="section-body ai-tip-box" id="ai-tip-content">
-                                ${task.tip ? `<p>${task.tip}</p>` : '<p class="text-muted"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando dica...</p>'}
+                                ${task.tip ? `<p>${task.tip}</p>` : (canGenerateTip ? '<p class="text-muted"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando dica...</p>' : '<p class="text-muted">Nenhuma dica disponível</p>')}
                             </div>
                         </div>
 
@@ -1098,7 +1436,7 @@ export class ProjectDetailsView extends Component {
                                 Status
                             </div>
                             <div class="sidebar-content">
-                                ${canEdit ? `
+                                ${canEditStatus ? `
                                     <select class="inline-select inline-select--status" data-field="status" data-status="${task.status}">
                                         ${statusOptions.map(opt => `
                                             <option value="${opt.value}" ${task.status === opt.value ? 'selected' : ''}>${opt.label}</option>
@@ -1216,8 +1554,14 @@ export class ProjectDetailsView extends Component {
                 });
             });
 
-            // Generate tip if null
-            if (!task.tip) {
+            // Check if user can generate tip
+            const canEditProject = this.userRole === ProjectRole.OWNER || this.userRole === ProjectRole.ADMIN;
+            const userIsAssignee = task.assignees?.some(a => a.user_id === currentUser?.id) || false;
+            const userIsReviewer = task.reviewers?.some(r => r.user_id === currentUser?.id) || false;
+            const userCanGenerateTip = canEditProject || userIsAssignee || userIsReviewer;
+
+            // Generate tip if null and user has permission
+            if (!task.tip && userCanGenerateTip) {
                 this.generateAndDisplayTip(task.id, modalEl, false);
             }
 
@@ -1339,6 +1683,8 @@ export class ProjectDetailsView extends Component {
             // Update local task object
             (task as any)[field] = value;
 
+            console.log(`Updated task ${task.id} field ${field} to ${value}`);
+
             // Update displayed value
             if (field === 'title') {
                 const titleEl = modalEl.querySelector('.task-detail-title .editable-value');
@@ -1346,10 +1692,53 @@ export class ProjectDetailsView extends Component {
             } else if (field === 'description') {
                 const descEl = modalEl.querySelector('[data-field="description"] .editable-value');
                 if (descEl) descEl.innerHTML = value || '<span class="text-muted">Clique para adicionar descrição...</span>';
+            } else if (field === 'status') {
+                // Update status badge if user is viewing (not editing)
+                const statusBadge = modalEl.querySelector('.status-badge');
+                if (statusBadge) {
+                    const statusLabels: Record<string, string> = {
+                        'pending': 'Pendente',
+                        'in_progress': 'Em Andamento',
+                        'ready': 'Pronto',
+                        'under_review': 'Em Revisão',
+                        'completed': 'Concluído'
+                    };
+                    const statusClasses: Record<string, string> = {
+                        'pending': 'pending',
+                        'in_progress': 'doing',
+                        'ready': 'ready',
+                        'under_review': 'review',
+                        'completed': 'done'
+                    };
+                    const statusLabel = statusLabels[value] || value;
+                    const statusClass = statusClasses[value] || 'pending';
+                    
+                    // Remove old status classes
+                    statusBadge.className = 'status-badge status-badge--' + statusClass;
+                    statusBadge.textContent = statusLabel;
+                }
+            } else if (field === 'priority') {
+                // Update priority badge if user is viewing (not editing)
+                const priorityBadge = modalEl.querySelector('.priority-badge');
+                if (priorityBadge) {
+                    const priorityLabels: Record<string, string> = {
+                        'low': 'Baixa',
+                        'medium': 'Média',
+                        'high': 'Alta'
+                    };
+                    const priorityLabel = priorityLabels[value] || value;
+                    
+                    // Remove old priority classes
+                    priorityBadge.className = 'priority-badge priority-badge--' + value;
+                    priorityBadge.textContent = priorityLabel;
+                }
             }
 
-            // Refresh the board
-            this.loadProjectData();
+            // Refresh the board (await to ensure it completes)
+            console.log('Reloading project data...');
+            await this.loadProjectData();
+            console.log('Project data reloaded');
+            
             toast.show('Alteração salva', 'success');
         } catch (error) {
             console.error('Erro ao salvar:', error);
@@ -1583,5 +1972,398 @@ export class ProjectDetailsView extends Component {
                 await this.removePerson(task, userId, btnType, modalEl);
             });
         });
+    }
+
+    // ============================================
+    // PREFERENCES & VIEW MODE
+    // ============================================
+
+    private loadPreferences() {
+        const key = `project_${this.projectId}_preferences`;
+        const saved = localStorage.getItem(key);
+        
+        if (saved) {
+            try {
+                const prefs = JSON.parse(saved);
+                this.filters = { ...this.filters, ...prefs.filters };
+                this.sortBy = prefs.sortBy || 'created';
+                this.sortOrder = prefs.sortOrder || 'desc';
+                this.taskView = prefs.taskView || 'kanban';
+            } catch (e) {
+                console.error('Error loading preferences:', e);
+            }
+        }
+    }
+
+    private savePreferences() {
+        const key = `project_${this.projectId}_preferences`;
+        const prefs = {
+            filters: this.filters,
+            sortBy: this.sortBy,
+            sortOrder: this.sortOrder,
+            taskView: this.taskView
+        };
+        localStorage.setItem(key, JSON.stringify(prefs));
+    }
+
+    private async updateTaskField(taskId: number, field: 'title' | 'status' | 'priority', value: string) {
+        try {
+            const updateData: Partial<Task> = { [field]: value };
+            await TaskService.update(String(taskId), updateData);
+            
+            // Update local task data
+            const task = this.allTasks.find(t => t.id === taskId);
+            if (task) {
+                (task as any)[field] = value;
+            }
+            
+            // Re-render to reflect changes
+            this.renderTasksWithPermissions();
+            
+            (window as any).toast?.success(`${field === 'title' ? 'Título' : field === 'status' ? 'Status' : 'Prioridade'} atualizado com sucesso`);
+        } catch (error) {
+            console.error('Error updating task field:', error);
+            (window as any).toast?.error('Erro ao atualizar tarefa');
+        }
+    }
+
+    private setupViewModeControls() {
+        const controls = this.container.querySelector('#task-view-controls') as HTMLElement;
+        const buttons = this.container.querySelectorAll('.view-mode-btn');
+        
+        // Set active button based on saved preference
+        buttons.forEach(btn => {
+            const mode = (btn as HTMLElement).dataset.viewMode;
+            if (mode === this.taskView) {
+                btn.classList.add('view-mode-btn--active');
+            } else {
+                btn.classList.remove('view-mode-btn--active');
+            }
+
+            btn.addEventListener('click', () => {
+                this.taskView = mode as 'kanban' | 'table';
+                buttons.forEach(b => b.classList.remove('view-mode-btn--active'));
+                btn.classList.add('view-mode-btn--active');
+                this.savePreferences();
+                this.renderTasksWithPermissions();
+            });
+        });
+    }
+
+    private setupTabVisibility() {
+        const controls = this.container.querySelector('#task-view-controls') as HTMLElement;
+        if (controls) {
+            // Mostrar controles apenas quando na view kanban (tarefas)
+            controls.style.display = this.currentView === 'kanban' ? 'flex' : 'none';
+        }
+    }
+
+    private updateActiveFiltersDisplay() {
+        const display = this.container.querySelector('#active-filters-display') as HTMLElement;
+        if (!display) return;
+
+        const badges: string[] = [];
+
+        if (this.filters.search) {
+            badges.push(`<span class="filter-badge">
+                Busca: "${this.filters.search}"
+                <button class="filter-badge-remove" data-clear="search">×</button>
+            </span>`);
+        }
+
+        if (this.filters.priority !== 'all') {
+            const labels: Record<string, string> = { low: 'Baixa', medium: 'Média', high: 'Alta' };
+            badges.push(`<span class="filter-badge">
+                Prioridade: ${labels[this.filters.priority]}
+                <button class="filter-badge-remove" data-clear="priority">×</button>
+            </span>`);
+        }
+
+        if (this.filters.status !== 'all') {
+            const labels: Record<string, string> = {
+                pending: 'Pendente',
+                in_progress: 'Em Progresso',
+                ready: 'Pronto',
+                under_review: 'Revisão',
+                completed: 'Concluído'
+            };
+            badges.push(`<span class="filter-badge">
+                Status: ${labels[this.filters.status]}
+                <button class="filter-badge-remove" data-clear="status">×</button>
+            </span>`);
+        }
+
+        if (this.filters.assignee !== 'all') {
+            const member = this.members.find(m => m.user_id === Number(this.filters.assignee));
+            badges.push(`<span class="filter-badge">
+                Responsável: ${member?.user_name || 'Usuário'}
+                <button class="filter-badge-remove" data-clear="assignee">×</button>
+            </span>`);
+        }
+
+        if (this.filters.reviewer !== 'all') {
+            const member = this.members.find(m => m.user_id === Number(this.filters.reviewer));
+            badges.push(`<span class="filter-badge">
+                Revisor: ${member?.user_name || 'Usuário'}
+                <button class="filter-badge-remove" data-clear="reviewer">×</button>
+            </span>`);
+        }
+
+        if (this.sortBy !== 'created' || this.sortOrder !== 'desc') {
+            const sortLabels: Record<string, string> = {
+                priority: 'Prioridade',
+                created: 'Criação',
+                estimate: 'Estimativa',
+                title: 'Título',
+                status: 'Status'
+            };
+            const orderLabel = this.sortOrder === 'asc' ? '↑' : '↓';
+            badges.push(`<span class="filter-badge">
+                Ordenação: ${sortLabels[this.sortBy]} ${orderLabel}
+                <button class="filter-badge-remove" data-clear="sort">×</button>
+            </span>`);
+        }
+
+        display.innerHTML = badges.join('');
+
+        // Bind remove listeners
+        display.querySelectorAll('.filter-badge-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const clear = (e.target as HTMLElement).dataset.clear;
+                this.clearFilter(clear as string);
+            });
+        });
+    }
+
+    private clearFilter(type: string) {
+        switch (type) {
+            case 'search':
+                this.filters.search = '';
+                break;
+            case 'priority':
+                this.filters.priority = 'all';
+                break;
+            case 'status':
+                this.filters.status = 'all';
+                break;
+            case 'assignee':
+                this.filters.assignee = 'all';
+                break;
+            case 'reviewer':
+                this.filters.reviewer = 'all';
+                break;
+            case 'sort':
+                this.sortBy = 'created';
+                this.sortOrder = 'desc';
+                break;
+        }
+        this.savePreferences();
+        this.renderTasksWithPermissions();
+    }
+
+    // ============================================
+    // FILTER & SORT MODAL
+    // ============================================
+
+    private openFilterSortModal() {
+        const btnClear = new Button({
+            text: 'Limpar Tudo',
+            variant: 'outline',
+            type: 'button',
+            action: 'clear-all'
+        });
+
+        const btnApply = new Button({
+            text: 'Aplicar',
+            variant: 'primary',
+            type: 'submit'
+        });
+
+        // Priority Select
+        const prioritySelect = new Select({
+            name: 'priority',
+            options: [
+                { value: 'all', label: 'Todas', selected: this.filters.priority === 'all' },
+                { value: 'low', label: 'Baixa', selected: this.filters.priority === 'low' },
+                { value: 'medium', label: 'Média', selected: this.filters.priority === 'medium' },
+                { value: 'high', label: 'Alta', selected: this.filters.priority === 'high' }
+            ]
+        });
+
+        // Status Select
+        const statusSelect = new Select({
+            name: 'status',
+            options: [
+                { value: 'all', label: 'Todos', selected: this.filters.status === 'all' },
+                { value: 'pending', label: 'Pendente', selected: this.filters.status === 'pending' },
+                { value: 'in_progress', label: 'Em Progresso', selected: this.filters.status === 'in_progress' },
+                { value: 'ready', label: 'Pronto', selected: this.filters.status === 'ready' },
+                { value: 'under_review', label: 'Revisão', selected: this.filters.status === 'under_review' },
+                { value: 'completed', label: 'Concluído', selected: this.filters.status === 'completed' }
+            ]
+        });
+
+        // Assignee Select
+        const assigneeSelect = new Select({
+            name: 'assignee',
+            options: [
+                { value: 'all', label: 'Todos', selected: this.filters.assignee === 'all' },
+                ...this.members.map(m => ({
+                    value: String(m.user_id),
+                    label: m.user_name || 'Usuário',
+                    selected: this.filters.assignee === String(m.user_id)
+                }))
+            ]
+        });
+
+        // Reviewer Select
+        const reviewerSelect = new Select({
+            name: 'reviewer',
+            options: [
+                { value: 'all', label: 'Todos', selected: this.filters.reviewer === 'all' },
+                ...this.members.map(m => ({
+                    value: String(m.user_id),
+                    label: m.user_name || 'Usuário',
+                    selected: this.filters.reviewer === String(m.user_id)
+                }))
+            ]
+        });
+
+        // Sort By Select
+        const sortBySelect = new Select({
+            name: 'sortBy',
+            options: [
+                { value: 'created', label: 'Data de Criação', selected: this.sortBy === 'created' },
+                { value: 'estimate', label: 'Data de Estimativa', selected: this.sortBy === 'estimate' },
+                { value: 'priority', label: 'Prioridade', selected: this.sortBy === 'priority' },
+                { value: 'title', label: 'Título', selected: this.sortBy === 'title' },
+                { value: 'status', label: 'Status', selected: this.sortBy === 'status' }
+            ]
+        });
+
+        // Sort Order Select
+        const sortOrderSelect = new Select({
+            name: 'sortOrder',
+            options: [
+                { value: 'asc', label: 'Crescente ↑', selected: this.sortOrder === 'asc' },
+                { value: 'desc', label: 'Decrescente ↓', selected: this.sortOrder === 'desc' }
+            ]
+        });
+
+        const formHtml = `
+            <form id="filter-sort-form" class="form">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.125rem;">Filtros</h3>
+                
+                <div class="form-group">
+                    <label>Buscar por título ou descrição</label>
+                    <input type="text" name="search" value="${this.filters.search}" class="form-input" placeholder="Digite para buscar...">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Prioridade</label>
+                        ${prioritySelect.render()}
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        ${statusSelect.render()}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Responsável</label>
+                        ${assigneeSelect.render()}
+                    </div>
+                    <div class="form-group">
+                        <label>Revisor</label>
+                        ${reviewerSelect.render()}
+                    </div>
+                </div>
+
+                <h3 style="margin: 1.5rem 0 1rem 0; font-size: 1.125rem;">Ordenação</h3>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Ordenar Por</label>
+                        ${sortBySelect.render()}
+                    </div>
+                    <div class="form-group">
+                        <label>Ordem</label>
+                        ${sortOrderSelect.render()}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                     ${btnClear.render()}
+                     ${btnApply.render()}
+                </div>
+            </form>
+        `;
+
+        const modal = new Modal({
+            title: 'Filtros & Ordenação',
+            content: formHtml,
+            onClose: () => {
+                // Clean up select event listeners
+                [prioritySelect, statusSelect, assigneeSelect, reviewerSelect, sortBySelect, sortOrderSelect].forEach(select => {
+                    select.destroy();
+                });
+            }
+        });
+
+        modal.open();
+
+        const modalEl = modal.getElement();
+        if (modalEl) {
+            // Bind all selects
+            const selects = [
+                { instance: prioritySelect, name: 'priority' },
+                { instance: statusSelect, name: 'status' },
+                { instance: assigneeSelect, name: 'assignee' },
+                { instance: reviewerSelect, name: 'reviewer' },
+                { instance: sortBySelect, name: 'sortBy' },
+                { instance: sortOrderSelect, name: 'sortOrder' }
+            ];
+            
+            selects.forEach(({ instance, name }) => {
+                const el = modalEl.querySelector(`[data-name="${name}"]`);
+                if (el) instance.bindEvents(el as HTMLElement);
+            });
+
+            const form = modalEl.querySelector('#filter-sort-form') as HTMLFormElement;
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                
+                this.filters.search = formData.get('search') as string;
+                this.filters.priority = prioritySelect.getValue();
+                this.filters.status = statusSelect.getValue();
+                this.filters.assignee = assigneeSelect.getValue();
+                this.filters.reviewer = reviewerSelect.getValue();
+                
+                this.sortBy = sortBySelect.getValue() as any;
+                this.sortOrder = sortOrderSelect.getValue() as 'asc' | 'desc';
+                
+                this.savePreferences();
+                this.renderTasksWithPermissions();
+                modal.close();
+            });
+
+            modalEl.querySelector('[data-action="clear-all"]')?.addEventListener('click', () => {
+                this.filters = {
+                    search: '',
+                    priority: 'all',
+                    status: 'all',
+                    assignee: 'all',
+                    reviewer: 'all'
+                };
+                this.sortBy = 'created';
+                this.sortOrder = 'desc';
+                this.savePreferences();
+                this.renderTasksWithPermissions();
+                modal.close();
+            });
+        }
     }
 }

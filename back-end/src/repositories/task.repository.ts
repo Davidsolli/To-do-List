@@ -1,7 +1,69 @@
 import { db } from "../database/db";
-import { Task, TaskCreateDTO, TaskResponseDTO } from "../interfaces/task";
+import { Task, TaskCreateDTO, TaskResponseDTO, TaskAssignee } from "../interfaces/task";
+import { ReviewerRepository } from "./reviewer.repository";
 
 export class TaskRepository {
+  
+  /**
+   * Get assignees for a task
+   */
+  static getAssignees(taskId: number): TaskAssignee[] {
+    return db.prepare(`
+      SELECT ta.user_id, u.name as user_name, u.email as user_email
+      FROM task_assignees ta
+      JOIN users u ON ta.user_id = u.id
+      WHERE ta.task_id = ?
+    `).all(taskId) as TaskAssignee[];
+  }
+
+  /**
+   * Get reviewers for a task
+   */
+  static getReviewers(taskId: number): TaskAssignee[] {
+    return ReviewerRepository.getReviewers(taskId);
+  }
+
+  /**
+   * Add assignee to a task
+   */
+  static addAssignee(taskId: number, userId: number): void {
+    db.prepare(`
+      INSERT OR IGNORE INTO task_assignees (task_id, user_id)
+      VALUES (?, ?)
+    `).run(taskId, userId);
+  }
+
+  /**
+   * Remove assignee from a task
+   */
+  static removeAssignee(taskId: number, userId: number): void {
+    db.prepare(`
+      DELETE FROM task_assignees WHERE task_id = ? AND user_id = ?
+    `).run(taskId, userId);
+  }
+
+  /**
+   * Set assignees for a task (replaces all existing)
+   */
+  static setAssignees(taskId: number, userIds: number[]): void {
+    db.prepare(`DELETE FROM task_assignees WHERE task_id = ?`).run(taskId);
+    
+    if (userIds.length > 0) {
+      const stmt = db.prepare(`INSERT INTO task_assignees (task_id, user_id) VALUES (?, ?)`);
+      userIds.forEach(userId => stmt.run(taskId, userId));
+    }
+  }
+
+  /**
+   * Check if user is assigned to a task
+   */
+  static isAssignee(taskId: number, userId: number): boolean {
+    const result = db.prepare(`
+      SELECT 1 FROM task_assignees WHERE task_id = ? AND user_id = ?
+    `).get(taskId, userId);
+    return !!result;
+  }
+
   static create(taskData: TaskCreateDTO): Task {
     const result = db
       .prepare(
@@ -34,7 +96,7 @@ export class TaskRepository {
   }
 
   static findById(id: number): Task | undefined {
-    return db
+    const task = db
       .prepare(
         `
             SELECT id, title, description, tip, priority, status, estimate, project_id
@@ -43,10 +105,17 @@ export class TaskRepository {
         `,
       )
       .get(id) as Task | undefined;
+    
+    if (task) {
+      task.assignees = this.getAssignees(task.id);
+      task.reviewers = this.getReviewers(task.id);
+    }
+    
+    return task;
   }
 
   static findByProjectId(projectId: number): Task[] {
-    return db
+    const tasks = db
       .prepare(
         `
             SELECT id, title, description, tip, priority, status, estimate, project_id
@@ -55,10 +124,17 @@ export class TaskRepository {
         `,
       )
       .all(projectId) as Task[];
+    
+    // Add assignees and reviewers to each task
+    return tasks.map(task => ({
+      ...task,
+      assignees: this.getAssignees(task.id),
+      reviewers: this.getReviewers(task.id)
+    }));
   }
 
   static findByUserId(userId: number): Task[] {
-    return db
+    const tasks = db
       .prepare(
         `
             SELECT t.id, t.title, t.description, t.tip, t.priority, t.status, t.estimate, t.project_id
@@ -68,6 +144,12 @@ export class TaskRepository {
         `,
       )
       .all(userId) as Task[];
+    
+    // Add assignees to each task
+    return tasks.map(task => ({
+      ...task,
+      assignees: this.getAssignees(task.id)
+    }));
   }
 
   static searchByUserIdAndKeyword(userId: number, keyword: string): Task[] {

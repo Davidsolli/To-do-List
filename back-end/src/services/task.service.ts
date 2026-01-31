@@ -2,11 +2,45 @@ import { TaskCreateDTO, TaskResponseDTO } from "../interfaces/task";
 import { TaskRepository } from "../repositories/task.repository";
 import { TaskValidation } from "../validations/task.validation";
 import { AIService } from "./ai.service";
+import { NotificationService } from "./notification.service";
+import { ProjectRepository } from "../repositories/project.repository";
+import { MemberRepository } from "../repositories/member.repository";
+import { AuditLogService } from "./audit.service";
+import { AuditAction, NotificationType } from "../interfaces/collaborative";
+import { ReviewerRepository } from "../repositories/reviewer.repository";
 
 export class TaskService {
-    static async createTask(taskData: TaskCreateDTO): Promise<TaskResponseDTO> {
+    static async createTask(taskData: TaskCreateDTO, assigneeIds?: number[]): Promise<TaskResponseDTO> {
         TaskValidation.validateTaskCreation(taskData);
-        return TaskRepository.create(taskData);
+        
+        const task = TaskRepository.create(taskData);
+
+        // Handle assignees separately
+        if (assigneeIds && assigneeIds.length > 0) {
+            TaskRepository.setAssignees(task.id, assigneeIds);
+            
+            const project = ProjectRepository.findById(task.project_id);
+            if (project) {
+                for (const userId of assigneeIds) {
+                    NotificationService.notifyAssignment(
+                        userId,
+                        task.title,
+                        project.name,
+                        task.id,
+                        task.project_id
+                    );
+                }
+            }
+            
+            // Reload task with assignees
+            return TaskRepository.findById(task.id) || task;
+        }
+
+        return task;
+    }
+
+    static async getTaskById(taskId: number): Promise<TaskResponseDTO | undefined> {
+        return TaskRepository.findById(taskId);
     }
 
     static async getTasksByUserId(userId: number): Promise<TaskResponseDTO[]> {
@@ -65,6 +99,83 @@ export class TaskService {
 
         // Atualizar a task com a nova dica
         const updatedTask = TaskRepository.update(taskId, { tip });
+
+        return updatedTask;
+    }
+
+    static async updateAssignees(
+        taskId: number,
+        assignees: number[],
+        projectId: number
+    ): Promise<TaskResponseDTO> {
+        const task = TaskRepository.findById(taskId);
+        if (!task) throw new Error("Task não encontrada");
+
+        // Get current assignees to compare
+        const currentAssignees = task.assignees?.map(a => a.user_id) || [];
+        const newAssignees = assignees.filter(id => !currentAssignees.includes(id));
+
+        // Update assignees using repository method
+        TaskRepository.setAssignees(taskId, assignees);
+        const updatedTask = TaskRepository.findById(taskId);
+        if (!updatedTask) throw new Error("Erro ao atualizar task");
+
+        // Notify new assignees
+        if (newAssignees.length > 0) {
+            const project = ProjectRepository.findById(projectId);
+            if (project) {
+                for (const userId of newAssignees) {
+                    NotificationService.notifyAssignment(
+                        userId,
+                        task.title,
+                        project.name,
+                        taskId,
+                        projectId
+                    );
+                    
+                    AuditLogService.log(
+                        AuditAction.TASK_ASSIGNED,
+                        `Usuário ${userId} atribuído à task "${task.title}"`,
+                        projectId
+                    );
+                }
+            }
+        }
+
+        return updatedTask;
+    }
+
+    static async updateReviewers(
+        taskId: number,
+        reviewerIds: number[],
+        projectId: number
+    ): Promise<TaskResponseDTO> {
+        const task = TaskRepository.findById(taskId);
+        if (!task) throw new Error("Task não encontrada");
+
+        // Get current reviewers to compare
+        const currentReviewers = task.reviewers?.map(r => r.user_id) || [];
+        const newReviewers = reviewerIds.filter(id => !currentReviewers.includes(id));
+
+        // Update reviewers using repository
+        ReviewerRepository.setReviewers(taskId, reviewerIds);
+        const updatedTask = TaskRepository.findById(taskId);
+        if (!updatedTask) throw new Error("Erro ao atualizar task");
+
+        // Notify new reviewers
+        if (newReviewers.length > 0) {
+            const project = ProjectRepository.findById(projectId);
+            if (project) {
+                for (const userId of newReviewers) {
+                    NotificationService.create({
+                        user_id: userId,
+                        type: NotificationType.REVIEWER_ASSIGNED,
+                        message: `Você foi designado como revisor da tarefa "${task.title}" no projeto "${project.name}"`,
+                        data: { task_id: taskId, project_id: projectId }
+                    });
+                }
+            }
+        }
 
         return updatedTask;
     }

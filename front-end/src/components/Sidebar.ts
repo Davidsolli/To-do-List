@@ -3,12 +3,16 @@ import template from './Sidebar.html';
 import './sidebar.css';
 import { AuthService } from '../services/AuthService';
 import { ProjectService } from '../services/ProjectService';
+import { NotificationService } from '../services/NotificationService';
+import { NotificationPopup } from './NotificationPopup/NotificationPopup';
 import { app } from '../App';
 
 
 export class Sidebar extends Component {
   private isDarkMode: boolean;
   private isProjectsExpanded = false;
+  private notificationPopup: NotificationPopup | null = null;
+  private notificationPollInterval: number | null = null;
 
   constructor(containerId: string) {
     super(containerId);
@@ -34,6 +38,107 @@ export class Sidebar extends Component {
     this.setupUsersMenuVisibility();
     this.initializeDarkMode();
     this.setupMobileToggle();
+    this.setupNotifications();
+  }
+
+  /**
+   * Configura o sistema de notificações
+   */
+  private setupNotifications(): void {
+    // Criar o popup de notificações
+    const popupContainer = this.container.querySelector('#notification-popup-container');
+    if (popupContainer) {
+      this.notificationPopup = new NotificationPopup(popupContainer as HTMLElement);
+    }
+
+    // Bind click handlers para abrir o popup
+    const notificationBtn = this.container.querySelector('#notificationToggle');
+    notificationBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleNotificationPopup();
+    });
+
+    const mobileNotificationBtn = this.container.querySelector('#mobileNotificationToggle');
+    mobileNotificationBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleNotificationPopup();
+    });
+
+    // Carregar contagem inicial e iniciar polling
+    this.updateNotificationBadge();
+    this.startNotificationPolling();
+
+    // Fechar popup ao clicar fora
+    document.addEventListener('click', (e) => {
+      if (this.notificationPopup?.isVisible()) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.notification-popup') && !target.closest('#notificationToggle') && !target.closest('#mobileNotificationToggle')) {
+          this.notificationPopup.hide();
+        }
+      }
+    });
+  }
+
+  private toggleNotificationPopup(): void {
+    if (this.notificationPopup) {
+      if (this.notificationPopup.isVisible()) {
+        this.notificationPopup.hide();
+      } else {
+        this.notificationPopup.show();
+      }
+    }
+  }
+
+  private async updateNotificationBadge(): Promise<void> {
+    try {
+      const count = await NotificationService.getUnreadCount();
+      this.setBadgeCount(count);
+    } catch (error) {
+      console.error('Erro ao atualizar badge de notificações:', error);
+    }
+  }
+
+  private setBadgeCount(count: number): void {
+    const badges = [
+      this.container.querySelector('#notificationBadge'),
+      this.container.querySelector('#mobileNotificationBadge'),
+      this.container.querySelector('#sidebarNotificationBadge')
+    ];
+
+    badges.forEach(badge => {
+      if (badge) {
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          (badge as HTMLElement).style.display = 'flex';
+        } else {
+          (badge as HTMLElement).style.display = 'none';
+        }
+      }
+    });
+  }
+
+  private startNotificationPolling(): void {
+    // Poll a cada 30 segundos
+    this.notificationPollInterval = window.setInterval(() => {
+      this.updateNotificationBadge();
+    }, 30000);
+  }
+
+  public stopNotificationPolling(): void {
+    if (this.notificationPollInterval) {
+      clearInterval(this.notificationPollInterval);
+      this.notificationPollInterval = null;
+    }
+  }
+
+  /**
+   * Método público para atualizar as notificações manualmente
+   */
+  public refreshNotifications(): void {
+    this.updateNotificationBadge();
+    if (this.notificationPopup) {
+      this.notificationPopup.refresh();
+    }
   }
 
   /**

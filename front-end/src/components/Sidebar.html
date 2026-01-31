@@ -4,9 +4,15 @@
     <img src="../assets/logo-dark.svg" alt="AlphaTask" class="mobile-logo mobile-logo-light">
     <img src="../assets/logo-white.svg" alt="AlphaTask" class="mobile-logo mobile-logo-dark">
   </div>
-  <button class="mobile-menu-btn" id="sidebarToggle" aria-label="Abrir menu">
-    <span class="material-icons-outlined">menu</span>
-  </button>
+  <div class="mobile-header-actions">
+    <button class="mobile-notification-btn" id="mobileNotificationToggle" aria-label="Notificações">
+      <span class="material-icons-outlined">notifications</span>
+      <span class="notification-badge" id="mobileNotificationBadge" style="display: none;">0</span>
+    </button>
+    <button class="mobile-menu-btn" id="sidebarToggle" aria-label="Abrir menu">
+      <span class="material-icons-outlined">menu</span>
+    </button>
+  </div>
 </header>
 
 <!-- Sidebar Container -->
@@ -39,6 +45,13 @@
       </div>
     </div>
 
+    <!-- Notificações -->
+    <a href="#" class="sidebar-item" data-action="menu-item" data-route="notificacoes">
+      <span class="material-icons-outlined sidebar-icon">notifications</span>
+      <span class="sidebar-text">Notificações</span>
+      <span class="sidebar-notification-badge" id="sidebarNotificationBadge" style="display: none;">0</span>
+    </a>
+
     <!-- Usuários (só visible se admin) -->
     <a href="#" class="sidebar-item" data-action="menu-item" data-route="usuarios">
       <span class="material-icons-outlined sidebar-icon">group</span>
@@ -63,8 +76,13 @@
       </div>
     </div>
 
-    <!-- Controles (Dark Mode + Logout) -->
+    <!-- Controles (Notificações + Dark Mode + Logout) -->
     <div class="sidebar-controls">
+      <button class="sidebar-btn-icon sidebar-notification-btn" id="notificationToggle" aria-label="Notificações"
+        title="Notificações">
+        <span class="material-icons-outlined">notifications</span>
+        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+      </button>
       <button class="sidebar-btn-icon" data-action="toggle-dark-mode" aria-label="Alternar modo escuro" title="Tema">
         <span class="material-icons-outlined">dark_mode</span>
       </button>
@@ -75,6 +93,9 @@
 
   </div>
 </aside>
+
+<!-- Notification Popup Container -->
+<div id="notification-popup-container"></div>
 
 <!-- Overlay para Mobile -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>

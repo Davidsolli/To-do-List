@@ -9,12 +9,15 @@
     <h3 class="task-card__title">${title}</h3>
     <p class="task-card__desc">${description}</p>
 
-    <div class="task-card__actions">
-        <button class="action-icon" data-action="edit" title="Editar">
-            <span class="material-icons-outlined">edit</span>
-        </button>
-        <button class="action-icon" data-action="delete" title="Excluir">
-            <span class="material-icons-outlined">delete</span>
-        </button>
+    <div class="task-card__footer">
+        <div class="task-card__assignees" data-assignees></div>
+        <div class="task-card__actions">
+            <button class="action-icon" data-action="edit" title="Editar">
+                <span class="material-icons-outlined">edit</span>
+            </button>
+            <button class="action-icon" data-action="delete" title="Excluir">
+                <span class="material-icons-outlined">delete</span>
+            </button>
+        </div>
     </div>
 </div>

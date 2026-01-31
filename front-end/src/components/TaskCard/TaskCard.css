@@ -92,11 +92,102 @@
     overflow: hidden;
 }
 
+.task-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
 .task-card__actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
-    margin-top: 0.25rem;
+}
+
+/* Assignees */
+.task-card__assignees {
+    flex: 1;
+}
+
+.task-card__assignee-list {
+    display: flex;
+    align-items: center;
+}
+
+.task-card__assignee {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-primary-btn-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-right: -6px;
+    border: 2px solid var(--bg-surface);
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s;
+}
+
+.task-card__assignee:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.task-card__assignee:last-child {
+    margin-right: 0;
+}
+
+.task-card__assignee--more {
+    background: var(--bg-page);
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    border-color: var(--border-color);
+}
+
+/* Reviewers */
+.task-card__reviewer-list {
+    display: flex;
+    align-items: center;
+    margin-left: 6px;
+    padding-left: 6px;
+    border-left: 1px solid var(--border-color);
+}
+
+.task-card__reviewer {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--status-doing-dot);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    margin-right: -4px;
+    border: 2px solid var(--bg-surface);
+}
+
+.task-card__reviewer--more {
+    background: var(--bg-page);
+    color: var(--text-secondary);
+    font-size: 0.55rem;
+    border-color: var(--border-color);
+}
+
+/* Readonly state */
+.task-card--readonly {
+    cursor: default;
+    opacity: 0.9;
+}
+
+.task-card--readonly:hover {
+    transform: none;
 }
 
 .action-icon {

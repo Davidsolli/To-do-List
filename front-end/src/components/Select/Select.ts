@@ -20,6 +20,8 @@ export class Select {
     private element: HTMLElement | null = null;
     private selectedValue: string = '';
     private isOpen: boolean = false;
+    private boundClickOutside: ((e: Event) => void) | null = null;
+    private boundEscapeKey: ((e: KeyboardEvent) => void) | null = null;
 
     constructor(config: SelectConfig) {
         this.config = config;
@@ -73,7 +75,6 @@ export class Select {
         this.element = element;
 
         const trigger = element.querySelector('[data-trigger]') as HTMLElement;
-        const dropdown = element.querySelector('[data-dropdown]') as HTMLElement;
         const options = element.querySelectorAll('.select-option');
 
         // Toggle dropdown
@@ -92,20 +93,11 @@ export class Select {
                 }
             });
         });
+    }
 
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (this.isOpen && !element.contains(e.target as Node)) {
-                this.close();
-            }
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
-                this.close();
-            }
-        });
+    destroy(): void {
+        this.close();
+        this.element = null;
     }
 
     private toggle(): void {
@@ -123,6 +115,32 @@ export class Select {
 
         this.isOpen = true;
         this.element.classList.add('active');
+        
+        // Setup click outside handler
+        this.boundClickOutside = (e: Event) => {
+            const target = e.target as HTMLElement;
+            
+            if (this.element && !this.element.contains(target)) {
+                this.close();
+            }
+        };
+        
+        // Setup escape key handler
+        this.boundEscapeKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                this.close();
+            }
+        };
+        
+        // Add listeners with a small delay to prevent immediate trigger
+        setTimeout(() => {
+            if (this.boundClickOutside) {
+                document.addEventListener('click', this.boundClickOutside);
+            }
+            if (this.boundEscapeKey) {
+                document.addEventListener('keydown', this.boundEscapeKey);
+            }
+        }, 0);
     }
 
     private close(): void {
@@ -130,6 +148,17 @@ export class Select {
 
         this.isOpen = false;
         this.element.classList.remove('active');
+        
+        // Remove event listeners
+        if (this.boundClickOutside) {
+            document.removeEventListener('click', this.boundClickOutside);
+            this.boundClickOutside = null;
+        }
+        
+        if (this.boundEscapeKey) {
+            document.removeEventListener('keydown', this.boundEscapeKey);
+            this.boundEscapeKey = null;
+        }
     }
 
     private selectOption(value: string): void {

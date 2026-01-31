@@ -24,10 +24,16 @@ export class TaskService {
         }
     }
 
+    // Get single task by ID
+    static async getById(id: string | number): Promise<Task> {
+        const response = await ApiService.get<{ task: Task }>(`tasks/${id}`);
+        return response.task;
+    }
+
     // Métodos do HEAD: necessários para o Kanban (create, update, updateStatus, delete)
-    static async create(task: Partial<Task>): Promise<Task> {
-        // Backend espera { title, description, priority, project_id, ... }
-        const response = await ApiService.post<{ message: string, task: Task }>('tasks', task);
+    static async create(task: Partial<Task>, assignees?: number[]): Promise<Task> {
+        // Backend espera { title, description, priority, project_id, assignees, ... }
+        const response = await ApiService.post<{ message: string, task: Task }>('tasks', { ...task, assignees });
         return response.task;
     }
 
@@ -39,6 +45,18 @@ export class TaskService {
 
     static async updateStatus(id: string, status: string): Promise<Task> {
         const response = await ApiService.patch<{ message: string, task: Task }>(`tasks/${id}/status`, { status });
+        return response.task;
+    }
+
+    // Update task assignees
+    static async updateAssignees(id: string | number, assignees: number[]): Promise<Task> {
+        const response = await ApiService.patch<{ message: string, task: Task }>(`tasks/${id}/assignees`, { assignees });
+        return response.task;
+    }
+
+    // Update task reviewers
+    static async updateReviewers(id: string | number, reviewers: number[]): Promise<Task> {
+        const response = await ApiService.patch<{ message: string, task: Task }>(`tasks/${id}/reviewers`, { reviewers });
         return response.task;
     }
 

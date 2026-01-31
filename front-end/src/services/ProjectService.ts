@@ -1,5 +1,6 @@
 import { Project } from '../models/Project';
 import { Task } from '../models/Task';
+import { ProjectMember, ProjectRole, AuditLog } from '../models/Collaboration';
 import { ApiService } from './ApiService';
 import { AuthService } from './AuthService';
 
@@ -87,5 +88,62 @@ export class ProjectService {
     // Alias para compatibilidade com DashboardView e ProjectsView
     static async deleteProject(id: number): Promise<void> {
         await ApiService.delete(`projects/${id}`);
+    }
+
+    // ===== COLLABORATIVE FEATURES =====
+
+    // Get project members
+    static async getMembers(projectId: string | number): Promise<ProjectMember[]> {
+        const response = await ApiService.get<{ members: ProjectMember[] } | ProjectMember[]>(`projects/${projectId}/members`);
+        // Handle both response formats
+        if (Array.isArray(response)) {
+            return response;
+        }
+        return response.members || [];
+    }
+
+    // Invite user to project
+    static async inviteUser(projectId: number, email: string): Promise<void> {
+        await ApiService.post(`projects/${projectId}/invite`, { email });
+    }
+
+    // Remove member from project
+    static async removeMember(projectId: number, userId: number): Promise<{ tasksAffected: number }> {
+        return await ApiService.delete<{ message: string, tasksAffected: number }>(`projects/${projectId}/members/${userId}`);
+    }
+
+    // Update member role
+    static async updateMemberRole(projectId: number, userId: number, role: ProjectRole): Promise<void> {
+        await ApiService.patch(`projects/${projectId}/members/${userId}`, { role });
+    }
+
+    // Transfer ownership
+    static async transferOwnership(projectId: number, newOwnerId: number): Promise<void> {
+        await ApiService.post(`projects/${projectId}/transfer`, { newOwnerId });
+    }
+
+    // Get audit logs
+    static async getAuditLogs(projectId: string | number, page: number = 1): Promise<AuditLog[]> {
+        const response = await ApiService.get<{ logs: AuditLog[] } | AuditLog[]>(`projects/${projectId}/audit?page=${page}`);
+        // Handle both response formats
+        if (Array.isArray(response)) {
+            return response;
+        }
+        return response.logs || [];
+    }
+
+    // Check if user is owner or admin
+    static async getUserRole(projectId: string | number): Promise<ProjectRole | null> {
+        try {
+            const members = await this.getMembers(projectId);
+            const user = JSON.parse(localStorage.getItem('user_data') || '{}');
+            
+            const member = members.find(m => m.user_id === user.id);
+            if (member?.role === ProjectRole.OWNER) return ProjectRole.OWNER;
+            
+            return member?.role || null;
+        } catch {
+            return null;
+        }
     }
 }

@@ -264,6 +264,7 @@ export class DashboardView extends Component {
         const labels: Record<TaskStatus, string> = {
             [TaskStatus.PENDING]: 'Pendente',
             [TaskStatus.IN_PROGRESS]: 'Em andamento',
+            [TaskStatus.READY]: 'Pronto',
             [TaskStatus.COMPLETED]: 'Concluída',
             [TaskStatus.UNDER_REVIEW]: 'Em revisão'
         };
@@ -271,6 +272,7 @@ export class DashboardView extends Component {
         const cssClasses: Record<TaskStatus, string> = {
             [TaskStatus.PENDING]: 'pending',
             [TaskStatus.IN_PROGRESS]: 'doing',
+            [TaskStatus.READY]: 'ready',
             [TaskStatus.COMPLETED]: 'done',
             [TaskStatus.UNDER_REVIEW]: 'doing' // Usa mesmo estilo de "em andamento"
         };

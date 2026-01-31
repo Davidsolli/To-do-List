@@ -64,9 +64,7 @@ export class Sidebar extends Component {
       this.toggleNotificationPopup();
     });
 
-    // Carregar contagem inicial e iniciar polling
-    this.updateNotificationBadge();
-    this.startNotificationPolling();
+    // O NotificationPopup já cuida de atualizar os badges via polling
 
     // Fechar popup ao clicar fora
     document.addEventListener('click', (e) => {
@@ -89,53 +87,10 @@ export class Sidebar extends Component {
     }
   }
 
-  private async updateNotificationBadge(): Promise<void> {
-    try {
-      const count = await NotificationService.getUnreadCount();
-      this.setBadgeCount(count);
-    } catch (error) {
-      console.error('Erro ao atualizar badge de notificações:', error);
-    }
-  }
-
-  private setBadgeCount(count: number): void {
-    const badges = [
-      this.container.querySelector('#notificationBadge'),
-      this.container.querySelector('#mobileNotificationBadge'),
-      this.container.querySelector('#sidebarNotificationBadge')
-    ];
-
-    badges.forEach(badge => {
-      if (badge) {
-        if (count > 0) {
-          badge.textContent = count > 99 ? '99+' : String(count);
-          (badge as HTMLElement).style.display = 'flex';
-        } else {
-          (badge as HTMLElement).style.display = 'none';
-        }
-      }
-    });
-  }
-
-  private startNotificationPolling(): void {
-    // Poll a cada 30 segundos
-    this.notificationPollInterval = window.setInterval(() => {
-      this.updateNotificationBadge();
-    }, 30000);
-  }
-
-  public stopNotificationPolling(): void {
-    if (this.notificationPollInterval) {
-      clearInterval(this.notificationPollInterval);
-      this.notificationPollInterval = null;
-    }
-  }
-
   /**
    * Método público para atualizar as notificações manualmente
    */
   public refreshNotifications(): void {
-    this.updateNotificationBadge();
     if (this.notificationPopup) {
       this.notificationPopup.refresh();
     }
@@ -445,7 +400,8 @@ export class Sidebar extends Component {
     const target = e.currentTarget as HTMLElement;
     const route = target.getAttribute('data-route');
 
-    if (!route) return;
+    // Verificar se route é null/undefined (não apenas vazio, pois "" é válido para Dashboard)
+    if (route === null) return;
 
     // Remover classe ativa de todos os itens
     const allItems = this.container.querySelectorAll('[data-action="menu-item"]');
@@ -487,23 +443,31 @@ export class Sidebar extends Component {
     const allItems = this.container.querySelectorAll('[data-action="menu-item"], [data-action="toggle-projects"]');
     let foundMainItem = false;
 
+    // Remover active de todos os itens primeiro
+    allItems.forEach(item => item.classList.remove('sidebar-item-active'));
+
+    // Remover active de todos os projetos do submenu
+    const projectItems = this.container.querySelectorAll('.sidebar-project-item');
+    projectItems.forEach(item => item.classList.remove('sidebar-project-item-active'));
+
+    // Verificar se é uma rota de projeto individual
+    if (route.startsWith('projetos/')) {
+      const parts = route.split('/');
+      const projectId = parts[1];
+      if (projectId) {
+        this.expandAndHighlightProject(projectId);
+        return;
+      }
+    }
+
+    // Para outras rotas, buscar o item correspondente
     allItems.forEach(item => {
       const itemRoute = item.getAttribute('data-route');
       if (itemRoute === route) {
         item.classList.add('sidebar-item-active');
         foundMainItem = true;
-      } else {
-        item.classList.remove('sidebar-item-active');
       }
     });
-
-    // Se não encontrou item principal e é uma rota de projeto
-    if (!foundMainItem && route.startsWith('projetos/')) {
-      const projectId = route.split('/')[1];
-      if (projectId) {
-        this.expandAndHighlightProject(projectId);
-      }
-    }
   }
 
   /**

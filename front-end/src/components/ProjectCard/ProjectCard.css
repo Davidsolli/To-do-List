@@ -31,7 +31,72 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.project-card__badges {
+    display: flex;
+    gap: 0.5rem;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.project-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-owner {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.role-admin {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.role-member {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.dark-mode .role-owner {
+    background-color: #78350f;
+    color: #fef3c7;
+}
+
+.dark-mode .role-admin {
+    background-color: #1e3a8a;
+    color: #dbeafe;
+}
+
+.dark-mode .role-member {
+    background-color: #374151;
+    color: #e5e7eb;
+}
+
+.project-task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: var(--bg-page);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.project-task-badge i {
+    font-size: 0.7rem;
 }
 
 .project-icon {

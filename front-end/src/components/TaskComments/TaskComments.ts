@@ -64,7 +64,7 @@ export class TaskComments {
 
     private renderComment(comment: TaskComment): string {
         const initial = (comment.user_name || 'U').charAt(0).toUpperCase();
-        const timeAgo = this.formatTimeAgo(new Date(comment.created_at));
+        const timeAgo = this.formatTimeAgo(comment.created_at);
         const isOwner = comment.user_id === this.currentUserId;
 
         return `
@@ -185,7 +185,13 @@ export class TaskComments {
         }
     }
 
-    private formatTimeAgo(date: Date): string {
+    private formatTimeAgo(dateString: string): string {
+        // SQLite salva CURRENT_TIMESTAMP em UTC, precisamos tratar isso
+        // Adiciona 'Z' se não tiver timezone para indicar UTC
+        const isoString = dateString.includes('Z') || dateString.includes('+') 
+            ? dateString 
+            : dateString.replace(' ', 'T') + 'Z';
+        const date = new Date(isoString);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / 60000);

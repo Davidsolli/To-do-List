@@ -24,6 +24,17 @@ export class TaskService {
         }
     }
 
+    // Get tasks for a specific project
+    static async getProjectTasks(projectId: number): Promise<{ tasks: Task[] }> {
+        try {
+            const response = await ApiService.get<{ tasks: Task[] }>(`tasks/project/${projectId}`);
+            return response;
+        } catch (error) {
+            console.error(`Erro ao buscar tarefas do projeto ${projectId}:`, error);
+            return { tasks: [] };
+        }
+    }
+
     // Get single task by ID
     static async getById(id: string | number): Promise<Task> {
         const response = await ApiService.get<{ task: Task }>(`tasks/${id}`);

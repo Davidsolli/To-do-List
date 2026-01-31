@@ -41,6 +41,12 @@ export class ApiService {
             }
 
             if (!response.ok) {
+                // Se o token expirou ou é inválido (401), fazer logout e redirecionar
+                if (response.status === 401 && !endpoint.includes('auth/login')) {
+                    this.handleUnauthorized();
+                    throw new Error('Sessão expirada. Faça login novamente.');
+                }
+
                 // Se a API retornar erro (400, 401, 500)
                 // O backend retorna { error: "mensagem" } ou { message: "mensagem" }
                 const errorMessage = data?.error || data?.message || `Erro na requisição: ${response.status}`;
@@ -51,6 +57,20 @@ export class ApiService {
         } catch (error) {
             console.error(`Erro na API [${endpoint}]:`, error);
             throw error;
+        }
+    }
+
+    // Método para lidar com token expirado/inválido
+    private static handleUnauthorized(): void {
+        // Limpa dados do usuário do localStorage
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('token');
+        
+        // Redireciona para login se não estiver já na página de login
+        if (!window.location.hash.includes('/login') && !window.location.hash.includes('/register')) {
+            window.location.hash = '#/login';
+            // Força reload para limpar estado da aplicação
+            window.location.reload();
         }
     }
 

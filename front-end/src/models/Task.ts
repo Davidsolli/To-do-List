@@ -31,4 +31,5 @@ export interface Task {
     project_id: number;
     assignees?: TaskAssignee[];
     reviewers?: TaskAssignee[];
+    created_at?: string;
 }

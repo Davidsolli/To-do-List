@@ -23,7 +23,31 @@ export class ProjectService {
         if (!user || !user.id) throw new Error('Usuário não autenticado');
 
         // Backend: GET /projects/user/:userId -> Retorna Promise<Project[]>
-        return await ApiService.get<Project[]>(`projects/user/${user.id}`);
+        const projects = await ApiService.get<Project[]>(`projects/user/${user.id}`);
+        
+        // Enriquecer cada projeto com role e task stats
+        const enrichedProjects = await Promise.all(projects.map(async (project) => {
+            try {
+                // Buscar role do usuário
+                const members = await this.getMembers(project.id);
+                const member = members.find(m => m.user_id === user.id);
+                project.role = member?.role || undefined;
+                
+                // Buscar estatísticas de tarefas
+                const tasksResponse = await ApiService.get<{ tasks: Task[] }>(`tasks/project/${project.id}`);
+                const tasks = tasksResponse.tasks || [];
+                project.taskStats = {
+                    completed: tasks.filter(t => t.status === 'completed').length,
+                    total: tasks.length
+                };
+            } catch (error) {
+                console.error(`Erro ao enriquecer projeto ${project.id}:`, error);
+                project.taskStats = { completed: 0, total: 0 };
+            }
+            return project;
+        }));
+        
+        return enrichedProjects;
     }
 
     // Método do develop: criar projeto com descrição opcional

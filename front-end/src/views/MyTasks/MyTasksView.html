@@ -1,0 +1,86 @@
+<div class="my-tasks-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Minhas Tarefas</h1>
+            <p class="text-secondary">Todas as tarefas atribuídas a você</p>
+        </div>
+    </div>
+
+    <!-- Filtros e Ordenação -->
+    <div class="task-filters">
+        <div class="filter-group">
+            <label for="filter-search">Buscar</label>
+            <input type="text" id="filter-search" class="filter-input" placeholder="Buscar por título..." />
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-project">Projeto</label>
+            <select id="filter-project" class="filter-select">
+                <option value="">Todos</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-priority">Prioridade</label>
+            <select id="filter-priority" class="filter-select">
+                <option value="">Todas</option>
+                <option value="high">Alta</option>
+                <option value="medium">Média</option>
+                <option value="low">Baixa</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-status">Status</label>
+            <select id="filter-status" class="filter-select">
+                <option value="">Todos</option>
+                <option value="pending">Pendente</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="ready">Pronto</option>
+                <option value="under_review">Em Revisão</option>
+                <option value="completed">Concluído</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filter-role">Meu Papel</label>
+            <select id="filter-role" class="filter-select">
+                <option value="">Todos</option>
+                <option value="assignee">Responsável</option>
+                <option value="reviewer">Revisor</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sort-by">Ordenar por</label>
+            <select id="sort-by" class="filter-select">
+                <option value="estimate">Prazo</option>
+                <option value="priority">Prioridade</option>
+                <option value="created">Data de criação</option>
+                <option value="title">Título</option>
+                <option value="status">Status</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sort-order">Ordem</label>
+            <select id="sort-order" class="filter-select">
+                <option value="asc">Crescente</option>
+                <option value="desc">Decrescente</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Contagem de tarefas -->
+    <div class="task-count">
+        <span id="task-count-display">Carregando...</span>
+    </div>
+
+    <!-- Lista de Tarefas -->
+    <div id="tasks-list" class="tasks-list">
+        <div class="loading-wrapper">
+            <div class="spinner"></div>
+            <span>Carregando tarefas...</span>
+        </div>
+    </div>
+</div>

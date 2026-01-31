@@ -36,7 +36,7 @@ export class CommentRepository {
             FROM task_comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.task_id = ?
-            ORDER BY c.created_at DESC
+            ORDER BY c.created_at ASC
         `).all(taskId) as TaskComment[];
     }
 

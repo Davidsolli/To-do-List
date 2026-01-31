@@ -62,7 +62,30 @@ export class TaskService {
         taskData: Partial<TaskCreateDTO>
     ): Promise<TaskResponseDTO> {
 
-        return TaskRepository.update(taskId, taskData);
+        const updatedTask = TaskRepository.update(taskId, taskData);
+
+        // Notify reviewers when task moves to ready (if status was updated)
+        if (taskData.status === 'ready') {
+            const task = TaskRepository.findById(taskId);
+            if (task && task.reviewers && task.reviewers.length > 0) {
+                const { NotificationService } = require('./notification.service');
+                const { ProjectRepository } = require('../repositories/project.repository');
+                const project = ProjectRepository.findById(task.project_id);
+                const projectName = project?.name || 'Projeto';
+
+                task.reviewers.forEach(reviewer => {
+                    NotificationService.notifyTaskReady(
+                        reviewer.user_id,
+                        task.title,
+                        projectName,
+                        taskId,
+                        task.project_id
+                    );
+                });
+            }
+        }
+
+        return updatedTask;
     }
 
     static async updateTaskStatus(
@@ -74,7 +97,30 @@ export class TaskService {
             throw new Error("Status inválido");
         }
 
-        return TaskRepository.updateStatus(taskId, status);
+        const updatedTask = TaskRepository.updateStatus(taskId, status);
+
+        // Notify reviewers when task moves to ready
+        if (status === 'ready') {
+            const task = TaskRepository.findById(taskId);
+            if (task && task.reviewers && task.reviewers.length > 0) {
+                const { NotificationService } = require('./notification.service');
+                const { ProjectRepository } = require('../repositories/project.repository');
+                const project = ProjectRepository.findById(task.project_id);
+                const projectName = project?.name || 'Projeto';
+
+                task.reviewers.forEach(reviewer => {
+                    NotificationService.notifyTaskReady(
+                        reviewer.user_id,
+                        task.title,
+                        projectName,
+                        taskId,
+                        task.project_id
+                    );
+                });
+            }
+        }
+
+        return updatedTask;
     }
 
     static async deleteTask(taskId: number): Promise<void> {
@@ -106,7 +152,8 @@ export class TaskService {
     static async updateAssignees(
         taskId: number,
         assignees: number[],
-        projectId: number
+        projectId: number,
+        actorUserId: number
     ): Promise<TaskResponseDTO> {
         const task = TaskRepository.findById(taskId);
         if (!task) throw new Error("Task não encontrada");
@@ -123,8 +170,12 @@ export class TaskService {
         // Notify new assignees
         if (newAssignees.length > 0) {
             const project = ProjectRepository.findById(projectId);
+            const UserRepository = require('../repositories/user.repository').default;
+            
             if (project) {
                 for (const userId of newAssignees) {
+                    const user = UserRepository.findById(userId);
+                    
                     NotificationService.notifyAssignment(
                         userId,
                         task.title,
@@ -135,8 +186,14 @@ export class TaskService {
                     
                     AuditLogService.log(
                         AuditAction.TASK_ASSIGNED,
-                        `Usuário ${userId} atribuído à task "${task.title}"`,
-                        projectId
+                        JSON.stringify({
+                            task_id: taskId,
+                            task_title: task.title,
+                            assigned_user_id: userId,
+                            assigned_user_name: user?.name || 'Usuário'
+                        }),
+                        projectId,
+                        actorUserId
                     );
                 }
             }
@@ -148,7 +205,8 @@ export class TaskService {
     static async updateReviewers(
         taskId: number,
         reviewerIds: number[],
-        projectId: number
+        projectId: number,
+        actorUserId: number
     ): Promise<TaskResponseDTO> {
         const task = TaskRepository.findById(taskId);
         if (!task) throw new Error("Task não encontrada");
@@ -165,14 +223,30 @@ export class TaskService {
         // Notify new reviewers
         if (newReviewers.length > 0) {
             const project = ProjectRepository.findById(projectId);
+            const UserRepository = require('../repositories/user.repository').default;
+            
             if (project) {
                 for (const userId of newReviewers) {
+                    const user = UserRepository.findById(userId);
+                    
                     NotificationService.create({
                         user_id: userId,
                         type: NotificationType.REVIEWER_ASSIGNED,
                         message: `Você foi designado como revisor da tarefa "${task.title}" no projeto "${project.name}"`,
                         data: { task_id: taskId, project_id: projectId }
                     });
+                    
+                    AuditLogService.log(
+                        AuditAction.TASK_REVIEWER_ASSIGNED,
+                        JSON.stringify({
+                            task_id: taskId,
+                            task_title: task.title,
+                            reviewer_user_id: userId,
+                            reviewer_user_name: user?.name || 'Usuário'
+                        }),
+                        projectId,
+                        actorUserId
+                    );
                 }
             }
         }

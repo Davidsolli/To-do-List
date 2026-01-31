@@ -92,4 +92,13 @@ export class NotificationService {
             data: { task_id: taskId, project_id: projectId }
         });
     }
+
+    static notifyTaskReady(userId: number, taskTitle: string, projectName: string, taskId: number, projectId: number): void {
+        this.create({
+            user_id: userId,
+            type: NotificationType.TASK_READY,
+            message: `A tarefa "${taskTitle}" está pronta para revisão no projeto "${projectName}"`,
+            data: { task_id: taskId, project_id: projectId }
+        });
+    }
 }

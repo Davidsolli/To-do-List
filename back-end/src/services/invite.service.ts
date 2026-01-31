@@ -23,35 +23,38 @@ export class InviteService {
             throw new Error("Sem permissão para convidar usuários");
         }
 
-        // 3. Check if user is already a member
+        // 3. Check if user exists in the system
         const existingUser = UserRepository.findByEmail(email);
-        if (existingUser) {
-            if (existingUser.id === project.user_id) {
-                throw new Error("Este usuário já é o dono do projeto");
-            }
-            if (MemberRepository.isMember(projectId, existingUser.id)) {
-                throw new Error("Este usuário já é membro do projeto");
-            }
+        if (!existingUser) {
+            throw new Error("Usuário não encontrado. Só é possível convidar usuários cadastrados no sistema.");
         }
 
-        // 4. Check if there's already a pending invite
+        // 4. Check if user is already owner or member
+        if (existingUser.id === project.user_id) {
+            throw new Error("Este usuário já é o dono do projeto");
+        }
+        if (MemberRepository.isMember(projectId, existingUser.id)) {
+            throw new Error("Este usuário já é membro do projeto");
+        }
+
+        // 5. Check if there's already a pending invite
         const existingInvite = InviteRepository.findByProjectAndEmail(projectId, email);
         if (existingInvite) {
             throw new Error("Já existe um convite pendente para este email");
         }
 
-        // 5. Create invite
+        // 6. Create invite
         const inviteId = InviteRepository.create({
             project_id: projectId,
             inviter_id: inviterId,
             email
         });
 
-        // 6. Get inviter info
+        // 7. Get inviter info
         const inviter = UserRepository.findById(inviterId);
 
-        // 7. If user exists, send notification
-        if (existingUser && inviter) {
+        // 8. Send notification to the user
+        if (inviter) {
             NotificationService.notifyInvite(
                 existingUser.id,
                 project.name,
@@ -61,7 +64,7 @@ export class InviteService {
             );
         }
 
-        // 8. Log audit
+        // 9. Log audit
         AuditLogService.log(
             AuditAction.INVITE_SENT,
             `Convite enviado para ${email}`,
@@ -102,7 +105,7 @@ export class InviteService {
         // 6. Log audit
         AuditLogService.log(
             AuditAction.INVITE_ACCEPTED,
-            `${user.name} aceitou o convite`,
+            JSON.stringify({ project_id: invite.project_id }),
             invite.project_id,
             userId
         );
@@ -127,7 +130,7 @@ export class InviteService {
         // 4. Log audit
         AuditLogService.log(
             AuditAction.INVITE_DECLINED,
-            `${user.name} recusou o convite`,
+            JSON.stringify({ project_id: invite.project_id }),
             invite.project_id,
             userId
         );

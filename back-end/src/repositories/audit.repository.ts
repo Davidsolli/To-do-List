@@ -13,9 +13,14 @@ export class AuditLogRepository {
 
     static findByProjectId(projectId: number, limit: number = 100, offset: number = 0): AuditLog[] {
         const result = db.prepare(`
-            SELECT * FROM audit_logs 
-            WHERE project_id = ?
-            ORDER BY created_at DESC
+            SELECT 
+                al.*,
+                u.name as user_name,
+                u.email as user_email
+            FROM audit_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            WHERE al.project_id = ?
+            ORDER BY al.created_at DESC
             LIMIT ? OFFSET ?
         `).all(projectId, limit, offset);
         return result as AuditLog[];
@@ -23,9 +28,14 @@ export class AuditLogRepository {
 
     static findByUserId(userId: number, limit: number = 100, offset: number = 0): AuditLog[] {
         const result = db.prepare(`
-            SELECT * FROM audit_logs 
-            WHERE user_id = ?
-            ORDER BY created_at DESC
+            SELECT 
+                al.*,
+                u.name as user_name,
+                u.email as user_email
+            FROM audit_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            WHERE al.user_id = ?
+            ORDER BY al.created_at DESC
             LIMIT ? OFFSET ?
         `).all(userId, limit, offset);
         return result as AuditLog[];
@@ -33,8 +43,13 @@ export class AuditLogRepository {
 
     static findAll(limit: number = 100, offset: number = 0): AuditLog[] {
         const result = db.prepare(`
-            SELECT * FROM audit_logs 
-            ORDER BY created_at DESC
+            SELECT 
+                al.*,
+                u.name as user_name,
+                u.email as user_email
+            FROM audit_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            ORDER BY al.created_at DESC
             LIMIT ? OFFSET ?
         `).all(limit, offset);
         return result as AuditLog[];

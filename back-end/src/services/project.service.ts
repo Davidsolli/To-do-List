@@ -119,7 +119,7 @@ export class ProjectService {
 
     AuditLogService.log(
       AuditAction.MEMBER_REMOVED,
-      `Membro ${user?.name || userId} removido`,
+      JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId }),
       projectId
     );
   }
@@ -137,9 +137,11 @@ export class ProjectService {
       NotificationService.notifyRoleChange(userId, project.name, role, projectId);
     }
 
+    const user = UserRepository.findById(userId);
+
     AuditLogService.log(
       AuditAction.ROLE_CHANGED,
-      `Papel do usuário ${userId} alterado para ${role}`,
+      JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId, new_role: role }),
       projectId
     );
   }
@@ -163,13 +165,14 @@ export class ProjectService {
     MemberRepository.removeMember(projectId, newOwnerId);
 
     // Notify users
-    const oldOwner = UserRepository.findById(oldOwnerId);
     NotificationService.notifyRoleChange(newOwnerId, project.name, "owner", projectId);
     NotificationService.notifyRoleChange(oldOwnerId, project.name, "admin", projectId);
 
+    const newOwner = UserRepository.findById(newOwnerId);
+
     AuditLogService.log(
       AuditAction.OWNERSHIP_TRANSFERRED,
-      `Propriedade transferida de ${oldOwner?.name || oldOwnerId} para usuário ${newOwnerId}`,
+      JSON.stringify({ new_owner_name: newOwner?.name || 'Novo proprietário', new_owner_id: newOwnerId }),
       projectId,
       oldOwnerId
     );

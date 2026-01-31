@@ -17,7 +17,10 @@ export class NotificationRepository {
     }
 
     static findById(id: number): Notification | undefined {
-        const result = db.prepare(`SELECT * FROM notifications WHERE id = ?`).get(id);
+        const result = db.prepare(`SELECT * FROM notifications WHERE id = ?`).get(id) as any;
+        if (result && result.created_at) {
+            result.created_at = result.created_at + 'Z'; // Interpret as UTC
+        }
         return result as Notification | undefined;
     }
 
@@ -27,8 +30,13 @@ export class NotificationRepository {
             WHERE user_id = ?
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
-        `).all(userId, limit, offset);
-        return result as Notification[];
+        `).all(userId, limit, offset) as any[];
+        
+        // Add 'Z' suffix to interpret timestamps as UTC
+        return result.map(n => ({
+            ...n,
+            created_at: n.created_at + 'Z'
+        })) as Notification[];
     }
 
     static findUnreadByUserId(userId: number): Notification[] {
@@ -36,8 +44,13 @@ export class NotificationRepository {
             SELECT * FROM notifications 
             WHERE user_id = ? AND read = 0
             ORDER BY created_at DESC
-        `).all(userId);
-        return result as Notification[];
+        `).all(userId) as any[];
+        
+        // Add 'Z' suffix to interpret timestamps as UTC
+        return result.map(n => ({
+            ...n,
+            created_at: n.created_at + 'Z'
+        })) as Notification[];
     }
 
     static getUnreadCount(userId: number): number {

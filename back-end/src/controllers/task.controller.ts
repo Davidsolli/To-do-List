@@ -7,6 +7,8 @@ import { AuthRequest } from "../interfaces/auth";
 import { getUserProjectRole } from "../middleware/project.middleware";
 import { ProjectRole } from "../interfaces/collaborative";
 import { UserRole } from "../enums/userRoles.enums";
+import { TaskRepository } from "../repositories/task.repository";
+import { ReviewerRepository } from "../repositories/reviewer.repository";
 
 export class TaskController {
   static async createTask(req: Request, res: Response): Promise<void> {
@@ -210,12 +212,22 @@ export class TaskController {
       const restrictedStatuses = [TaskStatus.UNDER_REVIEW, TaskStatus.COMPLETED];
       if (restrictedStatuses.includes(status)) {
         const projectRole = getUserProjectRole(task.project_id, userId!);
+        const isReviewer = ReviewerRepository.isReviewer(taskId, userId!);
         
-        if (authReq.user?.role !== UserRole.ADMIN &&
-            projectRole !== ProjectRole.OWNER && 
-            projectRole !== ProjectRole.ADMIN) {
+        // Pode mover para revisão/concluído se:
+        // - For admin do sistema, OU
+        // - For owner do projeto, OU
+        // - For admin do projeto, OU
+        // - For revisor da tarefa
+        const canMoveToRestrictedStatus = 
+          authReq.user?.role === UserRole.ADMIN ||
+          projectRole === ProjectRole.OWNER || 
+          projectRole === ProjectRole.ADMIN ||
+          isReviewer;
+
+        if (!canMoveToRestrictedStatus) {
           res.status(403).json({ 
-            error: "Apenas owner ou admin podem mover para 'em revisão' ou 'concluído'" 
+            error: "Apenas owner, admin ou revisores podem mover para 'em revisão' ou 'concluído'" 
           });
           return;
         }
@@ -278,19 +290,40 @@ export class TaskController {
         return;
       }
 
-      // Verificar ownership via projeto
-      const updatedTask = await TaskService.generateTip(taskId, forceRegenerate);
-      const project = ProjectService.getById(updatedTask.project_id);
-      const projectRole = getUserProjectRole(updatedTask.project_id, userId!);
+      // Buscar a task primeiro para verificar permissões
+      const task = TaskRepository.findById(taskId);
+      if (!task) {
+        res.status(404).json({ error: "Task não encontrada" });
+        return;
+      }
 
-      // System admin or project owner/admin can generate tips
-      if (authReq.user?.role !== UserRole.ADMIN && 
-          project.user_id !== userId &&
-          projectRole !== ProjectRole.OWNER &&
-          projectRole !== ProjectRole.ADMIN) {
+      // Verificar permissões ANTES de gerar a dica
+      const project = ProjectService.getById(task.project_id);
+      const projectRole = getUserProjectRole(task.project_id, userId);
+      const isAssignee = TaskRepository.isAssignee(taskId, userId);
+      const isReviewer = ReviewerRepository.isReviewer(taskId, userId);
+
+      // Pode gerar dica se:
+      // - For admin do sistema, OU
+      // - For owner do projeto, OU
+      // - For admin do projeto, OU
+      // - Estiver atribuído à tarefa (assignee), OU
+      // - For revisor da tarefa
+      const canGenerateTip = 
+        authReq.user?.role === UserRole.ADMIN || 
+        project.user_id === userId ||
+        projectRole === ProjectRole.OWNER ||
+        projectRole === ProjectRole.ADMIN ||
+        isAssignee ||
+        isReviewer;
+
+      if (!canGenerateTip) {
         res.status(403).json({ error: "Você não tem permissão para gerar dica nesta task" });
         return;
       }
+
+      // Agora gerar a dica
+      const updatedTask = await TaskService.generateTip(taskId, forceRegenerate);
 
       res.status(200).json({
         message: forceRegenerate ? "Nova dica gerada com sucesso" : "Dica recuperada com sucesso",
@@ -381,7 +414,7 @@ export class TaskController {
         return;
       }
 
-      const updatedTask = await TaskService.updateAssignees(taskId, assignees, task.project_id);
+      const updatedTask = await TaskService.updateAssignees(taskId, assignees, task.project_id, userId!);
 
       res.status(200).json({
         message: "Responsáveis atualizados",
@@ -430,7 +463,7 @@ export class TaskController {
         return;
       }
 
-      const updatedTask = await TaskService.updateReviewers(taskId, reviewers, task.project_id);
+      const updatedTask = await TaskService.updateReviewers(taskId, reviewers, task.project_id, userId!);
 
       res.status(200).json({
         message: "Revisores atualizados",

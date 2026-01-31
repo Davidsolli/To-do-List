@@ -41,7 +41,8 @@ export enum NotificationType {
     ASSIGNMENT = 'assignment',
     ADMIN_PROMOTED = 'admin_promoted',
     COMMENT = 'comment',
-    REVIEWER_ASSIGNED = 'reviewer_assigned'
+    REVIEWER_ASSIGNED = 'reviewer_assigned',
+    TASK_READY = 'task_ready'
 }
 
 export interface Notification {
@@ -71,13 +72,16 @@ export enum AuditAction {
     OWNERSHIP_TRANSFERRED = 'ownership_transferred',
     PROJECT_DELETED = 'project_deleted',
     TASK_ASSIGNED = 'task_assigned',
-    TASK_UNASSIGNED = 'task_unassigned'
+    TASK_UNASSIGNED = 'task_unassigned',
+    TASK_REVIEWER_ASSIGNED = 'task_reviewer_assigned'
 }
 
 export interface AuditLog {
     id: number;
     project_id?: number;
     user_id?: number;
+    user_name?: string;
+    user_email?: string;
     action: AuditAction;
     details?: string;
     created_at: string;

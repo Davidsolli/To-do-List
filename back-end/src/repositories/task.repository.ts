@@ -134,21 +134,25 @@ export class TaskRepository {
   }
 
   static findByUserId(userId: number): Task[] {
+    // Buscar tarefas onde o usuário é assignee ou reviewer
     const tasks = db
       .prepare(
         `
-            SELECT t.id, t.title, t.description, t.tip, t.priority, t.status, t.estimate, t.project_id
+            SELECT DISTINCT t.id, t.title, t.description, t.tip, t.priority, t.status, t.estimate, t.project_id
             FROM tasks t
-            INNER JOIN projects p ON t.project_id = p.id
-            WHERE p.user_id = ?
+            LEFT JOIN task_assignees a ON t.id = a.task_id
+            LEFT JOIN task_reviewers r ON t.id = r.task_id
+            WHERE a.user_id = ? OR r.user_id = ?
+            ORDER BY t.id DESC
         `,
       )
-      .all(userId) as Task[];
+      .all(userId, userId) as Task[];
     
-    // Add assignees to each task
+    // Add assignees and reviewers to each task
     return tasks.map(task => ({
       ...task,
-      assignees: this.getAssignees(task.id)
+      assignees: this.getAssignees(task.id),
+      reviewers: this.getReviewers(task.id)
     }));
   }
 
@@ -177,6 +181,7 @@ export class TaskRepository {
       description = COALESCE(?, description),
       tip = COALESCE(?, tip),
       priority = COALESCE(?, priority),
+      status = COALESCE(?, status),
       estimate = COALESCE(?, estimate)
     WHERE id = ?
   `).run(
@@ -184,6 +189,7 @@ export class TaskRepository {
       taskData.description ?? null,
       taskData.tip ?? null,
       taskData.priority ?? null,
+      taskData.status ?? null,
       taskData.estimate ?? null,
       taskId
     );

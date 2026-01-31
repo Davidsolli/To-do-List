@@ -1,16 +1,41 @@
 .notification-popup {
-    position: absolute;
-    top: 100%;
-    right: 0;
+    position: fixed;
+    bottom: 90px; /* Altura aproximada do footer da sidebar + margem */
+    left: 20px; /* Margem da esquerda */
     width: 360px;
+    max-width: calc(100vw - 40px);
     max-height: 480px;
     background: var(--color-surface, #fff);
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 99998;
     display: none;
     flex-direction: column;
     overflow: hidden;
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile positioning */
+@media (max-width: 1024px) {
+    .notification-popup {
+        bottom: auto;
+        top: 60px;
+        left: auto;
+        right: 10px;
+        width: 340px;
+        max-width: calc(100vw - 20px);
+    }
 }
 
 .notification-popup--open {

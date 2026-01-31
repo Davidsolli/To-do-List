@@ -12,20 +12,20 @@
 
     <div class="notifications-view__content">
         <div class="notifications-list" id="notifications-list">
-            <div class="loading-spinner">
-                <span class="material-icons-outlined spinning">sync</span>
-                <p>Carregando notificações...</p>
+            <div class="loading-wrapper">
+                <div class="spinner"></div>
+                <span>Carregando notificações...</span>
             </div>
         </div>
     </div>
 
     <div class="notifications-view__pagination">
-        <button class="btn btn--secondary btn--sm" id="btn-prev-page" disabled>
+        <button class="btn btn--secondary" id="btn-prev-page" disabled>
             <span class="material-icons-outlined">chevron_left</span>
             Anterior
         </button>
         <span id="page-info">Página 1 de 1</span>
-        <button class="btn btn--secondary btn--sm" id="btn-next-page" disabled>
+        <button class="btn btn--secondary" id="btn-next-page" disabled>
             Próxima
             <span class="material-icons-outlined">chevron_right</span>
         </button>

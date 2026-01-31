@@ -72,7 +72,8 @@ export class NotificationPopup {
         const popup = this.container.querySelector('.notification-popup');
         popup?.classList.add('notification-popup--open');
         this.isOpen = true;
-        this.loadNotifications();
+        // Render notifications when opening (they're already loaded from polling)
+        this.renderNotifications();
     }
 
     public close(): void {
@@ -84,10 +85,19 @@ export class NotificationPopup {
     private async loadNotifications(): Promise<void> {
         try {
             const { notifications, count } = await NotificationService.getUnread();
-            this.notifications = notifications.slice(0, 10); // Show max 10 in popup
+            
+            // Always update the badge count
             this.unreadCount = count;
-            this.renderNotifications();
             this.updateBadge();
+            
+            // Only update the list if popup is open
+            if (this.isOpen) {
+                this.notifications = notifications.slice(0, 10); // Show max 10 in popup
+                this.renderNotifications();
+            } else {
+                // Store notifications for when popup opens
+                this.notifications = notifications.slice(0, 10);
+            }
         } catch (error) {
             console.error('Error loading notifications:', error);
         }
@@ -209,12 +219,23 @@ export class NotificationPopup {
             badge.classList.toggle('notification-popup__badge--empty', this.unreadCount === 0);
         }
 
-        // Also update the bell button count if it exists
-        const bellCount = document.querySelector('.notification-bell__count');
-        if (bellCount) {
-            bellCount.textContent = this.unreadCount.toString();
-            bellCount.classList.toggle('notification-bell__count--hidden', this.unreadCount === 0);
-        }
+        // Update all notification badges in the sidebar
+        const badges = [
+            document.querySelector('#notificationBadge'),
+            document.querySelector('#mobileNotificationBadge'),
+            document.querySelector('#sidebarNotificationBadge')
+        ];
+
+        badges.forEach(badge => {
+            if (badge) {
+                if (this.unreadCount > 0) {
+                    badge.textContent = this.unreadCount > 99 ? '99+' : String(this.unreadCount);
+                    (badge as HTMLElement).style.display = 'flex';
+                } else {
+                    (badge as HTMLElement).style.display = 'none';
+                }
+            }
+        });
     }
 
     private async handleNotificationClick(id: number): Promise<void> {
@@ -270,12 +291,10 @@ export class NotificationPopup {
     }
 
     private startPolling(): void {
-        // Poll every 30 seconds for new notifications
-        this.pollInterval = setInterval(() => {
-            if (!this.isOpen) {
-                this.loadNotifications();
-            }
-        }, 30000);
+        // Poll every 15 seconds for new notifications (more frequent for better UX)
+        this.pollInterval = setInterval(async () => {
+            await this.loadNotifications();
+        }, 15000);
     }
 
     public destroy(): void {

@@ -25,6 +25,12 @@ export class ProjectCard {
         return role ? roleClasses[role] : 'role-member';
     }
 
+    // Verifica se deve mostrar o botão de menu baseado no role
+    private shouldShowMenu(): boolean {
+        // Membros não têm menu (sem permissões)
+        return this.project.role !== ProjectRole.MEMBER;
+    }
+
     render(): string {
         const initial = this.project.name.charAt(0).toUpperCase();
         const description = this.project.description || 'Sem descrição.';
@@ -43,6 +49,13 @@ export class ProjectCard {
             action: `access-project`,
         });
 
+        // Renderizar botão de menu apenas se tiver permissão
+        const menuButton = this.shouldShowMenu() 
+            ? `<button class="btn-menu" title="Opções" data-action="menu" data-id="{{id}}">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+               </button>`
+            : '';
+
         return template
             .replace('{{initial}}', initial)
             .replace('{{id}}', this.project.id.toString())
@@ -51,6 +64,7 @@ export class ProjectCard {
             .replace('{{role_label}}', roleLabel)
             .replace('{{role_class}}', roleClass)
             .replace('{{task_progress}}', taskProgress)
-            .replace('{{btn_access}}', btnAccess.render());
+            .replace('{{btn_access}}', btnAccess.render())
+            .replace('{{menu_button}}', menuButton.replace('{{id}}', this.project.id.toString()));
     }
 }

@@ -52,34 +52,19 @@
     letter-spacing: 0.5px;
 }
 
-.role-owner {
-    background-color: #fef3c7;
-    color: #92400e;
+.project-role-badge.role-owner {
+    background: var(--priority-mid-bg);
+    color: var(--priority-mid-text);
 }
 
-.role-admin {
-    background-color: #dbeafe;
-    color: #1e40af;
+.project-role-badge.role-admin {
+    background: var(--status-doing-bg);
+    color: var(--status-doing-text);
 }
 
-.role-member {
-    background-color: #e5e7eb;
-    color: #374151;
-}
-
-.dark-mode .role-owner {
-    background-color: #78350f;
-    color: #fef3c7;
-}
-
-.dark-mode .role-admin {
-    background-color: #1e3a8a;
-    color: #dbeafe;
-}
-
-.dark-mode .role-member {
-    background-color: #374151;
-    color: #e5e7eb;
+.project-role-badge.role-member {
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text);
 }
 
 .project-task-badge {

@@ -28,8 +28,8 @@
 }
 
 .task-comments__count {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
+    background-color: var(--status-ready-bg);
+    color: var(--status-ready-text);
     font-size: 0.6875rem;
     padding: 0.125rem 0.5rem;
     border-radius: 10px;

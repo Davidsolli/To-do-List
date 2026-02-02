@@ -4,6 +4,7 @@ import './NotificationsView.css';
 import { NotificationService } from "../../services/NotificationService";
 import { InviteService } from "../../services/InviteService";
 import { Notification, NotificationType, parseNotificationData } from "../../models/Collaboration";
+import { app } from '../../App';
 
 export class NotificationsView extends Component {
     private currentPage: number = 1;
@@ -138,7 +139,7 @@ export class NotificationsView extends Component {
                 item.style.cursor = 'pointer';
                 item.addEventListener('click', () => {
                     if (!n.read) this.markAsRead(n.id);
-                    window.location.href = `/projetos/${data.project_id}`;
+                    app.navigate(`/projetos/${data.project_id}`);
                 });
             }
 

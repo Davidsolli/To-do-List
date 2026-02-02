@@ -12,6 +12,9 @@ import { toast } from '../../services/ToastService';
 export class UsersView extends Component {
     private users: User[] = [];
     private filteredUsers: User[] = [];
+    private currentPage: number = 1;
+    private totalPages: number = 1;
+    private itemsPerPage: number = 15;
 
     getTemplate(): string {
         const btnNewUser = new Button({
@@ -58,16 +61,25 @@ export class UsersView extends Component {
         if (this.filteredUsers.length === 0) {
             emptyState.style.display = 'block';
             table.style.display = 'none';
+            this.updatePagination();
             return;
         }
 
         emptyState.style.display = 'none';
         table.style.display = 'table'; // Show table (headers + body)
 
-        this.filteredUsers.forEach(user => {
+        // Calcular paginação
+        this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const paginatedUsers = this.filteredUsers.slice(startIndex, endIndex);
+
+        paginatedUsers.forEach(user => {
             const row = this.createUserRow(user);
             list.appendChild(row);
         });
+
+        this.updatePagination();
     }
 
     private createUserRow(user: User): HTMLTableRowElement {
@@ -131,11 +143,29 @@ export class UsersView extends Component {
                 user.email.toLowerCase().includes(value)
             );
 
+            this.currentPage = 1;
             this.renderUsers();
         });
 
         newUserBtn?.addEventListener('click', () => {
             this.openCreateModal();
+        });
+
+        // Pagination
+        this.container.querySelector("#btn-prev-page")?.addEventListener("click", () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderUsers();
+                this.container.querySelector('.users-container')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        this.container.querySelector("#btn-next-page")?.addEventListener("click", () => {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.renderUsers();
+                this.container.querySelector('.users-container')?.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
 
@@ -208,6 +238,16 @@ export class UsersView extends Component {
             console.error('Failed to reload users', error);
             toast.error('Erro ao recarregar usuários');
         }
+    }
+
+    private updatePagination(): void {
+        const pageInfo = this.container.querySelector('#page-info');
+        const prevBtn = this.container.querySelector('#btn-prev-page') as HTMLButtonElement;
+        const nextBtn = this.container.querySelector('#btn-next-page') as HTMLButtonElement;
+
+        if (pageInfo) pageInfo.textContent = `Página ${this.currentPage} de ${this.totalPages}`;
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
     }
 
     private escapeHtml(text: string): string {

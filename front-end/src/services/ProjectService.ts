@@ -59,8 +59,15 @@ export class ProjectService {
             description: description || '',
             user_id: user?.id
         };
-        const response = await ApiService.post<Project>('projects', body);
-        return response;
+        const project = await ApiService.post<Project>('projects', body);
+        
+        // Enriquecer o projeto com role (criador sempre é 'owner')
+        project.role = ProjectRole.OWNER;
+        
+        // Adicionar taskStats inicial
+        project.taskStats = { completed: 0, total: 0 };
+        
+        return project;
     }
 
     // Método do develop: buscar projeto por ID (simples)

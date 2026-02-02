@@ -3,6 +3,7 @@ import { InviteService } from '../../services/InviteService';
 import { Notification, NotificationType, parseNotificationData } from '../../models/Collaboration';
 import template from './NotificationPopup.html';
 import './NotificationPopup.css';
+import { app } from '../../App';
 
 export class NotificationPopup {
     private container: HTMLElement;
@@ -253,7 +254,7 @@ export class NotificationPopup {
         // Navigate based on type
         const data = parseNotificationData(notification.data);
         if (data?.project_id) {
-            window.location.href = `/projetos/${data.project_id}`;
+            app.navigate(`/projetos/${data.project_id}`);
             this.close();
         }
     }

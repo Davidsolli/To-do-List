@@ -10,7 +10,7 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/', // 🔴 IMPORTANTE para SPA + assets absolutos
+        publicPath: '/server02/', // 🔴 IMPORTANTE: Base path para deployment em subdiretório
         clean: true,
     },
 

@@ -217,17 +217,39 @@ export class Sidebar extends Component {
 
   /**
    * Mostra/esconde item "Usuários" baseado se o usuário é admin
+   * e esconde outros itens quando é admin do sistema
    */
   private setupUsersMenuVisibility(): void {
+    const isAdmin = AuthService.isAdmin();
+    
     const usersItem = this.container.querySelector('[data-route="usuarios"]');
     if (usersItem) {
-      // Verificar se o usuário é admin
-      const isAdmin = AuthService.isAdmin();
       if (!isAdmin) {
         usersItem.classList.add('sidebar-item-hidden');
       } else {
         usersItem.classList.remove('sidebar-item-hidden');
       }
+    }
+
+    // Se for admin do sistema, esconder itens não relevantes
+    if (isAdmin) {
+      // Ocultar itens do menu
+      const dashboardItem = this.container.querySelector('[data-route=""]');
+      const myTasksItem = this.container.querySelector('[data-route="minhas-tarefas"]');
+      const notificationsItem = this.container.querySelector('[data-route="notificacoes"]');
+      const projectsSection = this.container.querySelector('.sidebar-projects');
+      
+      if (dashboardItem) dashboardItem.classList.add('sidebar-item-hidden');
+      if (myTasksItem) myTasksItem.classList.add('sidebar-item-hidden');
+      if (notificationsItem) notificationsItem.classList.add('sidebar-item-hidden');
+      if (projectsSection) (projectsSection as HTMLElement).style.display = 'none';
+
+      // Ocultar botões de notificação (desktop e mobile)
+      const notificationBtn = this.container.querySelector('#notificationToggle');
+      const mobileNotificationBtn = this.container.querySelector('#mobileNotificationToggle');
+      
+      if (notificationBtn) (notificationBtn as HTMLElement).style.display = 'none';
+      if (mobileNotificationBtn) (mobileNotificationBtn as HTMLElement).style.display = 'none';
     }
   }
 

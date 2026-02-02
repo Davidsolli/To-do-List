@@ -100,7 +100,7 @@ export class ProjectService {
     return MemberRepository.getTaskAssignmentCount(projectId, userId);
   }
 
-  static removeMember(projectId: number, userId: number) {
+  static removeMember(projectId: number, userId: number, actorId: number) {
     const project = ProjectRepository.findById(projectId);
     if (!project) throw new Error("Projeto não encontrado");
 
@@ -120,11 +120,12 @@ export class ProjectService {
     AuditLogService.log(
       AuditAction.MEMBER_REMOVED,
       JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId }),
-      projectId
+      projectId,
+      actorId
     );
   }
 
-  static updateMemberRole(projectId: number, userId: number, role: ProjectRole) {
+  static updateMemberRole(projectId: number, userId: number, role: ProjectRole, actorId: number) {
     const project = ProjectRepository.findById(projectId);
     if (!project) throw new Error("Projeto não encontrado");
 
@@ -142,7 +143,8 @@ export class ProjectService {
     AuditLogService.log(
       AuditAction.ROLE_CHANGED,
       JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId, new_role: role }),
-      projectId
+      projectId,
+      actorId
     );
   }
 

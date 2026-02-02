@@ -19,10 +19,34 @@
 .btn--primary:hover { background-color: var(--color-primary-light); }
 
 .btn--secondary {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary-dark-text);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border: 2px solid var(--border-color);
+  font-weight: 600;
 }
-.btn--secondary:hover { filter: brightness(0.95); }
+
+.btn--secondary .material-icons-outlined {
+  color: var(--text-main);
+}
+
+.btn--secondary:hover { 
+  background-color: var(--bg-decorative);
+  border-color: var(--color-primary-dark-text);
+}
+
+.dark-mode .btn--secondary {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.dark-mode .btn--secondary .material-icons-outlined {
+  color: #f1f5f9;
+}
+
+.dark-mode .btn--secondary:hover {
+  background-color: #334155;
+  border-color: #13EC5B;
+}
 
 .btn--outline {
   background: transparent;
@@ -93,6 +117,21 @@
 }
 .btn--danger:hover {
     background-color: #dc2626;
+}
+
+.btn--success {
+    background-color: var(--status-done-bg);
+    color: var(--status-done-text);
+    font-weight: 600;
+}
+.btn--success:hover {
+    background-color: var(--status-done-dot);
+    color: white;
+}
+
+.btn--sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
 }
 
 .btn--danger-icon {

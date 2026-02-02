@@ -86,8 +86,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.25rem 0.75rem;
-    background: var(--color-primary-light);
-    color: var(--color-primary);
+    background: var(--status-ready-bg);
+    color: var(--status-ready-text);
     border-radius: 12px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -114,10 +114,21 @@
    ============================================ */
 
 .task-table-view {
-    background: var(--bg-surface);
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 0;
+}
+
+/* Dark mode adjustments */
+.dark-mode .task-table-view {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.task-table-wrapper {
+    overflow-x: auto; /* Scroll horizontal se necessário */
+    border-radius: 8px;
 }
 
 .task-table {
@@ -126,23 +137,26 @@
 }
 
 .task-table thead {
-    background: var(--bg-decorative);
+    background: var(--bg-surface);
     border-bottom: 1px solid var(--border-color);
 }
 
 .task-table th {
-    padding: 0.75rem 1rem;
+    background: var(--bg-surface);
+    padding: 1rem 1.5rem;
     text-align: left;
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
     color: var(--text-secondary);
+    letter-spacing: 0.05em;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
 .task-table th:hover {
-    background: var(--bg-surface);
+    background: var(--bg-page);
 }
 
 .task-table th.sortable {
@@ -171,20 +185,35 @@
 
 .task-table tbody tr {
     border-bottom: 1px solid var(--border-color);
-    transition: background 0.2s;
-}
-
-.task-table tbody tr:hover {
-    background: var(--bg-decorative);
 }
 
 .task-table tbody tr:last-child {
     border-bottom: none;
 }
 
+.task-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
 .task-table td {
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    vertical-align: middle;
+    background-color: #FFFFFF;
+}
+
+.dark-mode .task-table td {
+    background-color: var(--bg-surface);
+}
+
+.task-table tr:last-child td {
+    border-bottom: none;
+}
+
+.task-table tr:hover td {
+    background-color: var(--bg-page); /* Efeito hover na linha */
 }
 
 .task-table-title {
@@ -214,7 +243,7 @@
 }
 
 .task-table-btn:hover {
-    background: var(--bg-decorative);
+    background: var(--bg-page);
     color: var(--text-main);
 }
 
@@ -478,11 +507,19 @@
 @media (min-width: 1024px) {
     .kanban-board {
         flex-wrap: nowrap;
+        align-items: flex-start;
     }
 
     .kanban-column {
         flex: 1 0 280px;
         max-width: 350px;
+        height: calc(100vh - 280px); /* Altura fixa baseada na viewport */
+        max-height: calc(100vh - 280px);
+    }
+    
+    .kanban-column-body {
+        overflow-y: auto; /* Scroll independente */
+        max-height: calc(100vh - 380px); /* Subtrai header da coluna */
     }
 }
 
@@ -519,7 +556,6 @@
     display: flex;
     flex-direction: column;
     min-width: 300px;
-    height: 100%;
     transition: all 0.2s ease;
 }
 
@@ -545,9 +581,11 @@
     flex: 1;
 }
 
-.task-count {
-    background: var(--bg-page);
-    color: var(--text-secondary);
+.kanban-column .task-count {
+    background: var(--status-ready-bg);
+    border: none;
+    margin: 0;
+    color: var(--status-ready-text);
     padding: 2px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -559,11 +597,29 @@
 .kanban-column-body {
     padding: 1rem;
     flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    min-height: 300px;
+    min-height: 200px;
+}
+
+/* Scrollbar personalizada para kanban columns */
+.kanban-column-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanban-column-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
 }
 
 /* Status Indicators */
@@ -1107,7 +1163,6 @@
     justify-content: start;
     font-weight: 700;
     color: var(--text-secondary);
-    text-transform: uppercase;
     letter-spacing: 0.04em;
 }
 
@@ -1206,11 +1261,11 @@
 
 .btn-add-inline {
     margin-left: auto;
-    background: var(--color-primary-light);
+    background: var(--status-ready-bg);
     border: none;
     padding: 0.25rem 0.5rem;
     cursor: pointer;
-    color: var(--color-primary);
+    color: var(--status-ready-text);
     border-radius: 4px;
     font-size: 0.6875rem;
     font-weight: 600;
@@ -1218,7 +1273,7 @@
 }
 
 .btn-add-inline:hover {
-    background: var(--color-primary);
+    background: var(--status-ready-dot);
     color: white;
 }
 
@@ -1705,8 +1760,8 @@ select.form-input {
 }
 
 .project-role-badge.role-member {
-    background: var(--bg-page);
-    color: var(--text-secondary);
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text);
 }
 
 /* ============================================
@@ -1757,7 +1812,7 @@ select.form-input {
 }
 
 .view-tab--active {
-    color: var(--color-primary);
+    color: var(--color-primary-dark-text);
     border-bottom-color: var(--color-primary);
 }
 

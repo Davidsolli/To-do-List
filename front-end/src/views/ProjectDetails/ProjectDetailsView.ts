@@ -35,7 +35,7 @@ export class ProjectDetailsView extends Component {
         assignee: 'all',
         reviewer: 'all'
     };
-    private sortBy: 'priority' | 'created' | 'estimate' | 'title' | 'status' = 'created';
+    private sortBy: 'priority' | 'estimate' | 'title' | 'status' = 'estimate';
     private sortOrder: 'asc' | 'desc' = 'desc';
     private taskView: 'kanban' | 'table' = 'kanban';
     private currentView: 'kanban' | 'members' | 'activity' = 'kanban';
@@ -508,13 +508,6 @@ export class ProjectDetailsView extends Component {
                     break;
                 }
                 
-                case 'created': {
-                    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-                    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-                    compareValue = dateA - dateB;
-                    break;
-                }
-                
                 case 'estimate': {
                     const dateA = a.estimate ? new Date(a.estimate).getTime() : 0;
                     const dateB = b.estimate ? new Date(b.estimate).getTime() : 0;
@@ -669,15 +662,16 @@ export class ProjectDetailsView extends Component {
         }
 
         tableView.innerHTML = `
-            <table class="task-table">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Status</th>
-                        <th>Prioridade</th>
+            <div class="task-table-wrapper">
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
                         <th>Responsável</th>
                         <th>Revisor</th>
-                        <th>Estimativa</th>
+                        <th>Prazo</th>
                         <th style="text-align: right;">Ações</th>
                     </tr>
                 </thead>
@@ -701,24 +695,10 @@ export class ProjectDetailsView extends Component {
                                     ` : `<div class="task-table-title" data-task-id="${task.id}">${task.title}</div>`}
                                 </td>
                                 <td>
-                                    ${canEditTask ? `
-                                        <select class="task-table-select" data-field="status" data-task-id="${task.id}">
-                                            <option value="pending" ${task.status === 'pending' ? 'selected' : ''}>Pendente</option>
-                                            <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>Em Progresso</option>
-                                            <option value="ready" ${task.status === 'ready' ? 'selected' : ''}>Pronto</option>
-                                            <option value="under_review" ${task.status === 'under_review' ? 'selected' : ''}>Revisão</option>
-                                            <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Concluído</option>
-                                        </select>
-                                    ` : `<span class="task-badge task-badge-${task.status}">${statusLabels[task.status]}</span>`}
+                                    ${canEditTask ? `<div class="table-select-container" data-field="status" data-task-id="${task.id}"></div>` : `<span class="task-badge task-badge-${task.status}">${statusLabels[task.status]}</span>`}
                                 </td>
                                 <td>
-                                    ${canEditTask ? `
-                                        <select class="task-table-select" data-field="priority" data-task-id="${task.id}">
-                                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>BAIXA</option>
-                                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>MÉDIA</option>
-                                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>ALTA</option>
-                                        </select>
-                                    ` : `<span class="task-badge task-badge-${task.priority}">${priorityLabels[task.priority]}</span>`}
+                                    ${canEditTask ? `<div class="table-select-container" data-field="priority" data-task-id="${task.id}"></div>` : `<span class="task-badge task-badge-${task.priority}">${priorityLabels[task.priority]}</span>`}
                                 </td>
                                 <td>
                                     ${task.assignees && task.assignees.length > 0 ? `
@@ -760,6 +740,7 @@ export class ProjectDetailsView extends Component {
                     }).join('')}
                 </tbody>
             </table>
+            </div>
         `;
 
         // Bind events
@@ -787,16 +768,15 @@ export class ProjectDetailsView extends Component {
             });
         });
 
-        // Inline editing - status and priority
-        tableView.querySelectorAll('.task-table-select').forEach(select => {
-            select.addEventListener('change', async () => {
-                const taskId = (select as HTMLElement).dataset.taskId;
-                const field = (select as HTMLElement).dataset.field;
-                const newValue = (select as HTMLSelectElement).value;
-                if (taskId && field) {
-                    await this.updateTaskField(Number(taskId), field as 'status' | 'priority', newValue);
-                }
-            });
+        // Render custom badge selects for status and priority
+        tableView.querySelectorAll('.table-select-container').forEach(container => {
+            const taskId = Number((container as HTMLElement).dataset.taskId);
+            const field = (container as HTMLElement).dataset.field as 'status' | 'priority';
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (task && field) {
+                this.renderTableSelect(container as HTMLElement, task, field);
+            }
         });
 
         tableView.querySelectorAll('[data-action="edit-task"]').forEach(btn => {
@@ -829,6 +809,83 @@ export class ProjectDetailsView extends Component {
 
         // Drag and Drop
         this.setupDragAndDrop(view as HTMLElement);
+    }
+
+    private renderTableSelect(container: HTMLElement, task: Task, field: 'status' | 'priority'): void {
+        const statusOptions = [
+            { value: 'pending', label: 'Pendente' },
+            { value: 'in_progress', label: 'Em Progresso' },
+            { value: 'ready', label: 'Pronto' },
+            { value: 'under_review', label: 'Revisão' },
+            { value: 'completed', label: 'Concluído' }
+        ];
+
+        const priorityOptions = [
+            { value: 'low', label: 'Baixa' },
+            { value: 'medium', label: 'Média' },
+            { value: 'high', label: 'Alta' }
+        ];
+
+        const options = field === 'status' ? statusOptions : priorityOptions;
+        const currentValue = task[field];
+
+        const select = new Select({
+            name: field,
+            options: options.map(opt => ({
+                value: opt.value,
+                label: opt.label,
+                selected: currentValue === opt.value
+            })),
+            onChange: async (value) => {
+                await this.updateTaskField(task.id, field, value);
+            }
+        });
+
+        container.innerHTML = select.render();
+        const selectEl = container.querySelector('[data-select]') as HTMLElement;
+        
+        if (selectEl) {
+            selectEl.classList.add('select-badge-style', `select-badge-${field}`);
+            
+            // Add current value class
+            const selectValue = selectEl.querySelector('[data-value]') as HTMLElement;
+            if (selectValue) {
+                if (field === 'status') {
+                    const statusClasses: Record<string, string> = {
+                        'pending': 'pending',
+                        'in_progress': 'doing',
+                        'ready': 'ready',
+                        'under_review': 'review',
+                        'completed': 'done'
+                    };
+                    const statusClass = statusClasses[currentValue] || currentValue;
+                    selectValue.classList.add(`select-value-status-${statusClass}`);
+                } else {
+                    selectValue.classList.add(`select-value-priority-${currentValue}`);
+                }
+            }
+            
+            select.bindEvents(selectEl);
+            
+            // Add badge styling to options
+            selectEl.querySelectorAll('.select-option').forEach(option => {
+                const value = (option as HTMLElement).dataset.value;
+                if (value) {
+                    if (field === 'status') {
+                        const statusClasses: Record<string, string> = {
+                            'pending': 'pending',
+                            'in_progress': 'doing',
+                            'ready': 'ready',
+                            'under_review': 'review',
+                            'completed': 'done'
+                        };
+                        option.classList.add('badge-option', `badge-option-status-${statusClasses[value] || value}`);
+                    } else {
+                        option.classList.add('badge-option', `badge-option-priority-${value}`);
+                    }
+                }
+            });
+        }
     }
 
     private setupDragAndDrop(view: HTMLElement) {
@@ -1005,7 +1062,7 @@ export class ProjectDetailsView extends Component {
                         ${prioritySelect.render()}
                     </div>
                      <div class="form-group">
-                        <label>Data de Conclusão</label>
+                        <label>Data de Prazo</label>
                         <div class="input-with-icon">
                             <input type="date" name="estimate" value="${dateValue}" class="form-input">
                             <i class="fa-solid fa-calendar"></i>
@@ -1283,7 +1340,7 @@ export class ProjectDetailsView extends Component {
         // Status labels
         const statusLabels: Record<string, string> = {
             'pending': 'Pendente',
-            'in_progress': 'Em Andamento',
+            'in_progress': 'Em Progresso',
             'ready': 'Pronto',
             'under_review': 'Em Revisão',
             'completed': 'Concluído'
@@ -1336,7 +1393,7 @@ export class ProjectDetailsView extends Component {
         // Status options (all)
         const allStatusOptions = [
             { value: 'pending', label: 'Pendente' },
-            { value: 'in_progress', label: 'Em Andamento' },
+            { value: 'in_progress', label: 'Em Progresso' },
             { value: 'ready', label: 'Pronto' },
             { value: 'under_review', label: 'Em Revisão' },
             { value: 'completed', label: 'Concluído' }
@@ -1435,14 +1492,8 @@ export class ProjectDetailsView extends Component {
                                 <i class="fa-solid fa-circle-dot"></i>
                                 Status
                             </div>
-                            <div class="sidebar-content">
-                                ${canEditStatus ? `
-                                    <select class="inline-select inline-select--status" data-field="status" data-status="${task.status}">
-                                        ${statusOptions.map(opt => `
-                                            <option value="${opt.value}" ${task.status === opt.value ? 'selected' : ''}>${opt.label}</option>
-                                        `).join('')}
-                                    </select>
-                                ` : `<span class="status-badge status-badge--${statusClass}">${statusLabel}</span>`}
+                            <div class="sidebar-content" id="status-select-container">
+                                ${canEditStatus ? `<!-- Status select will be rendered here -->` : `<span class="status-badge status-badge--${statusClass}">${statusLabel}</span>`}
                             </div>
                         </div>
 
@@ -1452,14 +1503,8 @@ export class ProjectDetailsView extends Component {
                                 <i class="fa-solid fa-flag"></i>
                                 Prioridade
                             </div>
-                            <div class="sidebar-content">
-                                ${canEdit ? `
-                                    <select class="inline-select inline-select--priority" data-field="priority" data-priority="${task.priority}">
-                                        ${priorityOptions.map(opt => `
-                                            <option value="${opt.value}" ${task.priority === opt.value ? 'selected' : ''}>${opt.label}</option>
-                                        `).join('')}
-                                    </select>
-                                ` : `<span class="priority-badge priority-badge--${task.priority}">${priorityLabel}</span>`}
+                            <div class="sidebar-content" id="priority-select-container">
+                                ${canEdit ? `<!-- Priority select will be rendered here -->` : `<span class="priority-badge priority-badge--${task.priority}">${priorityLabel}</span>`}
                             </div>
                         </div>
 
@@ -1578,6 +1623,106 @@ export class ProjectDetailsView extends Component {
                 taskComments.render().then(commentsEl => {
                     commentsContainer.appendChild(commentsEl);
                 });
+            }
+
+            // Render custom selects for status and priority
+            this.renderCustomTaskSelects(task, modalEl, canEditStatus, canEdit, statusOptions, priorityOptions);
+        }
+    }
+
+    private renderCustomTaskSelects(
+        task: Task,
+        modalEl: HTMLElement,
+        canEditStatus: boolean,
+        canEditPriority: boolean,
+        statusOptions: { value: string; label: string }[],
+        priorityOptions: { value: string; label: string }[]
+    ): void {
+        // Render Status Select with badges
+        if (canEditStatus) {
+            const statusContainer = modalEl.querySelector('#status-select-container');
+            if (statusContainer) {
+                const statusSelect = new Select({
+                    name: 'status',
+                    options: statusOptions.map(opt => ({
+                        value: opt.value,
+                        label: opt.label,
+                        selected: task.status === opt.value
+                    })),
+                    onChange: async (value) => {
+                        await this.saveInlineEdit(task, 'status', value, modalEl);
+                    }
+                });
+
+                statusContainer.innerHTML = statusSelect.render();
+                const selectEl = statusContainer.querySelector('[data-select]') as HTMLElement;
+                if (selectEl) {
+                    selectEl.classList.add('select-badge-style', 'select-badge-status');
+                    
+                    // Add current status class to select-value
+                    const statusClasses: Record<string, string> = {
+                        'pending': 'pending',
+                        'in_progress': 'doing',
+                        'ready': 'ready',
+                        'under_review': 'review',
+                        'completed': 'done'
+                    };
+                    const currentStatusClass = statusClasses[task.status] || task.status;
+                    const selectValue = selectEl.querySelector('[data-value]') as HTMLElement;
+                    if (selectValue) {
+                        selectValue.classList.add(`select-value-status-${currentStatusClass}`);
+                    }
+                    
+                    statusSelect.bindEvents(selectEl);
+                    
+                    // Add status badge styling to options
+                    selectEl.querySelectorAll('.select-option').forEach(option => {
+                        const value = (option as HTMLElement).dataset.value;
+                        if (value) {
+                            option.classList.add('badge-option', `badge-option-status-${statusClasses[value] || value}`);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Render Priority Select with badges
+        if (canEditPriority) {
+            const priorityContainer = modalEl.querySelector('#priority-select-container');
+            if (priorityContainer) {
+                const prioritySelect = new Select({
+                    name: 'priority',
+                    options: priorityOptions.map(opt => ({
+                        value: opt.value,
+                        label: opt.label,
+                        selected: task.priority === opt.value
+                    })),
+                    onChange: async (value) => {
+                        await this.saveInlineEdit(task, 'priority', value, modalEl);
+                    }
+                });
+
+                priorityContainer.innerHTML = prioritySelect.render();
+                const selectEl = priorityContainer.querySelector('[data-select]') as HTMLElement;
+                if (selectEl) {
+                    selectEl.classList.add('select-badge-style', 'select-badge-priority');
+                    
+                    // Add current priority class to select-value
+                    const selectValue = selectEl.querySelector('[data-value]') as HTMLElement;
+                    if (selectValue) {
+                        selectValue.classList.add(`select-value-priority-${task.priority}`);
+                    }
+                    
+                    prioritySelect.bindEvents(selectEl);
+                    
+                    // Add priority badge styling to options
+                    selectEl.querySelectorAll('.select-option').forEach(option => {
+                        const value = (option as HTMLElement).dataset.value;
+                        if (value) {
+                            option.classList.add('badge-option', `badge-option-priority-${value}`);
+                        }
+                    });
+                }
             }
         }
     }
@@ -1698,7 +1843,7 @@ export class ProjectDetailsView extends Component {
                 if (statusBadge) {
                     const statusLabels: Record<string, string> = {
                         'pending': 'Pendente',
-                        'in_progress': 'Em Andamento',
+                        'in_progress': 'Em Progresso',
                         'ready': 'Pronto',
                         'under_review': 'Em Revisão',
                         'completed': 'Concluído'
@@ -1986,7 +2131,7 @@ export class ProjectDetailsView extends Component {
             try {
                 const prefs = JSON.parse(saved);
                 this.filters = { ...this.filters, ...prefs.filters };
-                this.sortBy = prefs.sortBy || 'created';
+                this.sortBy = prefs.sortBy || 'estimate';
                 this.sortOrder = prefs.sortOrder || 'desc';
                 this.taskView = prefs.taskView || 'kanban';
             } catch (e) {
@@ -2109,11 +2254,10 @@ export class ProjectDetailsView extends Component {
             </span>`);
         }
 
-        if (this.sortBy !== 'created' || this.sortOrder !== 'desc') {
+        if (this.sortBy !== 'estimate' || this.sortOrder !== 'desc') {
             const sortLabels: Record<string, string> = {
                 priority: 'Prioridade',
-                created: 'Criação',
-                estimate: 'Estimativa',
+                estimate: 'Prazo',
                 title: 'Título',
                 status: 'Status'
             };
@@ -2153,7 +2297,7 @@ export class ProjectDetailsView extends Component {
                 this.filters.reviewer = 'all';
                 break;
             case 'sort':
-                this.sortBy = 'created';
+                this.sortBy = 'estimate';
                 this.sortOrder = 'desc';
                 break;
         }
@@ -2233,8 +2377,7 @@ export class ProjectDetailsView extends Component {
         const sortBySelect = new Select({
             name: 'sortBy',
             options: [
-                { value: 'created', label: 'Data de Criação', selected: this.sortBy === 'created' },
-                { value: 'estimate', label: 'Data de Estimativa', selected: this.sortBy === 'estimate' },
+                { value: 'estimate', label: 'Data de Prazo', selected: this.sortBy === 'estimate' },
                 { value: 'priority', label: 'Prioridade', selected: this.sortBy === 'priority' },
                 { value: 'title', label: 'Título', selected: this.sortBy === 'title' },
                 { value: 'status', label: 'Status', selected: this.sortBy === 'status' }
@@ -2358,7 +2501,7 @@ export class ProjectDetailsView extends Component {
                     assignee: 'all',
                     reviewer: 'all'
                 };
-                this.sortBy = 'created';
+                this.sortBy = 'estimate';
                 this.sortOrder = 'desc';
                 this.savePreferences();
                 this.renderTasksWithPermissions();

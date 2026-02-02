@@ -1,0 +1,101 @@
+<div class="project-members">
+    <div class="project-members__header">
+        <h3>Membros do Projeto</h3>
+        <button class="project-members__invite-btn" id="btn-invite-member">
+            <span class="material-icons-outlined">person_add</span>
+            Convidar
+        </button>
+    </div>
+
+    <div class="project-members__owner" id="project-owner">
+        <!-- Owner info will be rendered here -->
+    </div>
+
+    <div class="project-members__list" id="members-list">
+        <!-- Members will be rendered here -->
+    </div>
+
+    <div class="project-members__invites" id="pending-invites">
+        <h4>Convites Pendentes</h4>
+        <div class="project-members__invites-list" id="invites-list">
+            <!-- Pending invites will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<!-- Invite Modal -->
+<div class="modal-overlay" id="invite-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Convidar Membro</h2>
+            <button class="modal-close" id="close-invite-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="invite-form">
+                <div class="form-group">
+                    <label for="invite-email">Email do usuário</label>
+                    <input type="email" id="invite-email" placeholder="usuario@email.com" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancel-invite">Cancelar</button>
+                    <button type="submit" class="btn btn--primary">Enviar Convite</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Role Change Modal -->
+<div class="modal-overlay" id="role-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Alterar Papel</h2>
+            <button class="modal-close" id="close-role-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="role-modal-text">Selecione o novo papel para <strong id="role-user-name"></strong>:</p>
+            <div class="role-options">
+                <label class="role-option">
+                    <input type="radio" name="member-role" value="admin">
+                    <span class="role-option__label">
+                        <strong>Admin</strong>
+                        <span>Pode gerenciar tarefas, membros e convites</span>
+                    </span>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="member-role" value="member">
+                    <span class="role-option__label">
+                        <strong>Membro</strong>
+                        <span>Pode visualizar e trabalhar nas tarefas atribuídas</span>
+                    </span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn--secondary" id="cancel-role">Cancelar</button>
+                <button type="button" class="btn btn--primary" id="confirm-role">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Ownership Modal -->
+<div class="modal-overlay" id="transfer-modal">
+    <div class="modal-content modal-content--danger">
+        <div class="modal-header">
+            <h2>Transferir Propriedade</h2>
+            <button class="modal-close" id="close-transfer-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-box">
+                <span class="material-icons-outlined">warning</span>
+                <p>Você está prestes a transferir a propriedade deste projeto para <strong
+                        id="transfer-user-name"></strong>.</p>
+            </div>
+            <p>Esta ação não pode ser desfeita. Você se tornará um admin do projeto.</p>
+            <div class="form-actions">
+                <button type="button" class="btn btn--secondary" id="cancel-transfer">Cancelar</button>
+                <button type="button" class="btn btn--danger" id="confirm-transfer">Transferir Propriedade</button>
+            </div>
+        </div>
+    </div>
+</div>

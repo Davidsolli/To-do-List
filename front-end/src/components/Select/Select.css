@@ -9,7 +9,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.625rem 0.875rem;
-    background-color: var(--bg-surface);
+    background-color: var(--bg-page);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
@@ -27,7 +27,7 @@
 }
 
 .select-value {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-main);
     flex: 1;
 }
@@ -66,6 +66,13 @@
     overflow: hidden;
 }
 
+/* Dropdown com position fixed para contextos com overflow */
+.select-dropdown.fixed-position {
+    position: fixed;
+    left: auto;
+    right: auto;
+}
+
 .custom-select.active .select-dropdown {
     opacity: 1;
     display: block;
@@ -100,7 +107,7 @@
     padding: 0.75rem 0.875rem;
     cursor: pointer;
     transition: all 0.15s ease;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-main);
     font-weight: 500;
     display: flex;
@@ -150,4 +157,191 @@
 .custom-select.disabled .select-trigger {
     cursor: not-allowed;
     background-color: var(--bg-page);
+}
+
+/* ============================================
+   BADGE-STYLE SELECTS (GitHub Projects Style)
+   ============================================ */
+
+/* Badge-style select container */
+.select-badge-style .select-trigger {
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-height: auto;
+}
+
+.select-badge-style .select-trigger:hover {
+    background: var(--bg-hover);
+    border-radius: 6px;
+}
+
+.select-badge-style.active .select-trigger {
+    box-shadow: none;
+}
+
+.select-badge-style .select-value {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.select-badge-style .select-arrow {
+    display: none;
+}
+
+/* Badge options - base styling */
+.badge-option {
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+    padding: 0.5rem 0.875rem !important;
+    border-radius: 6px;
+    margin: 0.125rem 0.25rem;
+    position: relative;
+}
+
+.badge-option::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.badge-option.selected {
+    background: var(--bg-hover) !important;
+    color: var(--text-main) !important;
+}
+
+.badge-option.selected::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.75rem;
+    position: absolute;
+    right: 0.75rem;
+    color: var(--color-primary);
+}
+
+/* Status badges */
+.badge-option-status-pending::before {
+    background: var(--status-pending-bg);
+}
+
+.badge-option-status-pending {
+    color: var(--status-pending-text);
+}
+
+.badge-option-status-doing::before {
+    background: var(--status-doing-bg);
+}
+
+.badge-option-status-doing {
+    color: var(--status-doing-text);
+}
+
+.badge-option-status-ready::before {
+    background: var(--status-ready-bg);
+}
+
+.badge-option-status-ready {
+    color: var(--status-ready-text);
+}
+
+.badge-option-status-review::before {
+    background: var(--status-review-bg);
+}
+
+.badge-option-status-review {
+    color: var(--status-review-text);
+}
+
+.badge-option-status-done::before {
+    background: var(--status-done-bg);
+}
+
+.badge-option-status-done {
+    color: var(--status-done-text);
+}
+
+/* Priority badges */
+.badge-option-priority-low::before {
+    background: var(--priority-low-bg);
+}
+
+.badge-option-priority-low {
+    color: var(--priority-low-text);
+}
+
+.badge-option-priority-medium::before {
+    background: var(--priority-medium-bg);
+}
+
+.badge-option-priority-medium {
+    color: var(--priority-medium-text);
+}
+
+.badge-option-priority-high::before {
+    background: var(--priority-high-bg);
+}
+
+.badge-option-priority-high {
+    color: var(--priority-high-text);
+}
+
+/* Badge style - selected value appearance with dynamic colors */
+
+/* Status selected value colors */
+.select-value-status-pending {
+    background: var(--status-pending-bg) !important;
+    color: var(--status-pending-text) !important;
+}
+
+.select-value-status-doing {
+    background: var(--status-doing-bg) !important;
+    color: var(--status-doing-text) !important;
+}
+
+.select-value-status-ready {
+    background: var(--status-ready-bg) !important;
+    color: var(--status-ready-text) !important;
+}
+
+.select-value-status-review {
+    background: var(--status-review-bg) !important;
+    color: var(--status-review-text) !important;
+}
+
+.select-value-status-done {
+    background: var(--status-done-bg) !important;
+    color: var(--status-done-text) !important;
+}
+
+/* Priority selected value colors */
+.select-value-priority-low {
+    background: var(--priority-low-bg) !important;
+    color: var(--priority-low-text) !important;
+}
+
+.select-value-priority-medium {
+    background: var(--priority-medium-bg) !important;
+    color: var(--priority-medium-text) !important;
+}
+
+.select-value-priority-high {
+    background: var(--priority-high-bg) !important;
+    color: var(--priority-high-text) !important;
+}
+
+.select-badge-style .select-value::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.8;
 }

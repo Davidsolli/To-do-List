@@ -9,10 +9,14 @@ import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
 import { ContextMenu } from '../../components/ContextMenu/ContextMenu';
 import { Button } from '../../components/Button/Button';
 import { app } from '../../App';
+import { ProjectRole } from '../../models/Collaboration';
 
 export class ProjectsView extends Component {
     private projects: Project[] = [];
     private filteredProjects: Project[] = [];
+    private currentPage: number = 1;
+    private totalPages: number = 1;
+    private itemsPerPage: number = 12;
 
     getTemplate(): string {
         const btnNewProject = new Button({
@@ -53,13 +57,20 @@ export class ProjectsView extends Component {
         if (this.filteredProjects.length === 0) {
             list.style.display = 'none';
             emptyState.style.display = 'block';
+            this.updatePagination();
             return;
         }
 
         list.style.display = 'grid';
         emptyState.style.display = 'none';
 
-        this.filteredProjects.forEach(project => {
+        // Calcular paginação
+        this.totalPages = Math.ceil(this.filteredProjects.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const paginatedProjects = this.filteredProjects.slice(startIndex, endIndex);
+
+        paginatedProjects.forEach(project => {
             const card = new ProjectCard(project);
             const cardHtml = card.render();
 
@@ -81,11 +92,32 @@ export class ProjectsView extends Component {
                 this.showProjectMenu(menuBtn as HTMLElement, project);
             });
         });
+
+        this.updatePagination();
+    }
+
+    private updatePagination(): void {
+        const pageInfo = this.container.querySelector('#page-info');
+        const prevBtn = this.container.querySelector('#btn-prev-page') as HTMLButtonElement;
+        const nextBtn = this.container.querySelector('#btn-next-page') as HTMLButtonElement;
+
+        if (pageInfo) pageInfo.textContent = `Página ${this.currentPage} de ${this.totalPages}`;
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
     }
 
     private showProjectMenu(triggerElement: HTMLElement, project: Project): void {
+        // Determinar permissões baseadas no role
+        const role = project.role;
+        if (!role) return; // Se não tem role, não mostra menu
+        
+        const showEdit = role === ProjectRole.OWNER || role === ProjectRole.ADMIN;
+        const showDelete = role === ProjectRole.OWNER;
+
         const menu = new ContextMenu({
             id: project.id,
+            showEdit,
+            showDelete,
             onEdit: () => {
                 this.openEditModal(project);
             },
@@ -111,12 +143,29 @@ export class ProjectsView extends Component {
                 (project.description && project.description.toLowerCase().includes(value))
             );
 
+            this.currentPage = 1;
             this.renderProjects();
         });
 
         const newProjectBtn = view.querySelector('[data-action="new-project"]');
-
         newProjectBtn?.addEventListener('click', () => this.openCreateModal());
+
+        // Pagination
+        this.container.querySelector("#btn-prev-page")?.addEventListener("click", () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderProjects();
+                this.container.querySelector('.projects-grid')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        this.container.querySelector("#btn-next-page")?.addEventListener("click", () => {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.renderProjects();
+                this.container.querySelector('.projects-grid')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
     }
 
     private openCreateModal(): void {

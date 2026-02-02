@@ -2,6 +2,7 @@ import template from './PasswordModal.html';
 import './PasswordModal.css';
 import { UserService } from '../../services/UserService';
 import { AuthService } from '../../services/AuthService';
+import { Validator } from '../../utils/Validator';
 
 export interface PasswordModalOptions {
     onSuccess?: () => void;
@@ -128,17 +129,23 @@ export class PasswordModal {
         // Validations
         let hasErrors = false;
 
-        if (!currentPassword) {
+        if (Validator.isEmpty(currentPassword)) {
             this.showFieldError('current-password', 'Senha atual é obrigatória');
             hasErrors = true;
         }
 
-        if (newPassword.length < 8) {
-            this.showFieldError('new-password', 'A senha deve ter no mínimo 8 caracteres');
+        if (Validator.isEmpty(newPassword)) {
+            this.showFieldError('new-password', 'Nova senha é obrigatória');
+            hasErrors = true;
+        } else if (!Validator.isPasswordStrong(newPassword)) {
+            this.showFieldError('new-password', 'A senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais');
             hasErrors = true;
         }
 
-        if (newPassword !== confirmPassword) {
+        if (Validator.isEmpty(confirmPassword)) {
+            this.showFieldError('confirm-password', 'Confirmação de senha é obrigatória');
+            hasErrors = true;
+        } else if (newPassword !== confirmPassword) {
             this.showFieldError('confirm-password', 'As senhas não coincidem');
             hasErrors = true;
         }

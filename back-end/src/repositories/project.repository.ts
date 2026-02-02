@@ -17,6 +17,16 @@ export class ProjectRepository {
         return result as Project[];
     }
 
+    // Find all projects where user is owner OR member
+    static findAllUserProjects(userId: number): Project[] {
+        const result = db.prepare(`
+            SELECT DISTINCT p.* FROM projects p
+            LEFT JOIN project_members pm ON p.id = pm.project_id
+            WHERE p.user_id = ? OR pm.user_id = ?
+        `).all(userId, userId);
+        return result as Project[];
+    }
+
     static findById(id: number): Project | undefined {
         const result = db.prepare(`SELECT * FROM projects WHERE id = ?`).get(id);
         return result as Project | undefined;
@@ -40,6 +50,14 @@ export class ProjectRepository {
         const result = db.prepare(`DELETE FROM projects WHERE id = ?`).run(id);
         if (result.changes === 0) {
             throw new Error('Falha ao deletar projeto no banco de dados');
+        }
+        return result.changes;
+    }
+
+    static updateOwner(id: number, newOwnerId: number): number {
+        const result = db.prepare(`UPDATE projects SET user_id = ? WHERE id = ?`).run(newOwnerId, id);
+        if (result.changes === 0) {
+            throw new Error('Falha ao transferir propriedade do projeto');
         }
         return result.changes;
     }

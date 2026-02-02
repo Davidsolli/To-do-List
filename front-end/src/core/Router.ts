@@ -159,7 +159,7 @@ export class Router {
 
             // 5. Sincroniza o sidebar com a rota atual
             if (this.sidebarInstance) {
-                const routeName = path.substring(1) || 'projetos'; // Remove a barra inicial
+                const routeName = path.substring(1); // Remove a barra inicial (pode ficar vazio para /)
                 this.sidebarInstance.setActiveMenuItem(routeName);
             }
         } else {

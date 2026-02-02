@@ -242,3 +242,27 @@
         min-width: 600px;
     }
 }
+
+/* Pagination */
+.users-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.users-pagination span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .users-pagination {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}

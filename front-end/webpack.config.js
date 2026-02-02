@@ -21,7 +21,17 @@ module.exports = {
             directory: path.resolve(__dirname, 'public'), // ✅ serve public/
         },
         hot: true,
-        historyApiFallback: true,
+        // Para desenvolvimento local (sem /server02/), use:
+        // historyApiFallback: true,
+
+        // Para produção com base path /server02/:
+        historyApiFallback: {
+            index: '/server02/index.html', // Aponta para o index.html no base path
+            rewrites: [
+                { from: /^\/server02\/.*/, to: '/server02/index.html' } // Redireciona todas as rotas para o index
+            ],
+            disableDotRule: true, // Permite rotas com pontos (ex: /api/user.json ainda vai para backend)
+        },
         port: 4173
     },
 

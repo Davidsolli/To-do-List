@@ -5,6 +5,8 @@ export interface ContextMenuOptions {
     id: string | number;
     onEdit?: (id: string | number) => void;
     onDelete?: (id: string | number) => void;
+    showEdit?: boolean;
+    showDelete?: boolean;
 }
 
 export class ContextMenu {
@@ -16,12 +18,30 @@ export class ContextMenu {
     constructor(options: ContextMenuOptions) {
         this.options = options;
         this.menuId = `menu-${options.id}`;
+        // Por padrão, mostra ambas as opções se não especificado
+        if (this.options.showEdit === undefined) this.options.showEdit = true;
+        if (this.options.showDelete === undefined) this.options.showDelete = true;
     }
 
     render(): string {
-        return template
-            .replace('{{menuId}}', this.menuId)
-            .replace(/{{id}}/g, this.options.id.toString());
+        const editButton = this.options.showEdit
+            ? `<button class="context-menu__item" data-action="edit" data-id="{{id}}">
+                <i class="fa-solid fa-pen"></i>
+                <span>Editar</span>
+               </button>`
+            : '';
+
+        const deleteButton = this.options.showDelete
+            ? `<button class="context-menu__item context-menu__item--danger" data-action="delete" data-id="{{id}}">
+                <i class="fa-solid fa-trash"></i>
+                <span>Excluir</span>
+               </button>`
+            : '';
+
+        return `<div class="context-menu" data-menu-id="${this.menuId}">
+            ${editButton}
+            ${deleteButton}
+        </div>`.replace(/{{id}}/g, this.options.id.toString());
     }
 
     show(triggerElement: HTMLElement): void {

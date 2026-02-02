@@ -1,0 +1,51 @@
+<div class="my-tasks-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Minhas Tarefas</h1>
+            <p class="text-secondary">Todas as tarefas atribuídas a você</p>
+        </div>
+    </div>
+
+    <!-- Filtros e Ordenação (accordion) -->
+    <div class="filters-accordion" id="filters-accordion">
+        <button class="filters-accordion-header" id="filters-toggle" aria-expanded="true"
+            aria-controls="filters-content">
+            <span class="filters-accordion-title">
+                <i class="fa-solid fa-filter"></i>
+                Filtros
+            </span>
+            <i class="fa-solid fa-chevron-down filters-accordion-icon"></i>
+        </button>
+
+        <div id="filters-content" class="filters-accordion-content">
+            <div id="filters-container" class="filters-grid">
+                <!-- Filtros serão inseridos aqui via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Contagem de tarefas -->
+    <div class="task-count">
+        <span id="task-count-display">Carregando...</span>
+    </div>
+
+    <!-- Lista de Tarefas -->
+    <div id="tasks-list" class="tasks-list">
+        <div class="loading-wrapper">
+            <div class="spinner"></div>
+            <span>Carregando tarefas...</span>
+        </div>
+    </div>
+
+    <div class="my-tasks-pagination">
+        <button class="btn btn--secondary" id="btn-prev-page" disabled>
+            <span class="material-icons-outlined">chevron_left</span>
+            Anterior
+        </button>
+        <span id="page-info">Página 1 de 1</span>
+        <button class="btn btn--secondary" id="btn-next-page" disabled>
+            Próxima
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</div>

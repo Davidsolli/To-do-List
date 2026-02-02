@@ -3,12 +3,16 @@ import template from './Sidebar.html';
 import './sidebar.css';
 import { AuthService } from '../services/AuthService';
 import { ProjectService } from '../services/ProjectService';
+import { NotificationService } from '../services/NotificationService';
+import { NotificationPopup } from './NotificationPopup/NotificationPopup';
 import { app } from '../App';
 
 
 export class Sidebar extends Component {
   private isDarkMode: boolean;
   private isProjectsExpanded = false;
+  private notificationPopup: NotificationPopup | null = null;
+  private notificationPollInterval: number | null = null;
 
   constructor(containerId: string) {
     super(containerId);
@@ -34,6 +38,62 @@ export class Sidebar extends Component {
     this.setupUsersMenuVisibility();
     this.initializeDarkMode();
     this.setupMobileToggle();
+    this.setupNotifications();
+  }
+
+  /**
+   * Configura o sistema de notificações
+   */
+  private setupNotifications(): void {
+    // Criar o popup de notificações
+    const popupContainer = this.container.querySelector('#notification-popup-container');
+    if (popupContainer) {
+      this.notificationPopup = new NotificationPopup(popupContainer as HTMLElement);
+    }
+
+    // Bind click handlers para abrir o popup
+    const notificationBtn = this.container.querySelector('#notificationToggle');
+    notificationBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleNotificationPopup();
+    });
+
+    const mobileNotificationBtn = this.container.querySelector('#mobileNotificationToggle');
+    mobileNotificationBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleNotificationPopup();
+    });
+
+    // O NotificationPopup já cuida de atualizar os badges via polling
+
+    // Fechar popup ao clicar fora
+    document.addEventListener('click', (e) => {
+      if (this.notificationPopup?.isVisible()) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.notification-popup') && !target.closest('#notificationToggle') && !target.closest('#mobileNotificationToggle')) {
+          this.notificationPopup.hide();
+        }
+      }
+    });
+  }
+
+  private toggleNotificationPopup(): void {
+    if (this.notificationPopup) {
+      if (this.notificationPopup.isVisible()) {
+        this.notificationPopup.hide();
+      } else {
+        this.notificationPopup.show();
+      }
+    }
+  }
+
+  /**
+   * Método público para atualizar as notificações manualmente
+   */
+  public refreshNotifications(): void {
+    if (this.notificationPopup) {
+      this.notificationPopup.refresh();
+    }
   }
 
   /**
@@ -157,17 +217,39 @@ export class Sidebar extends Component {
 
   /**
    * Mostra/esconde item "Usuários" baseado se o usuário é admin
+   * e esconde outros itens quando é admin do sistema
    */
   private setupUsersMenuVisibility(): void {
+    const isAdmin = AuthService.isAdmin();
+    
     const usersItem = this.container.querySelector('[data-route="usuarios"]');
     if (usersItem) {
-      // Verificar se o usuário é admin
-      const isAdmin = AuthService.isAdmin();
       if (!isAdmin) {
         usersItem.classList.add('sidebar-item-hidden');
       } else {
         usersItem.classList.remove('sidebar-item-hidden');
       }
+    }
+
+    // Se for admin do sistema, esconder itens não relevantes
+    if (isAdmin) {
+      // Ocultar itens do menu
+      const dashboardItem = this.container.querySelector('[data-route=""]');
+      const myTasksItem = this.container.querySelector('[data-route="minhas-tarefas"]');
+      const notificationsItem = this.container.querySelector('[data-route="notificacoes"]');
+      const projectsSection = this.container.querySelector('.sidebar-projects');
+      
+      if (dashboardItem) dashboardItem.classList.add('sidebar-item-hidden');
+      if (myTasksItem) myTasksItem.classList.add('sidebar-item-hidden');
+      if (notificationsItem) notificationsItem.classList.add('sidebar-item-hidden');
+      if (projectsSection) (projectsSection as HTMLElement).style.display = 'none';
+
+      // Ocultar botões de notificação (desktop e mobile)
+      const notificationBtn = this.container.querySelector('#notificationToggle');
+      const mobileNotificationBtn = this.container.querySelector('#mobileNotificationToggle');
+      
+      if (notificationBtn) (notificationBtn as HTMLElement).style.display = 'none';
+      if (mobileNotificationBtn) (mobileNotificationBtn as HTMLElement).style.display = 'none';
     }
   }
 
@@ -340,7 +422,8 @@ export class Sidebar extends Component {
     const target = e.currentTarget as HTMLElement;
     const route = target.getAttribute('data-route');
 
-    if (!route) return;
+    // Verificar se route é null/undefined (não apenas vazio, pois "" é válido para Dashboard)
+    if (route === null) return;
 
     // Remover classe ativa de todos os itens
     const allItems = this.container.querySelectorAll('[data-action="menu-item"]');
@@ -382,23 +465,31 @@ export class Sidebar extends Component {
     const allItems = this.container.querySelectorAll('[data-action="menu-item"], [data-action="toggle-projects"]');
     let foundMainItem = false;
 
+    // Remover active de todos os itens primeiro
+    allItems.forEach(item => item.classList.remove('sidebar-item-active'));
+
+    // Remover active de todos os projetos do submenu
+    const projectItems = this.container.querySelectorAll('.sidebar-project-item');
+    projectItems.forEach(item => item.classList.remove('sidebar-project-item-active'));
+
+    // Verificar se é uma rota de projeto individual
+    if (route.startsWith('projetos/')) {
+      const parts = route.split('/');
+      const projectId = parts[1];
+      if (projectId) {
+        this.expandAndHighlightProject(projectId);
+        return;
+      }
+    }
+
+    // Para outras rotas, buscar o item correspondente
     allItems.forEach(item => {
       const itemRoute = item.getAttribute('data-route');
       if (itemRoute === route) {
         item.classList.add('sidebar-item-active');
         foundMainItem = true;
-      } else {
-        item.classList.remove('sidebar-item-active');
       }
     });
-
-    // Se não encontrou item principal e é uma rota de projeto
-    if (!foundMainItem && route.startsWith('projetos/')) {
-      const projectId = route.split('/')[1];
-      if (projectId) {
-        this.expandAndHighlightProject(projectId);
-      }
-    }
   }
 
   /**

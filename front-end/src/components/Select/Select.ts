@@ -15,11 +15,16 @@ export interface SelectConfig {
     onChange?: (value: string) => void;
 }
 
+// Global registry to track all open selects
+const openSelects: Set<Select> = new Set();
+
 export class Select {
     private config: SelectConfig;
     private element: HTMLElement | null = null;
     private selectedValue: string = '';
     private isOpen: boolean = false;
+    private boundClickOutside: ((e: Event) => void) | null = null;
+    private boundEscapeKey: ((e: KeyboardEvent) => void) | null = null;
 
     constructor(config: SelectConfig) {
         this.config = config;
@@ -73,7 +78,6 @@ export class Select {
         this.element = element;
 
         const trigger = element.querySelector('[data-trigger]') as HTMLElement;
-        const dropdown = element.querySelector('[data-dropdown]') as HTMLElement;
         const options = element.querySelectorAll('.select-option');
 
         // Toggle dropdown
@@ -92,20 +96,11 @@ export class Select {
                 }
             });
         });
+    }
 
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (this.isOpen && !element.contains(e.target as Node)) {
-                this.close();
-            }
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) {
-                this.close();
-            }
-        });
+    destroy(): void {
+        this.close();
+        this.element = null;
     }
 
     private toggle(): void {
@@ -121,8 +116,77 @@ export class Select {
     private open(): void {
         if (!this.element) return;
 
+        // Close all other open selects
+        openSelects.forEach(select => {
+            if (select !== this) {
+                select.close();
+            }
+        });
+
         this.isOpen = true;
         this.element.classList.add('active');
+        openSelects.add(this);
+        
+        // Check if inside overflow container and use fixed positioning
+        const dropdown = this.element.querySelector('.select-dropdown') as HTMLElement;
+        if (dropdown) {
+            const hasOverflowParent = this.hasOverflowParent(this.element);
+            if (hasOverflowParent) {
+                dropdown.classList.add('fixed-position');
+                this.positionDropdownFixed(dropdown);
+            } else {
+                dropdown.classList.remove('fixed-position');
+            }
+        }
+        
+        // Setup click outside handler
+        this.boundClickOutside = (e: Event) => {
+            const target = e.target as HTMLElement;
+            
+            if (this.element && !this.element.contains(target)) {
+                this.close();
+            }
+        };
+        
+        // Setup escape key handler
+        this.boundEscapeKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                this.close();
+            }
+        };
+        
+        // Add listeners with a small delay to prevent immediate trigger
+        setTimeout(() => {
+            if (this.boundClickOutside) {
+                document.addEventListener('click', this.boundClickOutside);
+            }
+            if (this.boundEscapeKey) {
+                document.addEventListener('keydown', this.boundEscapeKey);
+            }
+        }, 0);
+    }
+
+    private hasOverflowParent(element: HTMLElement): boolean {
+        let parent = element.parentElement;
+        while (parent) {
+            const style = window.getComputedStyle(parent);
+            if (style.overflow === 'auto' || style.overflow === 'hidden' || 
+                style.overflowX === 'auto' || style.overflowX === 'hidden' ||
+                style.overflowY === 'auto' || style.overflowY === 'hidden') {
+                return true;
+            }
+            parent = parent.parentElement;
+        }
+        return false;
+    }
+
+    private positionDropdownFixed(dropdown: HTMLElement): void {
+        if (!this.element) return;
+        
+        const rect = this.element.getBoundingClientRect();
+        dropdown.style.top = `${rect.bottom + 4}px`;
+        dropdown.style.left = `${rect.left}px`;
+        dropdown.style.width = `${rect.width}px`;
     }
 
     private close(): void {
@@ -130,6 +194,18 @@ export class Select {
 
         this.isOpen = false;
         this.element.classList.remove('active');
+        openSelects.delete(this);
+        
+        // Remove event listeners
+        if (this.boundClickOutside) {
+            document.removeEventListener('click', this.boundClickOutside);
+            this.boundClickOutside = null;
+        }
+        
+        if (this.boundEscapeKey) {
+            document.removeEventListener('keydown', this.boundEscapeKey);
+            this.boundEscapeKey = null;
+        }
     }
 
     private selectOption(value: string): void {
@@ -144,6 +220,9 @@ export class Select {
         if (selectedOption) {
             valueEl.textContent = selectedOption.label;
             valueEl.classList.remove('placeholder');
+            
+            // Update badge classes for status/priority selects
+            this.updateBadgeClasses(valueEl, value);
         }
 
         // Update selected state in options
@@ -163,6 +242,32 @@ export class Select {
         // Trigger onChange callback
         if (this.config.onChange) {
             this.config.onChange(value);
+        }
+    }
+
+    private updateBadgeClasses(valueEl: HTMLElement, newValue: string): void {
+        // Remove all existing badge value classes
+        const classesToRemove: string[] = [];
+        valueEl.classList.forEach(className => {
+            if (className.startsWith('select-value-status-') || className.startsWith('select-value-priority-')) {
+                classesToRemove.push(className);
+            }
+        });
+        classesToRemove.forEach(cls => valueEl.classList.remove(cls));
+
+        // Add new badge class based on select name
+        if (this.config.name === 'status') {
+            const statusClasses: Record<string, string> = {
+                'pending': 'pending',
+                'in_progress': 'doing',
+                'ready': 'ready',
+                'under_review': 'review',
+                'completed': 'done'
+            };
+            const statusClass = statusClasses[newValue] || newValue;
+            valueEl.classList.add(`select-value-status-${statusClass}`);
+        } else if (this.config.name === 'priority') {
+            valueEl.classList.add(`select-value-priority-${newValue}`);
         }
     }
 

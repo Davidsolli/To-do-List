@@ -93,7 +93,12 @@ export class ProjectMembers {
 
             // Load pending invites if admin or owner
             if (this.currentUserRole === ProjectRole.OWNER || this.currentUserRole === ProjectRole.ADMIN) {
-                this.invites = await InviteService.getProjectInvites(this.projectId);
+                try {
+                    this.invites = await InviteService.getProjectInvites(this.projectId);
+                } catch (error) {
+                    console.error('Error loading invites (non-critical):', error);
+                    this.invites = [];
+                }
             }
 
             this.renderOwner();
@@ -118,7 +123,7 @@ export class ProjectMembers {
                 <div class="project-members__info">
                     <p class="project-members__name">
                         ${this.owner.name} ${isCurrentUser ? '(você)' : ''}
-                        <span class="project-members__role-badge project-members__role-badge--owner">Owner</span>
+                        <span class="project-members__role-badge project-members__role-badge--owner">Proprietário</span>
                     </p>
                     <p class="project-members__email">${this.owner.email}</p>
                 </div>
@@ -137,7 +142,7 @@ export class ProjectMembers {
             list.innerHTML = `
                 <div class="project-members__empty">
                     <span class="material-icons-outlined">group</span>
-                    <p>Nenhum membro além do owner</p>
+                    <p>Nenhum membro além do proprietário</p>
                 </div>
             `;
             return;
@@ -146,8 +151,14 @@ export class ProjectMembers {
         list.innerHTML = nonOwnerMembers.map(member => {
             const initial = (member.user_name || '?').charAt(0).toUpperCase();
             const isCurrentUser = member.user_id === this.currentUserId;
-            const roleClass = member.role === ProjectRole.ADMIN ? 'project-members__role-badge--admin' : '';
+            const roleClass = member.role === ProjectRole.ADMIN ? 'project-members__role-badge--admin' : 'project-members__role-badge--member';
             const avatarClass = member.role === ProjectRole.ADMIN ? 'project-members__avatar--admin' : 'project-members__avatar--member';
+            
+            const roleLabels: Record<string, string> = {
+                [ProjectRole.ADMIN]: 'Administrador',
+                [ProjectRole.MEMBER]: 'Membro'
+            };
+            const roleLabel = roleLabels[member.role] || member.role;
 
             const canManage = this.currentUserRole === ProjectRole.OWNER || 
                              (this.currentUserRole === ProjectRole.ADMIN && !isCurrentUser);
@@ -177,7 +188,7 @@ export class ProjectMembers {
                     <div class="project-members__info">
                         <p class="project-members__name">
                             ${member.user_name} ${isCurrentUser ? '(você)' : ''}
-                            <span class="project-members__role-badge ${roleClass}">${member.role}</span>
+                            <span class="project-members__role-badge ${roleClass}">${roleLabel}</span>
                         </p>
                         <p class="project-members__email">${member.user_email}</p>
                     </div>

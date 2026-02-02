@@ -1,8 +1,12 @@
 .project-members {
-    background: var(--color-surface, #fff);
+    background: var(--bg-surface);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark-mode .project-members {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .project-members__header {
@@ -16,7 +20,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--color-text, #333);
+    color: var(--text-main);
 }
 
 .project-members__invite-btn {
@@ -46,7 +50,7 @@
 .project-members__owner {
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .project-members__owner-card {
@@ -82,7 +86,7 @@
 
 .project-members__name {
     font-weight: 600;
-    color: var(--color-text, #333);
+    color: var(--text-main);
     margin: 0 0 4px 0;
     display: flex;
     align-items: center;
@@ -109,9 +113,14 @@
     color: var(--color-warning-dark, #b45309);
 }
 
+.project-members__role-badge--member {
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text);
+}
+
 .project-members__email {
     font-size: 14px;
-    color: var(--color-muted, #6b7280);
+    color: var(--text-secondary);
     margin: 0;
 }
 
@@ -127,13 +136,13 @@
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: var(--color-surface-alt, #f9fafb);
+    background: var(--bg-page);
     border-radius: 8px;
     transition: background 0.2s;
 }
 
 .project-members__member-card:hover {
-    background: var(--color-hover, #f0f0f0);
+    background: var(--bg-decorative);
 }
 
 .project-members__actions {
@@ -147,37 +156,37 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    border: 1px solid var(--color-border, #e0e0e0);
-    background: white;
-    color: var(--color-text, #333);
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-main);
     transition: all 0.2s;
 }
 
 .project-members__action-btn:hover {
-    background: var(--color-hover, #f0f0f0);
+    background: var(--bg-decorative);
 }
 
 .project-members__action-btn--danger {
-    color: var(--color-danger, #ef4444);
-    border-color: var(--color-danger, #ef4444);
+    color: var(--priority-high-text);
+    border-color: var(--priority-high-bg);
 }
 
 .project-members__action-btn--danger:hover {
-    background: var(--color-danger, #ef4444);
-    color: white;
+    background: var(--priority-high-bg);
+    color: var(--priority-high-text);
 }
 
 /* Pending Invites */
 .project-members__invites {
     margin-top: 24px;
     padding-top: 24px;
-    border-top: 1px solid var(--color-border, #e0e0e0);
+    border-top: 1px solid var(--border-color);
 }
 
 .project-members__invites h4 {
     font-size: 14px;
     font-weight: 600;
-    color: var(--color-muted, #6b7280);
+    color: var(--text-secondary);
     margin: 0 0 16px 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -198,32 +207,32 @@
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: var(--color-info-bg, #dbeafe);
+    background: var(--bg-decorative);
     border-radius: 8px;
 }
 
 .project-members__invite-email {
     flex: 1;
     font-size: 14px;
-    color: var(--color-text, #333);
+    color: var(--text-main);
 }
 
 .project-members__invite-status {
     font-size: 12px;
-    color: var(--color-muted, #6b7280);
+    color: var(--text-secondary);
 }
 
 .project-members__invite-cancel {
     padding: 4px 8px;
     font-size: 12px;
-    color: var(--color-muted, #6b7280);
+    color: var(--text-secondary);
     background: none;
     border: none;
     cursor: pointer;
 }
 
 .project-members__invite-cancel:hover {
-    color: var(--color-danger, #ef4444);
+    color: var(--priority-high-text);
 }
 
 /* Role Options */

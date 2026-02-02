@@ -2,6 +2,7 @@ import template from './TaskComments.html';
 import './TaskComments.css';
 import { CommentService, TaskComment } from '../../services/CommentService';
 import { ToastService } from '../../services/ToastService';
+import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 
 export class TaskComments {
     private taskId: number;
@@ -134,16 +135,22 @@ export class TaskComments {
         });
 
         deleteBtn?.addEventListener('click', async () => {
-            if (!confirm('Tem certeza que deseja excluir este comentário?')) return;
-
-            try {
-                await CommentService.delete(commentId);
-                this.toastService.show('Comentário excluído', 'success');
-                await this.loadComments();
-            } catch (error) {
-                console.error('Error deleting comment:', error);
-                this.toastService.show('Erro ao excluir comentário', 'error');
-            }
+            const dialog = new ConfirmDialog({
+                title: 'Excluir Comentário',
+                message: 'Tem certeza que deseja excluir este comentário? Esta ação não pode ser desfeita.',
+                confirmText: 'Excluir',
+                onConfirm: async () => {
+                    try {
+                        await CommentService.delete(commentId);
+                        this.toastService.show('Comentário excluído', 'success');
+                        await this.loadComments();
+                    } catch (error) {
+                        console.error('Error deleting comment:', error);
+                        this.toastService.show('Erro ao excluir comentário', 'error');
+                    }
+                }
+            });
+            dialog.show();
         });
     }
 

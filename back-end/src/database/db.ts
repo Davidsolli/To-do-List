@@ -1,6 +1,10 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+
+dotenv.config();
 
 const dbPath = path.resolve(process.cwd(), "src/database/app.db");
 
@@ -132,9 +136,6 @@ db.exec(`
     UNIQUE(task_id, user_id)
   );
 
-  -- Insert default admin if not exists
-  INSERT OR IGNORE INTO users (name, email, password, role) 
-  VALUES ('admin', 'admin@email.com', '$2b$10$KCb2a.p.D1.ZQ74944gdcekGfETuXSXd1HJUFxtEDpmsoMQ4YPFGu', 'admin');
 `);
 
 // Migration: Add existing project owners to project_members table
@@ -149,3 +150,36 @@ db.exec(`
 `);
 
 console.log("Tabelas criadas/validadas com sucesso!");
+
+// Criar usuário admin apenas se configurado via variáveis de ambiente
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminName = process.env.ADMIN_NAME;
+const adminPassword = process.env.ADMIN_PASSWORD;
+
+if (adminEmail && adminName && adminPassword) {
+  const existingAdmin = db.prepare("SELECT id FROM users WHERE email = ?").get(adminEmail);
+
+  if (!existingAdmin) {
+    // Fazer hash da senha
+    const passwordHash = bcrypt.hashSync(adminPassword, 10);
+
+    db.prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)").run(
+      adminName,
+      adminEmail,
+      passwordHash,
+      "admin"
+    );
+
+    console.log("✅ Usuário admin criado com sucesso!");
+  } else {
+    console.log("ℹ️ Usuário admin já existe.");
+  }
+} else {
+  // Verifica se já existe pelo menos um usuário admin
+  const anyAdmin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+
+  if (!anyAdmin) {
+    console.warn("⚠️ AVISO: Nenhum usuário admin encontrado e variáveis de ambiente não configuradas.");
+    console.warn("⚠️ Configure ADMIN_NAME, ADMIN_EMAIL e ADMIN_PASSWORD no .env");
+  }
+}

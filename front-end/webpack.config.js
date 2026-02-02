@@ -3,18 +3,18 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
 
     entry: './src/index.ts',
 
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/', // 🔴 IMPORTANTE para SPA + assets absolutos
+        publicPath: '/server02/', // 🔴 IMPORTANTE: Base path para deployment em subdiretório
         clean: true,
     },
 
-    devtool: 'inline-source-map',
+    devtool: false, // Desabilita source maps para não expor código no browser
 
     devServer: {
         static: {

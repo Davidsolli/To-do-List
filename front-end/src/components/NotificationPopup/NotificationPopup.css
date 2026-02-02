@@ -5,14 +5,19 @@
     width: 360px;
     max-width: calc(100vw - 40px);
     max-height: 480px;
-    background: var(--color-surface, #fff);
+    background: var(--bg-surface);
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
     z-index: 99998;
     display: none;
     flex-direction: column;
     overflow: hidden;
     animation: slideUp 0.2s ease-out;
+}
+
+.dark-mode .notification-popup {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes slideUp {
@@ -47,19 +52,19 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px;
-    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .notification-popup__header h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: var(--color-text, #333);
+    color: var(--text-main);
 }
 
 .notification-popup__badge {
-    background: var(--color-primary, #6366f1);
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-primary-btn-text);
     font-size: 12px;
     font-weight: 600;
     padding: 2px 8px;
@@ -69,7 +74,8 @@
 }
 
 .notification-popup__badge--empty {
-    background: var(--color-muted, #9ca3af);
+    background: var(--text-tertiary);
+    color: white;
 }
 
 .notification-popup__list {
@@ -81,7 +87,7 @@
 .notification-popup__empty {
     padding: 32px 16px;
     text-align: center;
-    color: var(--color-muted, #9ca3af);
+    color: var(--text-tertiary);
 }
 
 .notification-popup__item {
@@ -89,21 +95,22 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--color-border, #f0f0f0);
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .notification-popup__item:hover {
-    background: var(--color-hover, #f5f5f5);
+    background: var(--bg-decorative);
 }
 
 .notification-popup__item--unread {
-    background: var(--color-primary-light, #eef2ff);
+    background: var(--status-ready-bg);
 }
 
 .notification-popup__item--unread:hover {
-    background: var(--color-primary-lighter, #e0e7ff);
+    background: var(--status-ready-bg);
+    filter: brightness(0.95);
 }
 
 .notification-popup__icon {
@@ -118,23 +125,23 @@
 }
 
 .notification-popup__icon--invite {
-    background: var(--color-info-bg, #dbeafe);
-    color: var(--color-info, #3b82f6);
+    background: var(--status-doing-bg);
+    color: var(--status-doing-dot);
 }
 
 .notification-popup__icon--role {
-    background: var(--color-warning-bg, #fef3c7);
-    color: var(--color-warning, #f59e0b);
+    background: var(--priority-mid-bg);
+    color: var(--priority-mid-dot);
 }
 
 .notification-popup__icon--removed {
-    background: var(--color-danger-bg, #fee2e2);
-    color: var(--color-danger, #ef4444);
+    background: var(--priority-high-bg);
+    color: var(--priority-high-dot);
 }
 
 .notification-popup__icon--assignment {
-    background: var(--color-success-bg, #d1fae5);
-    color: var(--color-success, #10b981);
+    background: var(--status-done-bg);
+    color: var(--status-done-dot);
 }
 
 .notification-popup__content {
@@ -144,14 +151,14 @@
 
 .notification-popup__message {
     font-size: 14px;
-    color: var(--color-text, #333);
+    color: var(--text-main);
     line-height: 1.4;
     margin: 0 0 4px 0;
 }
 
 .notification-popup__time {
     font-size: 12px;
-    color: var(--color-muted, #9ca3af);
+    color: var(--text-secondary);
 }
 
 .notification-popup__actions {
@@ -171,21 +178,22 @@
 }
 
 .notification-popup__action-btn--accept {
-    background: var(--color-success, #10b981);
+    background: var(--status-done-dot);
     color: white;
 }
 
 .notification-popup__action-btn--accept:hover {
-    background: var(--color-success-dark, #059669);
+    background: var(--status-done-text);
 }
 
 .notification-popup__action-btn--decline {
-    background: var(--color-muted-bg, #e5e7eb);
-    color: var(--color-text, #333);
+    background: var(--bg-decorative);
+    color: var(--text-main);
 }
 
 .notification-popup__action-btn--decline:hover {
-    background: var(--color-muted, #d1d5db);
+    background: var(--bg-surface);
+    filter: brightness(0.95);
 }
 
 .notification-popup__footer {
@@ -193,13 +201,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border-top: 1px solid var(--color-border, #e0e0e0);
-    background: var(--color-surface-alt, #fafafa);
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-page);
 }
 
 .notification-popup__view-all {
     font-size: 14px;
-    color: var(--color-primary, #6366f1);
+    color: var(--color-primary-dark-text);
     text-decoration: none;
     font-weight: 500;
 }
@@ -210,7 +218,7 @@
 
 .notification-popup__mark-read {
     font-size: 12px;
-    color: var(--color-muted, #6b7280);
+    color: var(--text-secondary);
     background: none;
     border: none;
     cursor: pointer;
@@ -220,7 +228,7 @@
 }
 
 .notification-popup__mark-read:hover {
-    background: var(--color-hover, #e5e7eb);
+    background: var(--bg-decorative);
 }
 
 /* Bell button styles */
@@ -235,19 +243,19 @@
 }
 
 .notification-bell:hover {
-    background: var(--color-hover, #f0f0f0);
+    background: var(--bg-decorative);
 }
 
 .notification-bell__icon {
     font-size: 24px;
-    color: var(--color-text, #333);
+    color: var(--text-main);
 }
 
 .notification-bell__count {
     position: absolute;
     top: 2px;
     right: 2px;
-    background: var(--color-danger, #ef4444);
+    background: var(--priority-high-dot);
     color: white;
     font-size: 10px;
     font-weight: 600;

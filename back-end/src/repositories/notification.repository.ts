@@ -4,6 +4,21 @@ import { Notification, NotificationCreateDTO } from "../interfaces/collaborative
 export class NotificationRepository {
 
     static create(data: NotificationCreateDTO): number {
+        // Check for duplicate unread notification
+        const dataString = data.data ? JSON.stringify(data.data) : null;
+        const duplicate = this.findDuplicate(data.user_id, data.type, dataString);
+
+        if (duplicate) {
+            // Update the existing notification's timestamp to bring it to the top
+            db.prepare(`
+                UPDATE notifications
+                SET created_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(duplicate.id);
+            return duplicate.id;
+        }
+
+        // No duplicate found, create new notification
         const result = db.prepare(`
             INSERT INTO notifications (user_id, type, message, data)
             VALUES (?, ?, ?, ?)
@@ -11,9 +26,30 @@ export class NotificationRepository {
             data.user_id,
             data.type,
             data.message,
-            data.data ? JSON.stringify(data.data) : null
+            dataString
         );
         return result.lastInsertRowid as number;
+    }
+
+    private static findDuplicate(userId: number, type: string, dataString: string | null): Notification | undefined {
+        // Find unread notifications with same user_id, type, and data
+        const result = db.prepare(`
+            SELECT * FROM notifications
+            WHERE user_id = ?
+            AND type = ?
+            AND read = 0
+            AND (
+                (data IS NULL AND ? IS NULL) OR
+                (data = ?)
+            )
+            ORDER BY created_at DESC
+            LIMIT 1
+        `).get(userId, type, dataString, dataString) as any;
+
+        if (result && result.created_at) {
+            result.created_at = result.created_at + 'Z';
+        }
+        return result as Notification | undefined;
     }
 
     static findById(id: number): Notification | undefined {

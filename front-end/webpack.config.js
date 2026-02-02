@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
 
     entry: './src/index.ts',
 
@@ -14,7 +14,7 @@ module.exports = {
         clean: true,
     },
 
-    devtool: 'inline-source-map',
+    devtool: false, // Desabilita source maps para não expor código no browser
 
     devServer: {
         static: {

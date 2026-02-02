@@ -13,69 +13,144 @@
                         </div>
                     </div>
                     <p class="text-secondary" id="project-desc">...</p>
+                    <div class="project-role-badge" id="user-role-badge" style="display: none;">
+                        <span class="material-icons-outlined">person</span>
+                        <span id="user-role-text">Membro</span>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="header-actions">
-            {{btn_filter}}
             {{btn_add_task}}
         </div>
     </div>
 
-    <div class="kanban-board">
-        <!-- Column: Pending -->
-        <div class="kanban-column" data-status="pending">
-            <div class="kanban-column-header">
-                <span class="status-indicator status-pending"></span>
-                <h2>Pendente</h2>
-                <span class="task-count" id="count-pending">0</span>
+    <!-- View Tabs -->
+    <div class="view-tabs">
+        <button class="view-tab view-tab--active" data-view="kanban">
+            <span class="material-icons-outlined">view_kanban</span>
+            Tarefas
+        </button>
+        <button class="view-tab" data-view="members">
+            <span class="material-icons-outlined">group</span>
+            Membros
+            <span class="members-count" id="members-count">1</span>
+        </button>
+        <button class="view-tab" data-view="activity">
+            <span class="material-icons-outlined">history</span>
+            Atividade
+        </button>
+    </div>
+
+    <!-- Task View Controls -->
+    <div class="task-view-controls" id="task-view-controls">
+        <div class="controls-left">
+            <div class="view-mode-selector">
+                <button class="view-mode-btn view-mode-btn--active" data-view-mode="kanban" title="Visualização Kanban">
+                    <span class="material-icons-outlined">view_kanban</span>
+                </button>
+                <button class="view-mode-btn" data-view-mode="table" title="Visualização em Tabela">
+                    <span class="material-icons-outlined">table_chart</span>
+                </button>
             </div>
-            <div class="kanban-column-body" id="col-pending">
-                <div class="loading-wrapper">
-                    <div class="spinner spinner-sm"></div>
+            <button class="btn btn--ghost" data-action="btn-filter-sort-inline" title="Filtros & Ordenação">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Filtros</span>
+            </button>
+        </div>
+        <div class="active-filters-display" id="active-filters-display"></div>
+    </div>
+
+    <!-- Kanban View -->
+    <div class="view-content" id="kanban-view">
+        <!-- Kanban Board (default) -->
+        <div class="kanban-board" id="kanban-board-view">
+            <!-- Column: Pending -->
+            <div class="kanban-column" data-status="pending">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-pending"></span>
+                    <h2>Pendente</h2>
+                    <span class="task-count" id="count-pending">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-pending">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column: In Progress -->
+            <div class="kanban-column" data-status="in_progress">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-progress"></span>
+                    <h2>Em Progresso</h2>
+                    <span class="task-count" id="count-in_progress">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-in_progress">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column: Ready -->
+            <div class="kanban-column" data-status="ready">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-ready"></span>
+                    <h2>Pronto</h2>
+                    <span class="task-count" id="count-ready">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-ready">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column: Under Review -->
+            <div class="kanban-column" data-status="under_review">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-review"></span>
+                    <h2>Revisão</h2>
+                    <span class="task-count" id="count-under_review">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-under_review">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column: Completed -->
+            <div class="kanban-column" data-status="completed">
+                <div class="kanban-column-header">
+                    <span class="status-indicator status-completed"></span>
+                    <h2>Concluído</h2>
+                    <span class="task-count" id="count-completed">0</span>
+                </div>
+                <div class="kanban-column-body" id="col-completed">
+                    <div class="loading-wrapper">
+                        <div class="spinner spinner-sm"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Column: In Progress -->
-        <div class="kanban-column" data-status="in_progress">
-            <div class="kanban-column-header">
-                <span class="status-indicator status-progress"></span>
-                <h2>Em Progresso</h2>
-                <span class="task-count" id="count-in_progress">0</span>
-            </div>
-            <div class="kanban-column-body" id="col-in_progress">
-                <div class="loading-wrapper">
-                    <div class="spinner spinner-sm"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Table View -->
+        <div class="task-table-view" id="table-view" style="display: none;"></div>
+    </div>
 
-        <!-- Column: Under Review -->
-        <div class="kanban-column" data-status="under_review">
-            <div class="kanban-column-header">
-                <span class="status-indicator status-review"></span>
-                <h2>Revisão</h2>
-                <span class="task-count" id="count-under_review">0</span>
-            </div>
-            <div class="kanban-column-body" id="col-under_review">
-                <div class="loading-wrapper">
-                    <div class="spinner spinner-sm"></div>
-                </div>
-            </div>
-        </div>
+    <!-- Members View -->
+    <div class="view-content view-content--hidden" id="members-view">
+        <div id="project-members-container"></div>
+    </div>
 
-        <!-- Column: Completed -->
-        <div class="kanban-column" data-status="completed">
-            <div class="kanban-column-header">
-                <span class="status-indicator status-completed"></span>
-                <h2>Concluído</h2>
-                <span class="task-count" id="count-completed">0</span>
-            </div>
-            <div class="kanban-column-body" id="col-completed">
-                <div class="loading-wrapper">
-                    <div class="spinner spinner-sm"></div>
-                </div>
+    <!-- Activity View -->
+    <div class="view-content view-content--hidden" id="activity-view">
+        <div class="activity-list" id="activity-list">
+            <div class="loading-wrapper">
+                <div class="spinner spinner-sm"></div>
+                <p>Carregando atividades...</p>
             </div>
         </div>
     </div>

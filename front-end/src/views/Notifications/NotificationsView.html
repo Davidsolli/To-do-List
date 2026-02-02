@@ -1,0 +1,33 @@
+<div class="notifications-view">
+    <header class="notifications-view__header">
+        <h1 class="notifications-view__title">
+            <span class="material-icons-outlined">notifications</span>
+            Notificações
+        </h1>
+        <button class="btn btn--primary" id="btn-mark-all-read">
+            <span class="material-icons-outlined">done_all</span>
+            Marcar todas como lidas
+        </button>
+    </header>
+
+    <div class="notifications-view__content">
+        <div class="notifications-list" id="notifications-list">
+            <div class="loading-wrapper">
+                <div class="spinner"></div>
+                <span>Carregando notificações...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications-view__pagination">
+        <button class="btn btn--secondary" id="btn-prev-page" disabled>
+            <span class="material-icons-outlined">chevron_left</span>
+            Anterior
+        </button>
+        <span id="page-info">Página 1 de 1</span>
+        <button class="btn btn--secondary" id="btn-next-page" disabled>
+            Próxima
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</div>

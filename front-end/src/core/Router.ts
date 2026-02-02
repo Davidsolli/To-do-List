@@ -24,6 +24,7 @@ interface RouteMatch {
 export class Router {
     private routes: RouteDefinition[] = [];
     private sidebarInstance: Sidebar | null = null;
+    private basePath: string = '/server02'; // Base path para deployment em subdiretório
 
     constructor(private rootId: string) {
         // Escuta a navegação pelos botões "Voltar" e "Avançar" do navegador
@@ -41,7 +42,9 @@ export class Router {
      * Navega para uma nova URL via código (ex: após login)
      */
     public navigate(path: string): void {
-        window.history.pushState({}, '', path);
+        // Adiciona o basePath ao path para manter o prefixo /server02
+        const fullPath = this.basePath + path;
+        window.history.pushState({}, '', fullPath);
         this.handleRoute();
     }
 
@@ -83,7 +86,12 @@ export class Router {
      * Lógica principal: Descobre a rota atual e renderiza a View correspondente
      */
     public async handleRoute(): Promise<void> {
-        const path = window.location.pathname;
+        let path = window.location.pathname;
+        
+        // Remove o basePath para fazer o matching com as rotas definidas
+        if (this.basePath && path.startsWith(this.basePath)) {
+            path = path.substring(this.basePath.length) || '/';
+        }
 
         // Se é a primeira carga, tenta validar o cookie de sessão antes de qualquer coisa
         if (!this.sessionChecked) {
@@ -151,7 +159,7 @@ export class Router {
 
             // 5. Sincroniza o sidebar com a rota atual
             if (this.sidebarInstance) {
-                const routeName = path.substring(1) || 'projetos'; // Remove a barra inicial
+                const routeName = path.substring(1); // Remove a barra inicial (pode ficar vazio para /)
                 this.sidebarInstance.setActiveMenuItem(routeName);
             }
         } else {

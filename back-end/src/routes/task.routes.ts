@@ -39,6 +39,14 @@ tasksRoutes.get(
   TaskController.getTasksByProjectId,
 );
 
+// Get task by ID
+tasksRoutes.get(
+  "/:id",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.getTaskById,
+);
+
 tasksRoutes.put(
   "/:id",
   authenticate,
@@ -53,6 +61,14 @@ tasksRoutes.patch(
   TaskController.updateTaskStatus,
 );
 
+// Update assignees
+tasksRoutes.patch(
+  "/:id/assignees",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.updateAssignees,
+);
+
 tasksRoutes.delete(
   "/:id",
   authenticate,
@@ -65,6 +81,22 @@ tasksRoutes.post(
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
   TaskController.generateTip,
+);
+
+// Update reviewers
+tasksRoutes.patch(
+  "/:id/reviewers",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.updateReviewers,
+);
+
+// Get user permissions for a task
+tasksRoutes.get(
+  "/:id/permissions",
+  authenticate,
+  authorize([UserRole.ADMIN, UserRole.USER]),
+  TaskController.getPermissions,
 );
 
 export default tasksRoutes;

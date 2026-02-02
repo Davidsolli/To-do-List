@@ -1,6 +1,11 @@
 import { Project, ProjectCreateDTO, ProjectUpdateDTO } from "../interfaces/project";
 import { ProjectRepository } from "../repositories/project.repository";
 import { ProjectValidation } from "../validations/project.validation";
+import { MemberRepository } from "../repositories/member.repository";
+import { ProjectRole, AuditAction } from "../interfaces/collaborative";
+import { AuditLogService } from "./audit.service";
+import { NotificationService } from "./notification.service";
+import UserRepository from "../repositories/user.repository";
 
 export class ProjectService {
 
@@ -15,6 +20,9 @@ export class ProjectService {
 
     const projectId = ProjectRepository.create(projectData);
 
+    // Add owner as a member with owner role
+    MemberRepository.addMember(projectId, projectData.user_id, ProjectRole.OWNER);
+
     const newProject = ProjectRepository.findById(projectId);
 
     if (!newProject) {
@@ -25,7 +33,7 @@ export class ProjectService {
   }
 
   static getByUserId(userId: number): Project[] {
-     return ProjectRepository.findByUserId(userId);
+     return ProjectRepository.findAllUserProjects(userId);
   }
 
   static getById(id: number): Project {
@@ -74,7 +82,100 @@ export class ProjectService {
       throw new Error('Projeto não encontrado para exclusão.');
     }
 
+    AuditLogService.log(
+      AuditAction.PROJECT_DELETED, 
+      `Projeto "${existingProject.name}" deletado`,
+      id,
+      existingProject.user_id
+    );
+
     return ProjectRepository.delete(id) > 0;
+  }
+
+  static getMembers(projectId: number) {
+    return MemberRepository.getMembers(projectId);
+  }
+
+  static getMemberTaskCount(projectId: number, userId: number): number {
+    return MemberRepository.getTaskAssignmentCount(projectId, userId);
+  }
+
+  static removeMember(projectId: number, userId: number) {
+    const project = ProjectRepository.findById(projectId);
+    if (!project) throw new Error("Projeto não encontrado");
+
+    const user = UserRepository.findById(userId);
+
+    // Remove from tasks first
+    MemberRepository.removeUserFromProjectTasks(projectId, userId);
+
+    // Remove membership
+    MemberRepository.removeMember(projectId, userId);
+
+    // Send notification
+    if (user) {
+      NotificationService.notifyRemoved(userId, project.name);
+    }
+
+    AuditLogService.log(
+      AuditAction.MEMBER_REMOVED,
+      JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId }),
+      projectId
+    );
+  }
+
+  static updateMemberRole(projectId: number, userId: number, role: ProjectRole) {
+    const project = ProjectRepository.findById(projectId);
+    if (!project) throw new Error("Projeto não encontrado");
+
+    MemberRepository.updateRole(projectId, userId, role);
+
+    // Notify user of role change
+    if (role === ProjectRole.ADMIN) {
+      NotificationService.notifyAdminPromoted(userId, project.name, projectId);
+    } else {
+      NotificationService.notifyRoleChange(userId, project.name, role, projectId);
+    }
+
+    const user = UserRepository.findById(userId);
+
+    AuditLogService.log(
+      AuditAction.ROLE_CHANGED,
+      JSON.stringify({ member_name: user?.name || 'Membro', member_id: userId, new_role: role }),
+      projectId
+    );
+  }
+
+  static transferOwnership(projectId: number, newOwnerId: number, oldOwnerId: number) {
+    const project = ProjectRepository.findById(projectId);
+    if (!project) throw new Error("Projeto não encontrado");
+
+    const isMember = MemberRepository.isMember(projectId, newOwnerId);
+    if (!isMember) {
+      throw new Error("O novo proprietário deve ser membro do projeto.");
+    }
+
+    // Update project owner
+    ProjectRepository.updateOwner(projectId, newOwnerId);
+
+    // Add old owner as admin member
+    MemberRepository.addMember(projectId, oldOwnerId, ProjectRole.ADMIN);
+    
+    // Remove new owner from members (they're now the owner)
+    MemberRepository.removeMember(projectId, newOwnerId);
+
+    // Notify users
+    NotificationService.notifyRoleChange(newOwnerId, project.name, "owner", projectId);
+    NotificationService.notifyRoleChange(oldOwnerId, project.name, "admin", projectId);
+
+    const newOwner = UserRepository.findById(newOwnerId);
+
+    AuditLogService.log(
+      AuditAction.OWNERSHIP_TRANSFERRED,
+      JSON.stringify({ new_owner_name: newOwner?.name || 'Novo proprietário', new_owner_id: newOwnerId }),
+      projectId,
+      oldOwnerId
+    );
   }
 }
 

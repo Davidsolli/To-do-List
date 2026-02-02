@@ -80,7 +80,9 @@ export class LoginView extends Component {
           .then((user) => {
             window.toast.success(`Bem-vindo, ${user.name}!`);
             setTimeout(() => {
-              app.navigate('/');
+              // Redirecionar admin para /usuarios, usuários normais para dashboard
+              const redirectPath = user.role === 'admin' ? '/usuarios' : '/';
+              app.navigate(redirectPath);
             }, 1000);
           })
           .catch((err) => {

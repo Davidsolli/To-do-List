@@ -45,7 +45,7 @@ export class Input {
     const paddingClasses = [
       icon ? 'form-input--has-icon' : '',
       type === 'password' ? 'form-input--has-toggle' : ''
-    ].join(' ');
+    ].filter(Boolean).join(' ');
 
     // 5. Substituição
     return template

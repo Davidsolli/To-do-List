@@ -45,6 +45,9 @@
   --priority-mid-bg: #FFF4CC;
   --priority-mid-dot: #B87503;
   --priority-mid-text: #451D1D; /* Mantido o mesmo tom escuro para consistência */
+  --priority-medium-bg: var(--priority-mid-bg);
+  --priority-medium-dot: var(--priority-mid-dot);
+  --priority-medium-text: var(--priority-mid-text);
 
   /* --- BAIXA (Verde) --- */
   --priority-low-bg: #DCFCE7;
@@ -56,21 +59,35 @@
      6. SISTEMA DE STATUS (KANBAN / PROCESSO)
      ========================================= */
   
+  /* --- PENDENTE (Cinza) --- */
+  --status-pending-bg: #E3E3E5;
+  --status-pending-dot: #585962;
+  --status-pending-text: #585962;
+
   /* --- FAZENDO / EM ANDAMENTO (Azul) --- */
-  /* Renomeei de 'mid' para 'doing' para não confundir com prioridade média */
   --status-doing-bg: #D6E4FF;
   --status-doing-dot: #2F80ED;
   --status-doing-text: #2F80ED;
 
-  /* --- PENDENTE (Cinza ou usar a cor de Alta Prioridade se for urgente) --- */
-  --status-todo-bg: #E3E3E5;
-  --status-todo-dot: #585962;
-  --status-todo-text: #585962;
+  /* --- PRONTO (Roxo/Lilás) --- */
+  --status-ready-bg: #E9D5FF;
+  --status-ready-dot: #9333EA;
+  --status-ready-text: #7C3AED;
 
-  /* --- CONCLUÍDO (Verde igual Baixa Prioridade) --- */
+  /* --- EM REVISÃO (Laranja) --- */
+  --status-review-bg: #FED7AA;
+  --status-review-dot: #EA580C;
+  --status-review-text: #C2410C;
+
+  /* --- CONCLUÍDO (Verde) --- */
   --status-done-bg: #DCFCE7;
   --status-done-dot: #166534;
   --status-done-text: #166534;
+
+  /* --- ANTIGOS (MANTER POR COMPATIBILIDADE) --- */
+  --status-todo-bg: var(--status-pending-bg);
+  --status-todo-dot: var(--status-pending-dot);
+  --status-todo-text: var(--status-pending-text);
 }
 
 /* ============================================
@@ -98,15 +115,23 @@
     --priority-high-text: #fca5a5;
     --priority-mid-bg: rgba(245, 158, 11, 0.2);
     --priority-mid-text: #fcd34d;
+    --priority-medium-bg: var(--priority-mid-bg);
+    --priority-medium-text: var(--priority-mid-text);
     --priority-low-bg: rgba(34, 197, 94, 0.2);
     --priority-low-text: #86efac;
 
     /* Ajustes de status para dark mode */
+    --status-pending-bg: rgba(148, 163, 184, 0.2);
+    --status-pending-text: #cbd5e1;
     --status-doing-bg: rgba(59, 130, 246, 0.2);
     --status-doing-text: #93c5fd;
-    --status-todo-bg: rgba(148, 163, 184, 0.2);
-    --status-todo-text: #cbd5e1;
+    --status-ready-bg: rgba(168, 85, 247, 0.2);
+    --status-ready-text: #c084fc;
+    --status-review-bg: rgba(249, 115, 22, 0.2);
+    --status-review-text: #fdba74;
     --status-done-bg: rgba(34, 197, 94, 0.2);
     --status-done-text: #86efac;
+    --status-todo-bg: var(--status-pending-bg);
+    --status-todo-text: var(--status-pending-text);
   }
 }

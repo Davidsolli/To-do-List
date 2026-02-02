@@ -1,9 +1,11 @@
 <div class="project-card">
     <div class="project-card__header">
         <div class="project-icon">{{initial}}</div>
-        <button class="btn-menu" title="Opções" data-action="menu" data-id="{{id}}">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
-        </button>
+        {{menu_button}}
+    </div>
+    <div class="project-card__badges">
+        <span class="project-role-badge {{role_class}}">{{role_label}}</span>
+        <span class="project-task-badge"><i class="fa-solid fa-list-check"></i> {{task_progress}}</span>
     </div>
     <h3 class="project-card__title">{{name}}</h3>
     <p class="project-card__desc">{{description}}</p>

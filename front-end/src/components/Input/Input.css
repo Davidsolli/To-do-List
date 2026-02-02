@@ -15,14 +15,15 @@
 
 .form-input {
   width: 100%;
-  padding: 12px 16px; /* Padding padrão */
+  padding: 0.625rem 0.875rem;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem !important;
   color: var(--text-main);
   transition: border-color 0.2s;
   background-color: #FFFFFF;
   box-sizing: border-box;
+  min-height: 42px;
 }
 
 .form-input:focus {
@@ -53,13 +54,13 @@
 /* --- Modificadores de Padding (Adicionados pelo TS) --- */
 
 /* Se tiver ícone na esquerda, empurra o texto para a direita */
-.form-input--has-icon {
-  padding-left: 44px; 
+.form-input.form-input--has-icon {
+  padding-left: 2.5rem; 
 }
 
 /* Se tiver toggle na direita, empurra o texto para a esquerda */
-.form-input--has-toggle {
-  padding-right: 44px;
+.form-input.form-input--has-toggle {
+  padding-right: 2.5rem;
 }
 
 /* --- Elementos Absolutos --- */
@@ -67,12 +68,12 @@
 /* Ícone da esquerda (FontAwesome) */
 .input-icon {
   position: absolute;
-  left: 14px;
+  left: 0.875rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
   pointer-events: none; /* O clique passa através dele */
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 /* Botão de Toggle Password */

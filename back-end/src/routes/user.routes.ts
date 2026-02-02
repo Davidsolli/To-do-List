@@ -28,7 +28,6 @@ userRoutes.get(
   "/:id",
   authenticate,
   authorize([UserRole.ADMIN, UserRole.USER]),
-  checkOwnership,
   userController.getById,
 );
 

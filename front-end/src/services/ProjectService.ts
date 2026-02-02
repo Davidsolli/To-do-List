@@ -1,5 +1,6 @@
 import { Project } from '../models/Project';
 import { Task } from '../models/Task';
+import { ProjectMember, ProjectRole, AuditLog } from '../models/Collaboration';
 import { ApiService } from './ApiService';
 import { AuthService } from './AuthService';
 
@@ -22,7 +23,31 @@ export class ProjectService {
         if (!user || !user.id) throw new Error('Usuário não autenticado');
 
         // Backend: GET /projects/user/:userId -> Retorna Promise<Project[]>
-        return await ApiService.get<Project[]>(`projects/user/${user.id}`);
+        const projects = await ApiService.get<Project[]>(`projects/user/${user.id}`);
+        
+        // Enriquecer cada projeto com role e task stats
+        const enrichedProjects = await Promise.all(projects.map(async (project) => {
+            try {
+                // Buscar role do usuário
+                const members = await this.getMembers(project.id);
+                const member = members.find(m => m.user_id === user.id);
+                project.role = member?.role || undefined;
+                
+                // Buscar estatísticas de tarefas
+                const tasksResponse = await ApiService.get<{ tasks: Task[] }>(`tasks/project/${project.id}`);
+                const tasks = tasksResponse.tasks || [];
+                project.taskStats = {
+                    completed: tasks.filter(t => t.status === 'completed').length,
+                    total: tasks.length
+                };
+            } catch (error) {
+                console.error(`Erro ao enriquecer projeto ${project.id}:`, error);
+                project.taskStats = { completed: 0, total: 0 };
+            }
+            return project;
+        }));
+        
+        return enrichedProjects;
     }
 
     // Método do develop: criar projeto com descrição opcional
@@ -34,8 +59,15 @@ export class ProjectService {
             description: description || '',
             user_id: user?.id
         };
-        const response = await ApiService.post<Project>('projects', body);
-        return response;
+        const project = await ApiService.post<Project>('projects', body);
+        
+        // Enriquecer o projeto com role (criador sempre é 'owner')
+        project.role = ProjectRole.OWNER;
+        
+        // Adicionar taskStats inicial
+        project.taskStats = { completed: 0, total: 0 };
+        
+        return project;
     }
 
     // Método do develop: buscar projeto por ID (simples)
@@ -87,5 +119,62 @@ export class ProjectService {
     // Alias para compatibilidade com DashboardView e ProjectsView
     static async deleteProject(id: number): Promise<void> {
         await ApiService.delete(`projects/${id}`);
+    }
+
+    // ===== COLLABORATIVE FEATURES =====
+
+    // Get project members
+    static async getMembers(projectId: string | number): Promise<ProjectMember[]> {
+        const response = await ApiService.get<{ members: ProjectMember[] } | ProjectMember[]>(`projects/${projectId}/members`);
+        // Handle both response formats
+        if (Array.isArray(response)) {
+            return response;
+        }
+        return response.members || [];
+    }
+
+    // Invite user to project
+    static async inviteUser(projectId: number, email: string): Promise<void> {
+        await ApiService.post(`projects/${projectId}/invite`, { email });
+    }
+
+    // Remove member from project
+    static async removeMember(projectId: number, userId: number): Promise<{ tasksAffected: number }> {
+        return await ApiService.delete<{ message: string, tasksAffected: number }>(`projects/${projectId}/members/${userId}`);
+    }
+
+    // Update member role
+    static async updateMemberRole(projectId: number, userId: number, role: ProjectRole): Promise<void> {
+        await ApiService.patch(`projects/${projectId}/members/${userId}`, { role });
+    }
+
+    // Transfer ownership
+    static async transferOwnership(projectId: number, newOwnerId: number): Promise<void> {
+        await ApiService.post(`projects/${projectId}/transfer`, { newOwnerId });
+    }
+
+    // Get audit logs
+    static async getAuditLogs(projectId: string | number, page: number = 1): Promise<AuditLog[]> {
+        const response = await ApiService.get<{ logs: AuditLog[] } | AuditLog[]>(`projects/${projectId}/audit?page=${page}`);
+        // Handle both response formats
+        if (Array.isArray(response)) {
+            return response;
+        }
+        return response.logs || [];
+    }
+
+    // Check if user is owner or admin
+    static async getUserRole(projectId: string | number): Promise<ProjectRole | null> {
+        try {
+            const members = await this.getMembers(projectId);
+            const user = JSON.parse(localStorage.getItem('user_data') || '{}');
+            
+            const member = members.find(m => m.user_id === user.id);
+            if (member?.role === ProjectRole.OWNER) return ProjectRole.OWNER;
+            
+            return member?.role || null;
+        } catch {
+            return null;
+        }
     }
 }

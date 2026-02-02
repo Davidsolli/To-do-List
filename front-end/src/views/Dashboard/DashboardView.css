@@ -58,26 +58,28 @@
     padding: 0 !important;              /* Remove preenchimentos extras */
 }
 
-.section-header {
+.dashboard-container .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
 }
 
-/* --- NOVO: Estilo de Card apenas para o Container da Tabela --- */
-#tasks-container {
-    background-color: var(--bg-surface, #ffffff);
+/* --- NOVO: Estilo de Card apenas para o Container da Tabela quando tem conteúdo --- */
+#tasks-container:not(:has(.empty-state-msg)) {
+    background-color: var(--bg-surface);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: 1px solid var(--border-color, #e5e7eb);
+    border: 1px solid var(--border-color);
     overflow: hidden;
     /* Importante: Padding zero para a tabela encostar nas bordas */
     padding: 0; 
 }
 
-/* Tabela */
-/* Badges (Reaproveitado) */
+/* Dark mode adjustments for better contrast */
+.dark-mode #tasks-container:not(:has(.empty-state-msg)) {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
 .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; gap: 6px; }
 .badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
 
@@ -113,11 +115,11 @@
 }
 
 /* Dark mode adjustments for better contrast */
-.dark-mode #tasks-container {
+.dark-mode #tasks-container:not(:empty) {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsividade */
+/* Badges (Reaproveitado) */
 @media (max-width: 768px) {
     .dashboard-container {
         padding: 1rem;

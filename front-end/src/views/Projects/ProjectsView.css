@@ -130,3 +130,27 @@
         min-width: 100%;
     }
 }
+
+/* Pagination */
+.projects-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.projects-pagination span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .projects-pagination {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}

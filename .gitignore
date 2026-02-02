@@ -6,3 +6,5 @@
 # Ignorar arquivos
 *.env
 .vscode/
+DEPLOYMENT.md
+QUICKSTART.md

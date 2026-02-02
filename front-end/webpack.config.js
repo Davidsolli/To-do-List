@@ -3,25 +3,35 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
 
     entry: './src/index.ts',
 
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/', // 🔴 IMPORTANTE para SPA + assets absolutos
+        publicPath: '/server02/', // 🔴 IMPORTANTE: Base path para deployment em subdiretório
         clean: true,
     },
 
-    devtool: 'inline-source-map',
+    devtool: false, // Desabilita source maps para não expor código no browser
 
     devServer: {
         static: {
             directory: path.resolve(__dirname, 'public'), // ✅ serve public/
         },
         hot: true,
-        historyApiFallback: true,
+        // Para desenvolvimento local (sem /server02/), use:
+        // historyApiFallback: true,
+
+        // Para produção com base path /server02/:
+        historyApiFallback: {
+            index: '/server02/index.html', // Aponta para o index.html no base path
+            rewrites: [
+                { from: /^\/server02\/.*/, to: '/server02/index.html' } // Redireciona todas as rotas para o index
+            ],
+            disableDotRule: true, // Permite rotas com pontos (ex: /api/user.json ainda vai para backend)
+        },
         port: 4173
     },
 

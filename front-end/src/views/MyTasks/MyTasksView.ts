@@ -6,6 +6,8 @@ import { ProjectService } from '../../services/ProjectService';
 import { TaskPriority, TaskStatus } from '../../models/Task';
 import { DateFormatter } from '../../utils/DateFormatter';
 import { app } from '../../App';
+import { Input } from '../../components/Input/Input';
+import { Select, SelectOption } from '../../components/Select/Select';
 
 interface Filters {
     search: string;
@@ -23,6 +25,9 @@ interface SortConfig {
 export class MyTasksView extends Component {
     private allTasks: TaskResponse[] = [];
     private filteredTasks: TaskResponse[] = [];
+    private currentPage: number = 1;
+    private totalPages: number = 1;
+    private itemsPerPage: number = 20;
     private filters: Filters = {
         search: '',
         project: '',
@@ -35,63 +40,174 @@ export class MyTasksView extends Component {
         order: 'asc'
     };
 
+    // Componentes customizados
+    private projectSelect?: Select;
+    private prioritySelect?: Select;
+    private statusSelect?: Select;
+    private roleSelect?: Select;
+    private sortBySelect?: Select;
+    private sortOrderSelect?: Select;
+
     getTemplate(): string {
         return template;
     }
 
     protected afterRender(): void {
+        this.renderFilters();
         this.loadTasks();
         this.bindEvents();
+    }
+
+    private renderFilters(): void {
+        const container = this.container.querySelector('#filters-container');
+        if (!container) return;
+
+        // Input de busca
+        const searchInput = new Input({
+            id: 'filter-search',
+            type: 'text',
+            placeholder: 'Buscar por título...',
+            icon: 'fa-solid fa-magnifying-glass'
+        });
+
+        // Select de projeto (será populado depois)
+        this.projectSelect = new Select({
+            name: 'filter-project',
+            placeholder: 'Todos os projetos',
+            options: [{ value: '', label: 'Todos', selected: true }],
+            onChange: (value) => {
+                this.filters.project = value;
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Select de prioridade
+        this.prioritySelect = new Select({
+            name: 'filter-priority',
+            placeholder: 'Todas as prioridades',
+            options: [
+                { value: '', label: 'Todas', selected: true },
+                { value: 'high', label: 'Alta' },
+                { value: 'medium', label: 'Média' },
+                { value: 'low', label: 'Baixa' }
+            ],
+            onChange: (value) => {
+                this.filters.priority = value;
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Select de status
+        this.statusSelect = new Select({
+            name: 'filter-status',
+            placeholder: 'Todos os status',
+            options: [
+                { value: '', label: 'Todos', selected: true },
+                { value: 'pending', label: 'Pendente' },
+                { value: 'in_progress', label: 'Em Progresso' },
+                { value: 'ready', label: 'Pronto' },
+                { value: 'under_review', label: 'Em Revisão' },
+                { value: 'completed', label: 'Concluído' }
+            ],
+            onChange: (value) => {
+                this.filters.status = value;
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Select de papel
+        this.roleSelect = new Select({
+            name: 'filter-role',
+            placeholder: 'Todos os papéis',
+            options: [
+                { value: '', label: 'Todos', selected: true },
+                { value: 'assignee', label: 'Responsável' },
+                { value: 'reviewer', label: 'Revisor' }
+            ],
+            onChange: (value) => {
+                this.filters.role = value;
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Select de ordenação
+        this.sortBySelect = new Select({
+            name: 'sort-by',
+            placeholder: 'Ordenar por',
+            options: [
+                { value: 'estimate', label: 'Prazo', selected: true },
+                { value: 'priority', label: 'Prioridade' },
+                { value: 'title', label: 'Título' },
+                { value: 'status', label: 'Status' }
+            ],
+            onChange: (value) => {
+                this.sort.by = value as any;
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Select de ordem
+        this.sortOrderSelect = new Select({
+            name: 'sort-order',
+            placeholder: 'Ordem',
+            options: [
+                { value: 'asc', label: 'Crescente', selected: true },
+                { value: 'desc', label: 'Decrescente' }
+            ],
+            onChange: (value) => {
+                this.sort.order = value as 'asc' | 'desc';
+                this.applyFiltersAndSort();
+            }
+        });
+
+        // Renderizar componentes
+        container.innerHTML = `
+            <div class="filters-row">
+                <span class="row-label">Filtros</span>
+                <div class="row-items">
+                    <div class="filter-item">${searchInput.render()}</div>
+                    <div class="filter-item" data-component="project-select">${this.projectSelect.render()}</div>
+                    <div class="filter-item" data-component="priority-select">${this.prioritySelect.render()}</div>
+                    <div class="filter-item" data-component="status-select">${this.statusSelect.render()}</div>
+                    <div class="filter-item" data-component="role-select">${this.roleSelect.render()}</div>
+                </div>
+            </div>
+            
+            <div class="filters-row">
+                <span class="row-label">Ordenação</span>
+                <div class="row-items">
+                    <div class="filter-item" data-component="sortby-select">${this.sortBySelect.render()}</div>
+                    <div class="filter-item" data-component="sortorder-select">${this.sortOrderSelect.render()}</div>
+                </div>
+            </div>
+        `;
+
+        // Bind eventos dos componentes Select
+        const projectSelectEl = container.querySelector('[data-component="project-select"] [data-select]') as HTMLElement;
+        const prioritySelectEl = container.querySelector('[data-component="priority-select"] [data-select]') as HTMLElement;
+        const statusSelectEl = container.querySelector('[data-component="status-select"] [data-select]') as HTMLElement;
+        const roleSelectEl = container.querySelector('[data-component="role-select"] [data-select]') as HTMLElement;
+        const sortBySelectEl = container.querySelector('[data-component="sortby-select"] [data-select]') as HTMLElement;
+        const sortOrderSelectEl = container.querySelector('[data-component="sortorder-select"] [data-select]') as HTMLElement;
+
+        if (projectSelectEl) this.projectSelect.bindEvents(projectSelectEl);
+        if (prioritySelectEl) this.prioritySelect.bindEvents(prioritySelectEl);
+        if (statusSelectEl) this.statusSelect.bindEvents(statusSelectEl);
+        if (roleSelectEl) this.roleSelect.bindEvents(roleSelectEl);
+        if (sortBySelectEl) this.sortBySelect.bindEvents(sortBySelectEl);
+        if (sortOrderSelectEl) this.sortOrderSelect.bindEvents(sortOrderSelectEl);
+
+        // Bind evento de busca no input
+        const searchInputEl = container.querySelector('#filter-search') as HTMLInputElement;
+        searchInputEl?.addEventListener('input', (e) => {
+            this.filters.search = (e.target as HTMLInputElement).value;
+            this.applyFiltersAndSort();
+        });
     }
 
     private bindEvents(): void {
         const container = this.container.querySelector('.my-tasks-container');
         if (!container) return;
-
-        // Filtros
-        const searchInput = container.querySelector('#filter-search') as HTMLInputElement;
-        const projectSelect = container.querySelector('#filter-project') as HTMLSelectElement;
-        const prioritySelect = container.querySelector('#filter-priority') as HTMLSelectElement;
-        const statusSelect = container.querySelector('#filter-status') as HTMLSelectElement;
-        const roleSelect = container.querySelector('#filter-role') as HTMLSelectElement;
-        const sortBySelect = container.querySelector('#sort-by') as HTMLSelectElement;
-        const sortOrderSelect = container.querySelector('#sort-order') as HTMLSelectElement;
-
-        // Event listeners para filtros
-        searchInput?.addEventListener('input', (e) => {
-            this.filters.search = (e.target as HTMLInputElement).value;
-            this.applyFiltersAndSort();
-        });
-
-        projectSelect?.addEventListener('change', (e) => {
-            this.filters.project = (e.target as HTMLSelectElement).value;
-            this.applyFiltersAndSort();
-        });
-
-        prioritySelect?.addEventListener('change', (e) => {
-            this.filters.priority = (e.target as HTMLSelectElement).value;
-            this.applyFiltersAndSort();
-        });
-
-        statusSelect?.addEventListener('change', (e) => {
-            this.filters.status = (e.target as HTMLSelectElement).value;
-            this.applyFiltersAndSort();
-        });
-
-        roleSelect?.addEventListener('change', (e) => {
-            this.filters.role = (e.target as HTMLSelectElement).value;
-            this.applyFiltersAndSort();
-        });
-
-        sortBySelect?.addEventListener('change', (e) => {
-            this.sort.by = (e.target as HTMLSelectElement).value as any;
-            this.applyFiltersAndSort();
-        });
-
-        sortOrderSelect?.addEventListener('change', (e) => {
-            this.sort.order = (e.target as HTMLSelectElement).value as 'asc' | 'desc';
-            this.applyFiltersAndSort();
-        });
 
         // Click em tarefa para navegar ao projeto
         container.addEventListener('click', (e) => {
@@ -102,6 +218,50 @@ export class MyTasksView extends Component {
                     app.navigate(`/projetos/${projectId}`);
                 }
             }
+        });
+
+        // Initialize filters toggle (after elements exist)
+        this.initFiltersToggle();
+
+        // Pagination
+        this.container.querySelector("#btn-prev-page")?.addEventListener("click", () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderTasks();
+                this.container.querySelector('.my-tasks-container')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        this.container.querySelector("#btn-next-page")?.addEventListener("click", () => {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.renderTasks();
+                this.container.querySelector('.my-tasks-container')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Toggle filters collapse state and persist preference
+    private initFiltersToggle(): void {
+        const container = this.container.querySelector('.my-tasks-container');
+        if (!container) return;
+
+        const accordion = container.querySelector('#filters-accordion') as HTMLElement;
+        const toggle = container.querySelector('#filters-toggle') as HTMLButtonElement;
+        if (!accordion || !toggle) return;
+
+        const STORAGE_KEY = 'mytasks_filters_collapsed';
+        const collapsed = localStorage.getItem(STORAGE_KEY) === 'true';
+
+        if (collapsed) {
+            accordion.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+
+        toggle.addEventListener('click', () => {
+            const isCollapsed = accordion.classList.toggle('collapsed');
+            toggle.setAttribute('aria-expanded', (!isCollapsed).toString());
+            localStorage.setItem(STORAGE_KEY, isCollapsed.toString());
         });
     }
 
@@ -154,22 +314,39 @@ export class MyTasksView extends Component {
     }
 
     private async populateProjectFilter(): Promise<void> {
-        const projectSelect = this.container.querySelector('#filter-project') as HTMLSelectElement;
-        if (!projectSelect) return;
+        if (!this.projectSelect) return;
 
         try {
             const projects = await ProjectService.getUserProjects();
             
-            // Limpar e adicionar opção padrão
-            projectSelect.innerHTML = '<option value="">Todos</option>';
-            
-            // Adicionar projetos
-            projects.forEach(project => {
-                const option = document.createElement('option');
-                option.value = project.id.toString();
-                option.textContent = project.name;
-                projectSelect.appendChild(option);
+            const options: SelectOption[] = [
+                { value: '', label: 'Todos', selected: true },
+                ...projects.map(project => ({
+                    value: project.id.toString(),
+                    label: project.name
+                }))
+            ];
+
+            // Recriar o select com as novas opções
+            this.projectSelect = new Select({
+                name: 'filter-project',
+                placeholder: 'Todos os projetos',
+                options,
+                onChange: (value) => {
+                    this.filters.project = value;
+                    this.applyFiltersAndSort();
+                }
             });
+
+            // Re-render do select de projetos
+            const container = this.container.querySelector('[data-component="project-select"]');
+            if (container) {
+                container.innerHTML = this.projectSelect.render();
+                const selectEl = container.querySelector('[data-select]') as HTMLElement;
+                if (selectEl) {
+                    this.projectSelect.bindEvents(selectEl);
+                }
+            }
         } catch (error) {
             console.error('Erro ao carregar projetos:', error);
         }
@@ -267,6 +444,7 @@ export class MyTasksView extends Component {
             return this.sort.order === 'asc' ? comparison : -comparison;
         });
 
+        this.currentPage = 1; // Reset para primeira página ao aplicar filtros
         this.renderTasks();
     }
 
@@ -281,15 +459,22 @@ export class MyTasksView extends Component {
             countDisplay.textContent = `${this.filteredTasks.length} tarefa(s) encontrada(s)`;
         }
 
-        // Renderizar tarefas
+        // Renderizar tarefas com paginação
         if (this.filteredTasks.length === 0) {
             listContainer.innerHTML = '<div class="empty-state-msg">Nenhuma tarefa encontrada com os filtros aplicados.</div>';
+            this.updatePagination();
             return;
         }
 
+        // Calcular paginação
+        this.totalPages = Math.ceil(this.filteredTasks.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const paginatedTasks = this.filteredTasks.slice(startIndex, endIndex);
+
         const user = JSON.parse(localStorage.getItem('user_data') || '{}');
 
-        listContainer.innerHTML = this.filteredTasks.map(task => {
+        listContainer.innerHTML = paginatedTasks.map(task => {
             const isAssignee = task.assignees?.some(a => {
                 const assigneeId = typeof a.user_id === 'string' ? parseInt(a.user_id) : a.user_id;
                 const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
@@ -331,6 +516,8 @@ export class MyTasksView extends Component {
                 </div>
             `;
         }).join('');
+
+        this.updatePagination();
     }
 
     private getPriorityBadge(priority: TaskPriority): string {
@@ -373,5 +560,15 @@ export class MyTasksView extends Component {
         const cssClass = cssClasses[status] || 'pending';
 
         return `<span class="badge badge--${cssClass}">${label}</span>`;
+    }
+
+    private updatePagination(): void {
+        const pageInfo = this.container.querySelector('#page-info');
+        const prevBtn = this.container.querySelector('#btn-prev-page') as HTMLButtonElement;
+        const nextBtn = this.container.querySelector('#btn-next-page') as HTMLButtonElement;
+
+        if (pageInfo) pageInfo.textContent = `Página ${this.currentPage} de ${this.totalPages}`;
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
     }
 }

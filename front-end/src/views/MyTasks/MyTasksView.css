@@ -25,23 +25,105 @@
 }
 
 /* ============================================
-   Filtros
+   Filtros - Accordion
    ============================================ */
-.task-filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 1.5rem;
+.filters-accordion {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.filters-accordion-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+
+.filters-accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.filters-accordion-title i {
+    color: var(--color-primary-dark-text);
+}
+
+.filters-accordion-icon {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.filters-accordion-header[aria-expanded="true"] .filters-accordion-icon {
+    transform: rotate(180deg);
+}
+
+.filters-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.filters-accordion-header[aria-expanded="true"] + .filters-accordion-content {
+    max-height: 600px;
+}
+
+.filters-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+:root:not(.dark-mode) .task-item{
+    background: #fff;
+}
+
+.filters-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.row-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-main);
+    min-width: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.row-items {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 0;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1;
 }
 
 .filter-group label {
@@ -50,12 +132,31 @@
     color: var(--text-main);
 }
 
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .row-label {
+        min-width: unset;
+    }
+
+    .row-items {
+        flex-direction: column;
+    }
+
+    .filter-item {
+        width: 100%;
+    }
+}
+
 .filter-input,
 .filter-select {
     padding: 0.625rem 0.875rem;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background-color: #FFFFFF;
+    background-color: var(--bg-page);
     color: var(--text-main);
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -83,12 +184,7 @@
     box-shadow: 0 0 0 3px rgba(19, 236, 91, 0.1);
 }
 
-/* Dark mode for native selects */
-.dark-mode .filter-input,
-.dark-mode .filter-select {
-    background-color: var(--bg-surface);
-}
-
+/* Dark mode arrow color */
 .dark-mode .filter-select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 }
@@ -96,14 +192,21 @@
 /* ============================================
    Contagem
    ============================================ */
-.task-count {
+.my-tasks-container .task-count {
     margin-bottom: 1rem;
     padding: 0.75rem 1rem;
-    background: var(--bg-decorative);
-    border-left: 3px solid var(--color-primary);
+    background: var(--status-done-bg);
+    border-left: 3px solid var(--status-done-dot);
     border-radius: 4px;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font: optional;nt-size: 0.875rem;
+    color: var(--status-done-text);
+    font-weight: 700;
+}
+
+.dark-mode .my-tasks-container .task-count {
+    background: rgba(34, 197, 94, 0.3) !important;
+    border-left-color: #86efac !important;
+    color: #86efac !important;
 }
 
 /* ============================================
@@ -112,21 +215,32 @@
 .tasks-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .task-item {
     padding: 1.5rem;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.task-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--color-primary);
 }
 
 .task-item:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .task-item-header {
@@ -137,10 +251,10 @@
 }
 
 .task-item-title {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: var(--text-main);
-    margin: 0;
+    margin: 0 0 0.5rem 0;
 }
 
 .task-item-badges {
@@ -253,11 +367,46 @@
         padding: 1rem;
     }
 
-    .task-filters {
-        grid-template-columns: 1fr;
+    .row-items {
+        flex-direction: column;
+    }
+
+    .row-items > * {
+        min-width: unset;
     }
 
     .task-item-body {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Dark mode - garantir hover shadow apropriado */
+.dark-mode .task-item:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+.my-tasks-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.my-tasks-pagination span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .my-tasks-pagination {
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 }

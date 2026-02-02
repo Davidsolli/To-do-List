@@ -6,68 +6,21 @@
         </div>
     </div>
 
-    <!-- Filtros e Ordenação -->
-    <div class="task-filters">
-        <div class="filter-group">
-            <label for="filter-search">Buscar</label>
-            <input type="text" id="filter-search" class="filter-input" placeholder="Buscar por título..." />
-        </div>
+    <!-- Filtros e Ordenação (accordion) -->
+    <div class="filters-accordion" id="filters-accordion">
+        <button class="filters-accordion-header" id="filters-toggle" aria-expanded="true"
+            aria-controls="filters-content">
+            <span class="filters-accordion-title">
+                <i class="fa-solid fa-filter"></i>
+                Filtros
+            </span>
+            <i class="fa-solid fa-chevron-down filters-accordion-icon"></i>
+        </button>
 
-        <div class="filter-group">
-            <label for="filter-project">Projeto</label>
-            <select id="filter-project" class="filter-select">
-                <option value="">Todos</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="filter-priority">Prioridade</label>
-            <select id="filter-priority" class="filter-select">
-                <option value="">Todas</option>
-                <option value="high">Alta</option>
-                <option value="medium">Média</option>
-                <option value="low">Baixa</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="filter-status">Status</label>
-            <select id="filter-status" class="filter-select">
-                <option value="">Todos</option>
-                <option value="pending">Pendente</option>
-                <option value="in_progress">Em Progresso</option>
-                <option value="ready">Pronto</option>
-                <option value="under_review">Em Revisão</option>
-                <option value="completed">Concluído</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="filter-role">Meu Papel</label>
-            <select id="filter-role" class="filter-select">
-                <option value="">Todos</option>
-                <option value="assignee">Responsável</option>
-                <option value="reviewer">Revisor</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="sort-by">Ordenar por</label>
-            <select id="sort-by" class="filter-select">
-                <option value="estimate">Prazo</option>
-                <option value="priority">Prioridade</option>
-                <option value="created">Data de criação</option>
-                <option value="title">Título</option>
-                <option value="status">Status</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="sort-order">Ordem</label>
-            <select id="sort-order" class="filter-select">
-                <option value="asc">Crescente</option>
-                <option value="desc">Decrescente</option>
-            </select>
+        <div id="filters-content" class="filters-accordion-content">
+            <div id="filters-container" class="filters-grid">
+                <!-- Filtros serão inseridos aqui via JS -->
+            </div>
         </div>
     </div>
 
@@ -82,5 +35,17 @@
             <div class="spinner"></div>
             <span>Carregando tarefas...</span>
         </div>
+    </div>
+
+    <div class="my-tasks-pagination">
+        <button class="btn btn--secondary" id="btn-prev-page" disabled>
+            <span class="material-icons-outlined">chevron_left</span>
+            Anterior
+        </button>
+        <span id="page-info">Página 1 de 1</span>
+        <button class="btn btn--secondary" id="btn-next-page" disabled>
+            Próxima
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
     </div>
 </div>

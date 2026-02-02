@@ -74,7 +74,7 @@ export class MyTasksView extends Component {
         this.projectSelect = new Select({
             name: 'filter-project',
             placeholder: 'Todos os projetos',
-            options: [{ value: '', label: 'Todos', selected: true }],
+            options: [{ value: 'ALL', label: 'Todos', selected: true }],
             onChange: (value) => {
                 this.filters.project = value;
                 this.applyFiltersAndSort();
@@ -86,7 +86,7 @@ export class MyTasksView extends Component {
             name: 'filter-priority',
             placeholder: 'Todas as prioridades',
             options: [
-                { value: '', label: 'Todas', selected: true },
+                { value: 'ALL', label: 'Todas', selected: true },
                 { value: 'high', label: 'Alta' },
                 { value: 'medium', label: 'Média' },
                 { value: 'low', label: 'Baixa' }
@@ -102,7 +102,7 @@ export class MyTasksView extends Component {
             name: 'filter-status',
             placeholder: 'Todos os status',
             options: [
-                { value: '', label: 'Todos', selected: true },
+                { value: 'ALL', label: 'Todos', selected: true },
                 { value: 'pending', label: 'Pendente' },
                 { value: 'in_progress', label: 'Em Progresso' },
                 { value: 'ready', label: 'Pronto' },
@@ -120,7 +120,7 @@ export class MyTasksView extends Component {
             name: 'filter-role',
             placeholder: 'Todos os papéis',
             options: [
-                { value: '', label: 'Todos', selected: true },
+                { value: 'ALL', label: 'Todos', selected: true },
                 { value: 'assignee', label: 'Responsável' },
                 { value: 'reviewer', label: 'Revisor' }
             ],
@@ -320,7 +320,7 @@ export class MyTasksView extends Component {
             const projects = await ProjectService.getUserProjects();
             
             const options: SelectOption[] = [
-                { value: '', label: 'Todos', selected: true },
+                { value: 'ALL', label: 'Todos', selected: true },
                 ...projects.map(project => ({
                     value: project.id.toString(),
                     label: project.name
@@ -366,22 +366,22 @@ export class MyTasksView extends Component {
             }
 
             // Filtro de projeto
-            if (this.filters.project && task.project_id?.toString() !== this.filters.project) {
+            if (this.filters.project && this.filters.project !== 'ALL' && task.project_id?.toString() !== this.filters.project) {
                 return false;
             }
 
             // Filtro de prioridade
-            if (this.filters.priority && task.priority !== this.filters.priority) {
+            if (this.filters.priority && this.filters.priority !== 'ALL' && task.priority !== this.filters.priority) {
                 return false;
             }
 
             // Filtro de status
-            if (this.filters.status && task.status !== this.filters.status) {
+            if (this.filters.status && this.filters.status !== 'ALL' && task.status !== this.filters.status) {
                 return false;
             }
 
             // Filtro de papel
-            if (this.filters.role) {
+            if (this.filters.role && this.filters.role !== 'ALL') {
                 const isAssignee = task.assignees?.some(a => {
                     const assigneeId = typeof a.user_id === 'string' ? parseInt(a.user_id) : a.user_id;
                     const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;

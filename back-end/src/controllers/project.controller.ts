@@ -221,7 +221,7 @@ export class ProjectController {
       // Check for tasks assigned to this member
       const taskCount = ProjectService.getMemberTaskCount(projectId, memberId);
       
-      ProjectService.removeMember(projectId, memberId);
+      ProjectService.removeMember(projectId, memberId, userId);
       
       return res.json({ 
         message: "Membro removido com sucesso",
@@ -254,7 +254,7 @@ export class ProjectController {
         return res.status(400).json({ error: "Papel inválido" });
       }
 
-      ProjectService.updateMemberRole(projectId, memberId, role);
+      ProjectService.updateMemberRole(projectId, memberId, role, userId);
       return res.json({ message: "Papel atualizado" });
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
